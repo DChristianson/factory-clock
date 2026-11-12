@@ -1,8 +1,8 @@
-import { ModelContextMarks } from '@snagboat/schema';
-import { SessionIndex } from '@snagboat/schema';
-import { NormalizedEvent } from '@snagboat/schema';
+import { ModelContextMarks } from '../schema';
+import { SessionIndex } from '../schema';
+import { NormalizedEvent } from '../schema';
 import { buildExplorerState, byNewestStart, ExploreSessionList, ExplorerState } from '../explorerModel';
-import { buildSessionView, FindingInput, SessionView } from '@snagboat/schema';
+import { buildSessionView, FindingInput, SessionView } from '../schema';
 import { EXPLORE_SESSION_CAP } from '../catalog';
 import { buildMarks } from './marks';
 

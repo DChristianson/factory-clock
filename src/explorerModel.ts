@@ -1,5 +1,5 @@
-import { SessionSummary } from '@snagboat/schema';
-import { SessionView } from '@snagboat/schema';
+import { SessionSummary } from './schema';
+import { SessionView } from './schema';
 import { CATALOG, TAXONOMY, Taxonomy, VisualizerEntry } from './catalog';
 
 /** The day's session list the Sessions tab draws (the `sessions` message). */
