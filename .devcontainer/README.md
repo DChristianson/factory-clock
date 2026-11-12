@@ -3,9 +3,10 @@
 ## What a `.devcontainer` folder is
 
 A `.devcontainer/` folder describes a Linux computer, in the form of a Docker
-container, that your editor runs your project *inside*. When VS Code (with the
-**Dev Containers** extension) opens a folder that contains one, it offers
-**"Reopen in Container"**. It then:
+container, that your editor runs your project *inside*. The computer that runs
+the container and your editor is the **host**: macOS, Windows or Linux. When
+VS Code (with the **Dev Containers** extension) opens a folder that contains
+one, it offers **"Reopen in Container"**. It then:
 
 1. **Builds an image** from `Dockerfile`: the OS, tools and versions this
    project needs.
@@ -16,16 +17,16 @@ container, that your editor runs your project *inside*. When VS Code (with the
 3. **Runs setup hooks** (`postCreateCommand` once, `postStartCommand` on every
    start).
 4. **Moves VS Code's backend into the container.** The window still runs on
-   your Mac, but the terminal, extensions, language servers and Claude Code
+   the host, but the terminal, extensions, language servers and Claude Code
    all run inside the container.
 
 This gives you two things:
 
 - **Reproducibility.** Anyone (or any future you) gets the same toolchain by
-  opening the folder. Nothing is installed on your Mac.
+  opening the folder. Nothing is installed on the host.
 - **Containment.** Code running in the container can only reach your
-  project folder and the network. It can't reach the rest of your Mac's
-  files, keychain, SSH keys or `~/.claude`.
+  project folder and the network. It can't reach the rest of the host's
+  files, credential store, SSH keys or `~/.claude`.
 
 `devcontainer.json` is an open spec (containers.dev). GitHub Codespaces,
 JetBrains and the `devcontainer` CLI read it too.
@@ -38,11 +39,12 @@ JetBrains and the `devcontainer` CLI read it too.
 | `devcontainer.json` | Node 24 and the GitHub CLI (as features), security options, Claude login volume, env vars, setup hooks, VS Code extension |
 | `post-create.sh` | Runs once at creation: prints tool versions, turns bd metrics off |
 | `init-project.sh` | Run once by hand: `git init` + `bd init --skip-hooks` (already done for this repo) |
-| `check-host-safety.sh` | Runs on every start: warns if git hooks have been configured (see below) |
+| `check-host-safety.sh` | Runs on every start: warns if git hooks, or git settings that run commands, have been configured (see below) |
 
 ## First use
 
-1. Install Docker Desktop and the VS Code extension **Dev Containers**
+1. Install Docker (Docker Desktop, or Docker Engine on Linux) and the VS Code
+   extension **Dev Containers**
    (`ms-vscode-remote.remote-containers`).
 2. Open your factory-clock checkout in VS Code, then **Reopen in Container**.
    The first build takes a few minutes.
@@ -61,7 +63,7 @@ npm test         # the unit tests
 ```
 
 The page is static files. `site/` is in the shared folder, so open
-`site/index.html` in a browser on your Mac.
+`site/index.html` in a browser on the host.
 
 ## Beads
 
@@ -82,11 +84,11 @@ queue.
 - Claude Code, `bd`, and any scripts in `.beads/hooks/` (which `bd` runs
   automatically on issue create/close) all run as an unprivileged user with
   no `sudo`, no Linux capabilities, and no way to gain privileges.
-- Claude's login and settings live in a Docker volume, not your Mac's
+- Claude's login and settings live in a Docker volume, not the host's
   `~/.claude`.
 - bd usage metrics are off (`BD_DISABLE_METRICS=1`, `DO_NOT_TRACK=1`), and
   their hostname is pointed at 127.0.0.1 as a backup.
-- Your Mac's SSH agent isn't passed in (`SSH_AUTH_SOCK` is cleared).
+- The host's SSH agent isn't passed in (`SSH_AUTH_SOCK` is cleared).
 
 **Not contained:**
 - **The project folder.** Anything in the container can read, change or
@@ -97,29 +99,33 @@ queue.
   container (github.com/anthropics/claude-code, `.devcontainer/`) has one
   you can adapt.
 - **Git hooks.** `.git/` is inside the shared folder. If anything in the
-  container sets `core.hooksPath` or writes `.git/hooks/*`, **git on your
-  Mac** runs those scripts the next time you commit or pull there.
+  container sets `core.hooksPath` or writes `.git/hooks/*`, **git on the
+  host** runs those scripts the next time you commit or pull there. The same
+  goes for config settings that name a program, such as `core.fsmonitor`
+  (run by a plain `git status`), `core.sshCommand`, `core.pager`, filter and
+  merge drivers, credential helpers, and `!` aliases.
   `init-project.sh` uses `--skip-hooks`, and `check-host-safety.sh` warns on
-  each start. Run it on your Mac too before using git there:
-  `bash .devcontainer/check-host-safety.sh`.
+  each start. Run it on the host too before using git there:
+  `bash .devcontainer/check-host-safety.sh` (on Windows, from Git Bash or
+  WSL).
 - **Agent hook files in the repo.** `bd init` writes `.claude/settings.json`
   (and Codex/Cursor equivalents) that run `bd prime` at session start. If you
-  run Claude Code on your Mac in this folder, that command runs on your Mac.
+  run Claude Code on the host in this folder, that command runs on the host.
   It's harmless when `bd` isn't installed there, but treat these files as code.
 
 ## Pushing to GitHub
 
-VS Code normally forwards your Mac's git credentials into the container, which
+VS Code normally forwards the host's git credentials into the container, which
 would let anything in it push to **every** repo you can access. Choose one:
 
-- **Push from your Mac** (simplest): commit in the container, then
-  `git push` in a Mac terminal. Run `check-host-safety.sh` first.
+- **Push from the host** (simplest): commit in the container, then
+  `git push` in a terminal on the host. Run `check-host-safety.sh` first.
 - **Push from the container with a narrow token:** turn off credential
   forwarding in your VS Code *user* settings
   (`"dev.containers.gitCredentialHelperConfigLocation": "none"`), then use a
   GitHub fine-grained token limited to this one repo. A token can't push
   `.github/workflows/` files unless it also has the **Workflows** permission;
-  push those from your Mac.
+  push those from the host.
 
 **`gh` (GitHub CLI)** is installed by a feature in `devcontainer.json`, for
 opening PRs. It doesn't use the forwarded git credentials; give it the same
@@ -142,6 +148,8 @@ rebuild, log in again.
 - **Upgrade bd:** in `Dockerfile`, change `BD_VERSION`, download the two
   linux tarballs, run
   `gh attestation verify <tarball> --repo gastownhall/beads` on each, and
-  paste in their `shasum -a 256` values. Keep it in step with Snagboat's and
-  tbd's dev containers, which share the same database format.
-- **Reset Claude's login:** delete the `claude-config-*` volume in Docker Desktop.
+  paste in their SHA-256 hashes (`sha256sum`, or `shasum -a 256` on macOS).
+  Keep it in step with Snagboat's and tbd's dev containers, which share the
+  same database format.
+- **Reset Claude's login:** delete the `claude-config-*` volume
+  (`docker volume ls`, then `docker volume rm <name>`, or in Docker Desktop).

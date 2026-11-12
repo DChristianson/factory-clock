@@ -19,7 +19,7 @@
     "--add-host=gastownhall-eventsapi.com=::1"
   ],
 
-  // Claude Code's login and settings live in a Docker volume, NOT your Mac's
+  // Claude Code's login and settings live in a Docker volume, NOT the host's
   // ~/.claude. It survives container rebuilds; each project gets its own.
   "mounts": [
     "source=claude-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
@@ -32,7 +32,7 @@
   },
 
   "remoteEnv": {
-    // Don't hand your Mac's SSH keys (via the forwarded ssh-agent) to code in
+    // Don't hand the host's SSH keys (via the forwarded ssh-agent) to code in
     // the container. See README "Pushing to GitHub".
     "SSH_AUTH_SOCK": ""
   },
@@ -40,7 +40,7 @@
   // Runs once when the container is created.
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   // Runs every time the container starts: checks that nothing has set up git
-  // hooks that would run on your Mac.
+  // hooks that would run on the host.
   "postStartCommand": "bash .devcontainer/check-host-safety.sh",
 
   "customizations": {
