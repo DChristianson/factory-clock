@@ -2,7 +2,7 @@
 // layers around a center line. Tokens by agent or by model, or tool calls by
 // category, summed into time bins; a layer's thickness is the amount, its
 // position only there to keep the layers together. See
-// docs/design/visualization-explorer.md for the contract. Clicking a layer
+// docs/visualization-explorer.md for the contract. Clicking a layer
 // announces the busiest turn at that time. The mode lives in the instance. Sees
 // only its host and ctx: no VS Code.
 (function () {

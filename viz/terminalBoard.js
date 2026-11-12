@@ -3,7 +3,7 @@
 // categories) plus the queue, tokens, and status, each a grid of fixed-width
 // cells. What an actor last said or did appears only in its region, and a
 // change arrives as flaps falling left to right, never a fade. See
-// docs/design/visualization-explorer.md, "Terminal Board".
+// docs/visualization-explorer.md, "Terminal Board".
 //
 // The board shows the session at the shared replay clock's position. While
 // it plays, a region holds each message for a minimum dwell before the next

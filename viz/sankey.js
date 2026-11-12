@@ -1,6 +1,6 @@
 // Sankey: where tokens went, flowing from sessions to the main agent or
 // subagents to models. Widths are measured tokens, with no tool category split,
-// which would be an approximation. See docs/design/visualization-explorer.md for
+// which would be an approximation. See docs/visualization-explorer.md for
 // the contract. Clicking a ribbon lists the turns behind it, each announcing
 // { sessionId, turnId }; a selected turn narrows the ribbons to its own. The
 // pinned ribbon lives in the instance. Sees only its host and ctx: no VS Code.

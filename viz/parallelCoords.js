@@ -1,7 +1,7 @@
 // Parallel coordinates: every turn as a line across six measures, each axis on
 // its own scale from zero, colored by session. Bundles show turns that behave
 // alike, and a line that crosses against the rest is a turn worth reading. See
-// docs/design/visualization-explorer.md for the contract. Clicking a line
+// docs/visualization-explorer.md for the contract. Clicking a line
 // announces { sessionId, turnId }. Sees only its host and ctx: no VS Code.
 (function () {
   const AXES = [

@@ -2,7 +2,7 @@
 // axes, each scaled to the largest value among the loaded sessions. So it's
 // relative, and a lone session fills every axis; the proposal warns that area
 // and axis scaling can mislead, and the note says the same. The tooltips have
-// the real values. See docs/design/visualization-explorer.md for the contract.
+// the real values. See docs/visualization-explorer.md for the contract.
 // Clicking a point announces its session. Sees only its host and ctx: no VS Code.
 (function () {
   const MAX_SIZE = 480;

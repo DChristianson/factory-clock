@@ -1,7 +1,7 @@
 // Histogram: how a measurement is spread, across the loaded sessions, stacked
 // by session when there are several. The last bar gathers anything past the
 // 99th percentile, so one huge call doesn't flatten the rest. See
-// docs/design/visualization-explorer.md for the contract. Clicking a bar
+// docs/visualization-explorer.md for the contract. Clicking a bar
 // announces the turn behind its largest value. The metric lives in the
 // instance. Sees only its host and ctx: no VS Code.
 (function () {

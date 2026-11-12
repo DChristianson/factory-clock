@@ -1,7 +1,7 @@
 // Ridgeline: the shape of a per-call measurement across sessions or models, as
 // overlapping density curves on one axis. Each curve is scaled to its own peak,
 // so it compares where values fall, not how many there were; the row's label
-// has the count. See docs/design/visualization-explorer.md for the contract.
+// has the count. See docs/visualization-explorer.md for the contract.
 // Clicking a session's ridge announces that session. The choices live in the
 // instance. Sees only its host and ctx: no VS Code.
 (function () {

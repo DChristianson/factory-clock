@@ -4,7 +4,7 @@
 // of tool calls from one agent to one category folds into one arrow with ×N.
 // Delegation arrows are inferred: the log has no link from a subagent to the
 // call that started it, so they're drawn dashed at its first event. See
-// docs/design/visualization-explorer.md for the contract. A session-level
+// docs/visualization-explorer.md for the contract. A session-level
 // visualizer: the explorer gives it one session at a time. Clicking a turn's
 // band announces { sessionId, turnId }. Sees only its host and ctx: no VS Code.
 (function () {

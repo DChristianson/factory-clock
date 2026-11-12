@@ -3,7 +3,7 @@
 // prompt -> agent -> category nodes. Sessions sit side by side as small
 // multiples on one y axis, each group labeled with the session's name; an
 // Unlinked column appears where the tree has one. The category split is the
-// tree's approximation, marked ≈. See docs/design/visualization-explorer.md
+// tree's approximation, marked ≈. See docs/visualization-explorer.md
 // for the contract. Clicking a column announces { sessionId, turnId }. The
 // stacking mode lives in the instance, not in saved state. Sees only its
 // host and ctx: no VS Code.

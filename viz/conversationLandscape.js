@@ -4,7 +4,7 @@
 // the words it emitted orbit it in that hue, sized by how much they're its
 // own. No edge is drawn: relationships live only in how close the dots are,
 // set by the shared force layout under a model the view names on screen.
-// See docs/design/visualization-explorer.md, "Conversation Landscape".
+// See docs/visualization-explorer.md, "Conversation Landscape".
 //
 // The words are counted, not read: your prompts and the agents' reply
 // excerpts (when text capture is on), weighted by how often an actor used a

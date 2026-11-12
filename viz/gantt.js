@@ -4,7 +4,7 @@
 // below it as those same rows on the turn's own time axis, so a two-minute turn
 // in a four-hour session can still be read. Model and tool calls are recorded
 // as moments, not spans, so they're ticks, and ticks too close to tell apart
-// fold into one that counts them. See docs/design/visualization-explorer.md
+// fold into one that counts them. See docs/visualization-explorer.md
 // for the contract. Clicking a turn's bar announces { sessionId, turnId }. The
 // mode lives in the instance. Sees only its host and ctx: no VS Code.
 (function () {

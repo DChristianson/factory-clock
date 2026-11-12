@@ -2,7 +2,7 @@
 // you, the agent, its subagents, and the tool categories it used, lit only by
 // the work moving through it. A dark field; nodes bloom when they act; prompts,
 // delegations, and tool calls travel between them as comet-tailed particles
-// during replay. See docs/design/visualization-explorer.md, "Living Network".
+// during replay. See docs/visualization-explorer.md, "Living Network".
 //
 // Positions come from the shared force layout, weighted by how often two
 // actors interacted, with you pinned at the left; the note says so. Playback

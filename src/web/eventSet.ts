@@ -17,9 +17,9 @@ const noFindings: FindingsFor = () => [];
  * SessionController.explore builds one (the session's events in time order,
  * the findings for them, and buildSessionView with the marks and those
  * findings), without the live findings the extension merges in, since
- * nothing is live here. The findings come from the host: Snagboat's build of
- * the page replays its built-in heuristics (Snagboat's src/web/findings.ts); without
- * one, views have no findings.
+ * nothing is live here. The findings come from the caller. The page passes
+ * none for now, so views have no findings; they will come from a file
+ * Snagboat exports.
  */
 export class EventSet {
   readonly index = new SessionIndex();

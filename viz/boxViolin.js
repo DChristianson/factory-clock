@@ -1,7 +1,7 @@
 // Box and violin: how a measurement varies from session to session, one row
 // each on a shared axis. The violin is the density of the values, the box their
 // quartiles, the whiskers reach 1.5 times the box, and the dots beyond are
-// outliers. See docs/design/visualization-explorer.md for the contract. Clicking
+// outliers. See docs/visualization-explorer.md for the contract. Clicking
 // an outlier announces its turn; clicking a row, its session. The metric lives
 // in the instance. Sees only its host and ctx: no VS Code.
 (function () {

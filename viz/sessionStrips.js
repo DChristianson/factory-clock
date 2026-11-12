@@ -2,7 +2,7 @@
 // from its first prompt to its last call (two alternating shades, as the
 // tree), compactions as ticks, findings as the timeline's badges. Idle gaps
 // stay visible, which the tree can't show. See
-// docs/design/visualization-explorer.md for the contract. A project-level
+// docs/visualization-explorer.md for the contract. A project-level
 // visualizer: draws every session it's given on one time axis, one session
 // as one row. Clicking a turn announces { sessionId, turnId }. Sees only its
 // host and ctx: no VS Code.

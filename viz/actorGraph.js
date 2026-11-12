@@ -3,7 +3,7 @@
 // categories), so the layout stays put between draws. Edges are typed and not
 // interchangeable: message (you to an agent), delegation (an agent to a
 // subagent, inferred from events carrying an agentId, so dashed), model call,
-// and tool call. See docs/design/visualization-explorer.md for the contract.
+// and tool call. See docs/visualization-explorer.md for the contract.
 // A project-level visualizer: draws every session it's given, one session
 // without complaint. With a turn selected, the actors and edges active in it
 // stand out; clicking an actor announces the first turn it appears in. Sees

@@ -3,7 +3,7 @@
 // session and tool category, and findings by heuristic and day. Darker is more,
 // in five steps on a square-root scale, because a few cells usually dwarf the
 // rest; the legend prints each step's bounds. See
-// docs/design/visualization-explorer.md for the contract. Clicking a cell
+// docs/visualization-explorer.md for the contract. Clicking a cell
 // announces the session behind it, and its busiest turn where there is one. The
 // grid choice lives in the instance. Sees only its host and ctx: no VS Code.
 (function () {

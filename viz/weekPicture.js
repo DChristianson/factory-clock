@@ -3,7 +3,7 @@
 // tokens, with a dot where a finding started. Rings grow outward, so a wedge's
 // area exaggerates later days; color carries the value, and the table beside it
 // has the numbers. It draws the loaded sessions, not everything that happened
-// that week. Times are local. See docs/design/visualization-explorer.md for the
+// that week. Times are local. See docs/visualization-explorer.md for the
 // contract. Clicking a wedge announces that hour's busiest session and turn. The
 // week shown lives in the instance. Sees only its host and ctx: no VS Code.
 (function () {

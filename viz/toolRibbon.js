@@ -4,7 +4,7 @@
 // the right, and a ribbon's width is how many times that step happened. Start
 // and End mark the edges of a sequence. Order is observed, but one call
 // following another doesn't show that it depended on it, and the note says so.
-// See docs/design/visualization-explorer.md for the contract. Clicking a ribbon
+// See docs/visualization-explorer.md for the contract. Clicking a ribbon
 // lists the turns it came from, each announcing { sessionId, turnId }; a
 // selected turn narrows the ribbons to its own. The pinned ribbon lives in the
 // instance. Sees only its host and ctx: no VS Code.

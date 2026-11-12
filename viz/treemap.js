@@ -3,7 +3,7 @@
 // so one category's share across sessions reads as one block. Layout is
 // squarified (Bruls, Huizing, van Wijk), so blocks stay near square and easy to
 // compare. The category split is the tree's approximation, marked ≈. See
-// docs/design/visualization-explorer.md for the contract. Clicking a block
+// docs/visualization-explorer.md for the contract. Clicking a block
 // announces { sessionId, turnId? }. The mode lives in the instance. Sees only
 // its host and ctx: no VS Code.
 (function () {

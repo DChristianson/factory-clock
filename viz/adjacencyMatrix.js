@@ -3,7 +3,7 @@
 // A pair has one kind of relationship, named in its tooltip, and delegation is
 // outlined dashed because it's inferred from agent ids and order. Unlike the
 // actor graph, it stays readable when many actors interact. See
-// docs/design/visualization-explorer.md for the contract. Clicking a cell
+// docs/visualization-explorer.md for the contract. Clicking a cell
 // announces the turn with the most of that interaction. Sees only its host and
 // ctx: no VS Code.
 (function () {

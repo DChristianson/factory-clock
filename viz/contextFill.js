@@ -4,7 +4,7 @@
 // shapes compare. A dot marks the first call after each compaction; each
 // model's largest-seen and limit lines are drawn as the timeline draws
 // them. Lines take the validated hues in fixed order and repeat dashed past
-// six. See docs/design/visualization-explorer.md for the contract. A
+// six. See docs/visualization-explorer.md for the contract. A
 // project-level visualizer: one session draws one line. Hovering near a
 // point gives its breakdown; clicking selects that call's turn. Sees only
 // its host and ctx: no VS Code.

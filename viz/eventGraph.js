@@ -4,7 +4,7 @@
 // and their order, so only that order is drawn solid; anything saying one event
 // led to another is dashed and named as inferred (see the proposal's "don't
 // confuse communication with causality"). Positions come from sequence, not
-// clock time, so the layout is stable. See docs/design/visualization-explorer.md
+// clock time, so the layout is stable. See docs/visualization-explorer.md
 // for the contract. A session-level visualizer: draws the first session it's
 // given. Clicking a prompt announces { sessionId, turnId }. Sees only its host
 // and ctx: no VS Code.

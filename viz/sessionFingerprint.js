@@ -5,7 +5,7 @@
 // stock, so where runs agree the inks overprint and where they diverge one
 // color stands alone. Every loaded run also gets a small signature in the
 // library row, where clicking one lifts it onto the plate or off it. See
-// docs/design/visualization-explorer.md, "Session Fingerprint".
+// docs/visualization-explorer.md, "Session Fingerprint".
 //
 // Honest about what it has: a turn is a node at its prompt, sized by its
 // tokens; a branch is a subagent's span from its first event to its last; a

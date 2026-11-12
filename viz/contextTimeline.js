@@ -1,7 +1,7 @@
 // Context timeline: the context each main-agent model call sent, as steps
 // over clock time, with prompt rules, compactions, findings, and each model's
-// largest-seen and limit lines. See docs/design/conversation-view.md for the
-// view and docs/design/visualization-explorer.md for the contract. Draws the
+// largest-seen and limit lines. See Snagboat's docs/design/conversation-view.md for the
+// view and docs/visualization-explorer.md for the contract. Draws the
 // first session it's given (a session-level visualizer; the explorer stacks
 // one per session). Keeps its own zoom: 'all', a range, or by default the
 // selected turn with padding (or the latest turn). Clicking a prompt rule

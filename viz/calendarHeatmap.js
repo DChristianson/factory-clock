@@ -1,7 +1,7 @@
 // Calendar heatmap: the loaded sessions by local day, a column per week, at
 // least a quarter wide so the long view reads as one. It counts the loaded
 // sessions, not all that happened on those days. See
-// docs/design/visualization-explorer.md for the contract. Clicking a day
+// docs/visualization-explorer.md for the contract. Clicking a day
 // announces that day's busiest session and turn. The measure lives in the
 // instance. Sees only its host and ctx: no VS Code.
 (function () {

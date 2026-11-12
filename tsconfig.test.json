@@ -1,0 +1,13 @@
+{
+  // The unit tests (src/test), compiled with the sources they test into out/
+  // and run with Node by scripts/runUnit.js (npm test). Node types are on here
+  // only.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": false,
+    "sourceMap": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": []
+}

@@ -1,10 +1,7 @@
 /* The visualizers' styles: the explorer (explore.js), the visualizers
-   (packages/viz/viz/*.js, vizkit.js), and the base they draw on (page, buttons,
-   tables, tooltip). They move with Factory Clock into their own package
-   (docs/design/factory-clock-plan.md, step 4), and need only theme.css's
-   --fc-* tokens: each host loads theme.css first and may map the tokens to
-   its own theme (the webview does, in vscodeTheme.css), then this file, then
-   its own page styles (detail.css in the webview, web.css on the web page).
+   (viz/*.js, vizkit.js), and the base they draw on (page, buttons,
+   tables, tooltip). They need only theme.css's --fc-* tokens. The page
+   loads theme.css first, then this file, then its own styles (web.css).
    A new color goes into theme.css's validated set, not inline. Hero views
    are the exception: each keeps its own palette, scoped to the view below. */
 body {
@@ -109,7 +106,7 @@ select, input[type="search"] {
 .session-list tbody tr:hover { background: var(--fc-hover, rgba(128, 128, 128, 0.12)); }
 .session-list tbody tr.selected { background: var(--fc-active-bg, rgba(128, 128, 128, 0.2)); color: var(--fc-active-ink, var(--fc-ink)); }
 
-/* Turn tree and context timeline (packages/viz/viz/turnTree.js, contextTimeline.js) */
+/* Turn tree and context timeline (viz/turnTree.js, contextTimeline.js) */
 .tree, .context-chart { width: 100%; display: block; }
 .tree .node { fill: var(--fc-panel, rgba(128, 128, 128, 0.14)); stroke: var(--fc-rule); stroke-width: 1; }
 .tree .turn-0 { fill: var(--fc-turn-0); }
@@ -165,7 +162,7 @@ select, input[type="search"] {
 .brush { fill: var(--fc-selection, rgba(57, 135, 229, 0.25)); }
 .context-chart .mark-label { fill: var(--fc-ink); }
 
-/* Explorer charts (packages/viz/viz/*.js beyond the two ported views): the same
+/* Explorer charts (viz/*.js beyond the two ported views): the same
    grid, axis, hover, and mark conventions as the context chart. */
 .viz-chart { width: 100%; display: block; }
 .viz-chart .grid { stroke: var(--fc-rule); stroke-width: 1; shape-rendering: crispEdges; }
@@ -620,7 +617,7 @@ select, input[type="search"] {
 .swim-call { fill: var(--fc-ink-muted); background: var(--fc-ink-muted); }
 .swim-compaction { fill: var(--fc-warn); }
 
-/* Explore tab: picker, carousel, puck (see docs/design/visualization-explorer.md) */
+/* Explore tab: picker, carousel, puck (see docs/visualization-explorer.md) */
 .picker { margin-top: 12px; }
 .picker th.pick, .picker td.pick { width: 1.4em; padding-right: 4px; }
 .picker td.pick input { margin: 0; vertical-align: middle; }
@@ -746,7 +743,7 @@ select, input[type="search"] {
 .replay-badge.live { color: var(--fc-ok, #388a34); border-color: currentColor; }
 .replay-where { color: var(--fc-ink-muted); }
 
-/* ---------- Hero views: each draws its own ground and palette in either theme (docs/design/visualization-explorer.md, "Design language facet") ---------- */
+/* ---------- Hero views: each draws its own ground and palette in either theme (docs/visualization-explorer.md, "Design language facet") ---------- */
 
 /* Living Network, design language `cinematic`: a dark field lit by the work moving through it. */
 .hero-living {

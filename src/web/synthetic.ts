@@ -2,7 +2,7 @@ import { EventToolCategory } from '../schema';
 import { AgentId, NormalizedEvent } from '../schema';
 
 /**
- * The web demo's example sessions (docs/design/visualization-explorer.md,
+ * The web demo's example sessions (docs/visualization-explorer.md,
  * "Synthetic data"): four sessions of NormalizedEvents shaped like real
  * Claude Code and Copilot ones, from a seeded generator, so every visit draws
  * the same examples. Prompts with turn ids and text, model calls with the

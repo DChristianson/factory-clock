@@ -3,7 +3,7 @@
 // hand-off. Unlike the sequence diagram it reads across, and shows responsibility
 // rather than messages; unlike the Gantt, distance isn't time, so a burst stays
 // readable. Repeated steps fold into ×N. Long sessions are cut short, with a note;
-// a selected turn draws in full. See docs/design/visualization-explorer.md for
+// a selected turn draws in full. See docs/visualization-explorer.md for
 // the contract. Clicking a turn's band announces { sessionId, turnId }. Sees only
 // its host and ctx: no VS Code.
 (function () {

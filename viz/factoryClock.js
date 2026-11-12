@@ -4,7 +4,7 @@
 // depth, from you at the center through the primary agent and its subagents
 // to the tools at the bezel. An arc spans a stretch of an actor's activity;
 // hatching marks a quiet gap inside an open turn; one signal-orange hand
-// sweeps through the history. See docs/design/visualization-explorer.md,
+// sweeps through the history. See docs/visualization-explorer.md,
 // "Factory Clock".
 //
 // Events have no durations, so as in the Gantt an arc runs from the first

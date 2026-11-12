@@ -1,7 +1,7 @@
 // Bubble chart: each loaded session by how long it ran and how many tokens it
 // used, with area for its tool calls and color for the worst finding it had.
 // Span includes idle time, since events don't say when someone stepped away. See
-// docs/design/visualization-explorer.md for the contract. Clicking a bubble
+// docs/visualization-explorer.md for the contract. Clicking a bubble
 // announces its session. Sees only its host and ctx: no VS Code.
 (function () {
   const MAX_R = 42;

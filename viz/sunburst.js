@@ -3,7 +3,7 @@
 // its share of its parent; outer arcs are drawn longer than inner ones of the
 // same value, so it shows structure, and the treemap compares sizes better. The
 // tool category ring is the tree's approximate split, marked ≈. See
-// docs/design/visualization-explorer.md for the contract. Clicking an arc
+// docs/visualization-explorer.md for the contract. Clicking an arc
 // announces { sessionId, turnId? }. Sees only its host and ctx: no VS Code.
 (function () {
   const MAX_SIZE = 560;

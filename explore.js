@@ -1,9 +1,8 @@
-// Snagboat Explore tab (experimental): a session picker, a carousel with one
-// slide per visualizer in the catalog, and a puck that names the current
-// visualizer and filters the carousel by its tags. See
-// docs/design/visualization-explorer.md. Nothing here knows about VS Code:
-// the tab sees only ctx (the visualization kit and the tooltip) and a source
-// object, so the web demo mounts the same file over a source of its own.
+// The explorer: a session picker, a carousel with one slide per visualizer
+// in the catalog, and a puck that names the current visualizer and filters
+// the carousel by its tags. See docs/visualization-explorer.md. It sees only
+// ctx (the visualization kit and the tooltip) and a source object, which the
+// web page (src/web/page.ts) gives it.
 // Plain DOM; all data is written with textContent, never innerHTML.
 //
 //   window.factoryClockExplore.mount(root, source, ctx) -> { shown(), destroy() }
@@ -17,17 +16,17 @@
 //   getState()           the tab's saved state, {} the first time
 //   setState(partial)    merge these keys into the saved state
 //   onSessions(cb)       cb({ sessions, headlines }) on each list push
-//   onExplorer(cb)       cb(ExplorerState | null) on each explorer push (packages/viz/src/explorerModel.ts)
+//   onExplorer(cb)       cb(ExplorerState | null) on each explorer push (src/explorerModel.ts)
 //   openSessionId()      the session open in the Sessions tab, or null (pre-checked the first time)
 //
 // ctx: the helpers from vizkit.js plus tooltip, showTip(evt, rows), hideTip(). The tab adds
-// select(selection) for each visualizer it mounts (see packages/viz/viz/registry.js).
+// select(selection) for each visualizer it mounts (see viz/registry.js).
 //
 // Saved state: { picked: string[], current: visualizer id, filters: { facet: [values] }, replay: { speed, loop },
 // collapsed: boolean, corner: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
 // selection: { sessionId?, turnId?, range?, focusId? } | null }.
 (function () {
-  // The most sessions the picker allows; matches EXPLORE_SESSION_CAP in packages/viz/src/catalog.ts.
+  // The most sessions the picker allows; matches EXPLORE_SESSION_CAP in src/catalog.ts.
   const CAP = 8;
   const CORNERS = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
   // The strip never gets shorter than this; in a window too short for it, the page scrolls and the nav sticks to the window's bottom.

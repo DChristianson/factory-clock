@@ -1,4 +1,4 @@
-// The visualization kit: the helpers the visualizers under packages/viz/viz/, the
+// The visualization kit: the helpers the visualizers under viz/, the
 // registry and the explorer (explore.js) use, which reach a visualizer through
 // ctx: DOM and SVG construction, number and time formatting, a tooltip pair
 // bound to an element, the small session helpers, the distribution and slide
@@ -354,7 +354,7 @@
 
 
   // ---------- replay ----------
-  // One clock for the views that play a session back (docs/design/visualization-explorer.md,
+  // One clock for the views that play a session back (docs/visualization-explorer.md,
   // "Shared replay"). It runs over session time: a view reads the clock's position and draws
   // the events up to it, keeping no timers of its own.
 
@@ -654,7 +654,7 @@
   }
 
   // ---------- force layout ----------
-  // A small force layout for the hero views that need one (docs/design/visualization-explorer.md,
+  // A small force layout for the hero views that need one (docs/visualization-explorer.md,
   // "Shared force layout"). No dependencies and no randomness: a node starts where a hash of its
   // id puts it, so one session always gets the same picture; the layout settles before drawing,
   // and an update starts from the positions it had, so nodes move gently.

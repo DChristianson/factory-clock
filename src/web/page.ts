@@ -5,12 +5,12 @@ import { readDemoTraces } from './traces';
 import { syntheticEvents, syntheticSessionIds } from './synthetic';
 
 /**
- * The web demo's page (docs/design/visualization-explorer.md, "A web demo on
- * GitHub Pages"): mounts the package's explore.js over a source backed by an EventSet
+ * The web page (docs/visualization-explorer.md, "A web demo on
+ * GitHub Pages"): mounts explore.js over a source backed by an EventSet
  * in memory, the example traces (or the generated sessions, when the page was
  * built without traces) until files are loaded, and keeps the tab's
- * small state in localStorage. This is the only DOM-touching file in
- * the package's TypeScript, whose tsconfig has the DOM lib. Nothing here fetches, posts, or
+ * small state in localStorage. This and src/main.ts are the only
+ * DOM-touching files in the TypeScript, whose tsconfig has the DOM lib. Nothing here fetches, posts, or
  * stores anything but that state: the page's CSP forbids network requests,
  * and loaded events live in memory until the tab closes.
  */
@@ -18,7 +18,7 @@ import { syntheticEvents, syntheticSessionIds } from './synthetic';
 /** The explorer's saved state, under one key. */
 const STATE_KEY = 'factoryClock.explore';
 
-/** The source object packages/viz/explore.js expects (see its header). */
+/** The source object explore.js expects (see its header). */
 interface ExploreSource {
   listSessions(): void;
   loadSessions(ids: string[]): void;
@@ -39,7 +39,7 @@ interface ExploreTab {
 interface PageGlobals {
   factoryClockKit: Record<string, unknown> & { tipFor(tooltip: HTMLElement): { showTip: (evt: MouseEvent, rows: unknown[]) => void; hideTip: () => void } };
   factoryClockExplore: { mount(root: HTMLElement, source: ExploreSource, ctx: Record<string, unknown>): ExploreTab };
-  /** Set by demo-traces.js (hosts/web/demo/traces.js, from npm run demo:traces) when the page was built with it. */
+  /** Set by demo-traces.js (hosts/web/demo/traces.js, from Snagboat's npm run demo:traces) when the page was built with it. */
   factoryClockDemoTraces?: { picked?: unknown; events?: unknown };
 }
 

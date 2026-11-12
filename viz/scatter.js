@@ -1,7 +1,7 @@
 // Scatter plot: every turn as a point, how long it ran against what it used, on
 // log axes because both usually span orders of magnitude. Long turns aren't
 // always costly ones, and this is where that shows. See
-// docs/design/visualization-explorer.md for the contract. Clicking a point
+// docs/visualization-explorer.md for the contract. Clicking a point
 // announces { sessionId, turnId }. The y measure lives in the instance. Sees
 // only its host and ctx: no VS Code.
 (function () {

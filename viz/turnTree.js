@@ -1,6 +1,6 @@
 // Turn tree (icicle): where the tokens went, by session, then prompt, then
-// agent, then tool category. See docs/design/conversation-view.md for the
-// view and docs/design/visualization-explorer.md for the contract. Click
+// agent, then tool category. See Snagboat's docs/design/conversation-view.md for the
+// view and docs/visualization-explorer.md for the contract. Click
 // zooms to a node (the focus) and announces { sessionId, turnId, focusId };
 // focus(nodeId) on the instance does the same from outside (the Sessions
 // tab's breadcrumb). Several sessions draw as a forest under a root

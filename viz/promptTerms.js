@@ -3,7 +3,7 @@
 // time, by counting: no model, no embeddings, nothing stored or sent. A term
 // counts once per prompt; a node's size is how many prompts use it, a line
 // joins two terms that share prompts, thicker when they share more. See
-// docs/design/visualization-explorer.md for the contract. A project-level
+// docs/visualization-explorer.md for the contract. A project-level
 // visualizer: every session it's given goes into one graph, one session makes
 // one graph. Clicking a term lists its prompts, and clicking one of those
 // announces { sessionId, turnId }. Sees only its host and ctx: no VS Code.
