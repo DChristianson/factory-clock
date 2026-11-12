@@ -1,17 +1,17 @@
 # Contributing a visualizer
 
-This guide is for adding a view to Factory Clock. The full interface is in [the visualizer contract](../../docs/design/visualizer-contract.md); this page is the steps. For the rest of the repository (setup, tests, privacy rules), see Snagboat's [CONTRIBUTING.md](../../CONTRIBUTING.md).
+This guide is for adding a view to Factory Clock. The full interface is in [the visualizer contract](docs/visualizer-contract.md). This page is the steps.
 
 A visualizer is one plain browser script that draws `SessionView`s into a DOM element. It sees only that element, a `ctx` object of helpers, and the sessions. It doesn't know which page it runs in.
 
 ## Setup
 
-Requires Node.js 24 or later. From the repository root:
+Requires Node.js 24 or later.
 
 ```bash
 npm ci
-npm run build:web          # the web page, in out/web/
-npm run test:unit          # every unit test, no VS Code needed
+npm run build    # the web page, in site/
+npm test         # every unit test
 ```
 
 ## Steps
@@ -39,7 +39,7 @@ Add one file to `viz/`, named after the view in camelCase (`callsPerSession.js`)
 
 `register` throws without an `id` and a `mount` function. The `id` must match a catalog entry (step 2). `update` runs often: after mount, when the sessions change, and after any view announces a selection. Make it safe to repeat, and never call `ctx.select` from inside it. If the view animates, add `setActive(active)` and drive it through `ctx.createReplay`.
 
-The contract has [a complete worked example](../../docs/design/visualizer-contract.md#a-worked-example). Short real ones to copy: [`viz/bubble.js`](viz/bubble.js) and [`viz/histogram.js`](viz/histogram.js). With replay: [`viz/factoryClock.js`](viz/factoryClock.js).
+The contract has [a complete worked example](docs/visualizer-contract.md#a-worked-example). Short real ones to copy: [`viz/bubble.js`](viz/bubble.js) and [`viz/histogram.js`](viz/histogram.js). With replay: [`viz/factoryClock.js`](viz/factoryClock.js).
 
 ### 2. Add the catalog entry
 
@@ -61,7 +61,7 @@ The explorer draws its slides from the catalog, not from what registered. Add an
 
 ### 3. Load it
 
-Nothing to do. The web page picks up every file in `viz/` on its own (`scripts/webDemo.js` writes a script tag for each).
+Nothing to do. The web page picks up every file in `viz/` on its own (`scripts/site.js` writes a script tag for each).
 
 If the catalog and the registry disagree, the puck shows "Catalog mismatch" and the slide says "No renderer is registered".
 
@@ -84,12 +84,12 @@ If the catalog and the registry disagree, the puck shows "Catalog mismatch" and 
 
 ### 6. Test it
 
-- **The catalog test.** In `src/test/unit/explorer.unit.test.ts`, "the catalog conforms to the taxonomy" runs `validateCatalog` and lists every catalog id in order. Add your id in the same place you put it in `CATALOG`. If you add a hero view, also add it and its language to the hero list in the next test.
-- **The theme test.** `src/test/unit/themeBoundary.unit.test.ts` scans every file in `viz/` and `viz.css`. Nothing to add; it must pass.
-- **Your own logic.** If the view computes something worth testing alone, load the script in Node the way `src/test/unit/heroShared.unit.test.ts` loads `vizkit.js`: a `vm` sandbox with a bare `window`. Use the synthetic sessions from `src/web/synthetic.ts` (`factory-clock/web`). Never use real traces in unit tests.
-- **The page.** Run `npm run build:web` and open `out/web/index.html`. Move to your view in the carousel and check that it draws, the tooltip and click work, the browser console has no errors, and it works in both light and dark color schemes and at a narrow window. To check it headlessly, load the page with Playwright or another headless browser, wait for the explorer, and assert that `window.factoryClock.ids()` includes your id and no page errors were logged.
+- **The catalog test.** In `src/test/explorer.unit.test.ts`, "the catalog conforms to the taxonomy" runs `validateCatalog` and lists every catalog id in order. Add your id in the same place you put it in `CATALOG`. If you add a hero view, also add it and its language to the hero list in the next test.
+- **The theme test.** `src/test/themeBoundary.unit.test.ts` scans every file in `viz/` and `viz.css`. Nothing to add; it must pass.
+- **Your own logic.** If the view computes something worth testing alone, load the script in Node the way `src/test/heroShared.unit.test.ts` loads `vizkit.js`: a `vm` sandbox with a bare `window`. Use the synthetic sessions from `src/web/synthetic.ts`. Never use real traces in unit tests.
+- **The page.** Run `npm run build` and open `site/index.html`. Move to your view in the carousel and check that it draws, the tooltip and click work, the browser console has no errors, and it works in both light and dark color schemes and at a narrow window. To check it headlessly, load the page with Playwright or another headless browser, wait for the explorer, and assert that `window.factoryClock.ids()` includes your id and no page errors were logged.
 
-Run `npm run test:unit` before you open a pull request.
+Run `npm test` before you open a pull request.
 
 ## Constraints
 
@@ -106,9 +106,16 @@ Run `npm run test:unit` before you open a pull request.
 - [ ] One file in `viz/`, in an IIFE, calling `window.factoryClock.register` with an `id` and `mount`
 - [ ] `mount` returns `update`, `resize` and `destroy`; `destroy` hides the tooltip, stops timers and empties `host`
 - [ ] A `CATALOG` entry in `src/catalog.ts` with a description and a value for all five facets
-- [ ] The id added to the catalog test in `src/test/unit/explorer.unit.test.ts`
+- [ ] The id added to the catalog test in `src/test/explorer.unit.test.ts`
 - [ ] Colors from `--fc-*` tokens only; any new token in `theme.css`, with a light and a dark value
 - [ ] Rules in `viz.css` under the view's own class; no inline `style` in markup
 - [ ] Text through `textContent`; SVG has `role="img"` and an `aria-label`; clickable marks reachable by keyboard
 - [ ] Animation only through `ctx.createReplay`, or stopped under `prefers-reduced-motion`
-- [ ] `npm run test:unit` passes, and the view draws in `out/web/index.html` with no console errors
+- [ ] `npm test` passes, and the view draws in `site/index.html` with no console errors
+
+## Other changes
+
+- **Keep the page's promise.** No network requests, no analytics, no storage beyond the explorer's state. See [PRIVACY.md](PRIVACY.md). Don't loosen the Content-Security-Policy in `hosts/web/index.html`.
+- **The schema copy.** `src/schema/` is a copy of Snagboat's files. Change it by copying newer files from Snagboat, and update the commit in its [README](src/schema/README.md). If you must change a copied file here, say so in that README.
+- **Never commit real sessions** to tests. Example traces (`hosts/web/demo/traces.js`) are made with Snagboat's `npm run demo:traces` and committed only after someone has read the text report it writes.
+- **Writing.** Plain, short, direct sentences in docs and the page.
