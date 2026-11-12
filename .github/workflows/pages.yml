@@ -1,0 +1,54 @@
+name: Pages
+
+# Builds the web page (scripts/site.js assembles it in site/) and deploys it
+# to GitHub Pages at https://dchristianson.github.io/factory-clock/. The
+# repository's Pages source must be "GitHub Actions" (Settings > Pages).
+# The page is files only; nothing runs on a server. Its Content-Security-
+# Policy is in hosts/web/index.html: scripts and styles only from the page,
+# no network requests, no analytics. The deploy checks it is still there.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer push waits for the running one rather than cancelling it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the page
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - name: Check the page's security policy
+        run: grep -F "content=\"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'\"" site/index.html
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
