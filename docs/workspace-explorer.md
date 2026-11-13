@@ -427,7 +427,7 @@ A spike before any of this (plan step 22): factor `split-flap` and `cinematic` i
 
 ## Credits
 
-Every view names the work it draws on, so the page gives proper credit: the chart type it is, the technique or layout it uses, the metaphor it borrows, and the design it came from (the owner, 2026-11-13).
+Every view acknowledges the prior art it draws on: the chart type it is, the technique or layout it uses, and the metaphor it borrows (the owner, 2026-11-13). Credits are for others' work only; this project, its owner, and its own design documents are never credited (the owner, 2026-11-13).
 
 ```ts
 interface Credit {
@@ -435,16 +435,16 @@ interface Credit {
   by: string;                // 'Danny Holten'
   year?: number;             // 2006
   url?: string;              // only a link someone has opened and checked
-  relation: 'form' | 'technique' | 'metaphor' | 'design';
+  relation: 'form' | 'technique' | 'metaphor';
   note?: string;             // one line: what was taken
 }
 ```
 
-- **`form`** is the chart type itself (Sankey's diagram, the treemap). **`technique`** is a layout or algorithm used (edge bundling, circle packing, a Hilbert-curve order). **`metaphor`** is a borrowed picture (CodeCity's city, the metro map). **`design`** is where the view's own design came from: the visualization proposal and its categories, the hero concept pages (ChatGPT-generated), the design canvas, the owner's sketches.
-- **In the catalog.** `credits: Credit[]` on every entry; a unit test fails an entry with none. A view that is original says so with one `design` credit naming this project's design document, so "original" is a claim someone made, never a blank.
+- **`form`** is the chart type itself (Sankey's diagram, the treemap). **`technique`** is a layout or algorithm used (edge bundling, circle packing, a Hilbert-curve order). **`metaphor`** is a borrowed picture (CodeCity's city, the metro map).
+- **In the catalog.** `credits: Credit[]` on every entry; a unit test fails an entry with none, and one that credits this project. A view that looks original still has prior art: find the nearest form or technique it builds on (a strip per session is LifeLines; an event graph is Lamport's space-time diagram).
 - **On screen.** The puck's *Here* gains an *After* line ("After Holten 2006 · Wettel & Lanza 2008"), each name linking to its source. Below the fold, beside the picker and loader, a **Credits** list is built from the catalog, one row per view with all its credits, so the page's whole debt is in one place. The README links to it.
 - **For the new views**, credits come from [the prior-art survey](workspace-explorer-prior-art.md) as each view is built, and the rule joins those in [What applies to all](#what-applies-to-all).
-- **For the 32 existing views**, credits are researched once (plan step 24) and every URL opened before it's recorded. To start from, with the details to check: treemap (Shneiderman, early 1990s), Sankey diagram (Sankey, 1898), streamgraph (Byron and Wattenberg, 2008), parallel coordinates (Inselberg, 1985), sunburst (Stasko and Zhang, 2000), Gantt chart (Gantt, 1910s), sequence diagram (UML), and the hero views' concept pages and design canvas named in [the first design](visualization-explorer.md#hero-visualizations).
+- **For the 32 existing views**, credits are researched once (plan step 24) and every URL opened before it's recorded. To start from, with the details to check: treemap (Shneiderman, early 1990s), Sankey diagram (Sankey, 1898), streamgraph (Byron and Wattenberg, 2008), parallel coordinates (Inselberg, 1985), sunburst (Stasko and Zhang, 2000), Gantt chart (Gantt, 1910s), sequence diagram (UML).
 
 ## Testing
 
@@ -483,7 +483,7 @@ Tracked in beads: the epic `factory-clock-bqx`, **Workspace explorer**, with one
 21. **Strata.** The fourth hero view, after Atlas's foundations (steps 11 and 12); its language in the taxonomy, the view, and its note here.
 22. **Design-language fusion spike.** Factor `split-flap` and `cinematic` into sheet, type, marks, and motion; draw the two named fusions; record the cost. Decides step 23.
 23. **Language slots.** The slots in `viz.css` and the kit, `slots` in the catalog, the puck's "with …" row. Every existing language unchanged when nothing is picked. Only if step 22 says so.
-24. **Credits.** The `credits` field and its test, the puck's *After* line, the Credits list, and credits for all existing views, each source checked. ∥ with 6–7, after 5.
+24. **Credits.** The `credits` field and its test, the puck's *After* line, the Credits list, and prior-art credits for all existing views, each source checked. ∥ with 6–7, after 5.
 
 Steps 2–5 are the foundation and are small. Steps 6–7 are the visible change and the ones to look at early. Steps 8–11 make the demo real. Everything from 12 on is a view at a time, as before.
 
