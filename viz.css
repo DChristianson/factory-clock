@@ -617,6 +617,9 @@ select, input[type="search"] {
 .swim-call { fill: var(--fc-ink-muted); background: var(--fc-ink-muted); }
 .swim-compaction { fill: var(--fc-warn); }
 
+/* The hidden attribute always hides: a class that sets display (.slide, .card) would otherwise beat the browser's own [hidden] rule. */
+[hidden] { display: none !important; }
+
 /* Explore tab: picker, stage and shelf, puck (see docs/workspace-explorer.md, "Stage and shelf") */
 .picker { margin-top: 12px; }
 .picker th.pick, .picker td.pick { width: 1.4em; padding-right: 4px; }
