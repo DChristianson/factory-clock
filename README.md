@@ -26,6 +26,8 @@ The hero views replay sessions on a shared clock with play, scrub, speed and loo
 
 The catalog in [`src/catalog.ts`](src/catalog.ts) has each view's description and tags. Tags come from five facets: category (what question it answers), purpose (informative or expressive), level (one session, or several), dimension (time, actor, quantity, ...), and design language. The design behind each view is in [docs/visualization-explorer.md](docs/visualization-explorer.md).
 
+Every view acknowledges the prior art it draws on: the chart type it is, and any technique or picture it borrows. The puck names them under *After*, and the page's [Credits list](https://dchristianson.github.io/factory-clock/#credits) has them all, built from the `credits` in the catalog.
+
 ## Build and run
 
 Requires Node.js 24 or later.

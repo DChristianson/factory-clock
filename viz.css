@@ -708,6 +708,8 @@ select, input[type="search"] {
 .puck-body { flex: 0 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 .puck-toggle { margin-left: auto; }
 .puck-desc { margin: 0 0 4px; }
+.puck-after { margin: 0 0 4px; }
+.puck-after a { color: var(--fc-link); }
 .puck-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; margin-top: 8px; }
 /* Collapsed: a small circle with the title and position; the whole of it is the toggle. */
 .puck.collapsed { width: 96px; height: 96px; padding: 0 6px; justify-content: center; border-radius: 50%; }

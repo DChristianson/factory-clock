@@ -36,6 +36,14 @@
   const DRAG_THRESHOLD = 4; // px of movement before a press on the puck's head counts as a drag
   let mounted = null;
 
+  // A credit's people as the After line cites them; matches creditName in src/catalog.ts, whose unit tests cover it.
+  function creditName(by) {
+    const given = /\(([^()]+)\)\s*$/.exec(by);
+    if (given) return given[1].trim();
+    const last = by.split(/\s*,\s*(?:and\s+)?|\s+and\s+|\s*&\s*/).map((p) => p.trim()).filter(Boolean).map((p) => p.split(/\s+/).pop());
+    return last.length > 2 ? `${last[0]} et al.` : last.join(' & ');
+  }
+
   function mount(root, source, ctx) {
     const viz = window.factoryClock;
     const { el, compact, fmt, clip, short, duration, agentName, modelShort, ms } = ctx;
@@ -113,6 +121,8 @@
       renderCollapsed();
     });
     const puckDesc = el('p', { class: 'muted small puck-desc' });
+    // The work the view draws on (entry.credits), one name per credit, linked when it has a url.
+    const puckAfter = el('p', { class: 'muted small puck-after', hidden: true });
     const facets = el('div');
     const filterNote = el('span', { class: 'muted small' });
     const clearBtn = el('button', { class: 'link', text: 'Clear' });
@@ -122,7 +132,7 @@
       applyFilters('smooth');
     });
     const mismatchNote = el('p', { class: 'muted small', hidden: true });
-    const puckBody = el('div', { class: 'puck-body' }, [puckDesc, facets, el('div', { class: 'puck-foot' }, [filterNote, el('span', { class: 'spacer' }), clearBtn]), mismatchNote]);
+    const puckBody = el('div', { class: 'puck-body' }, [puckDesc, puckAfter, facets, el('div', { class: 'puck-foot' }, [filterNote, el('span', { class: 'spacer' }), clearBtn]), mismatchNote]);
     const puckHead = el('div', { class: 'puck-head' }, [puckTitle, puckPos, collapseBtn]);
     const puck = el('aside', { class: 'puck', 'aria-label': 'Current visualizer and tag filters' }, [puckHead, puckBody]);
     function renderCollapsed() {
@@ -494,6 +504,17 @@
       puckTitle.textContent = entry ? entry.title : st.catalog.length ? 'Nothing matches' : 'Explore';
       puckPos.textContent = entry ? `${slides.indexOf(cur) + 1}/${slides.length}` : '';
       puckDesc.textContent = entry ? entry.description : st.catalog.length ? 'Clear a filter to see visualizers again.' : 'Waiting for the catalog…';
+      const credits = entry && Array.isArray(entry.credits) ? entry.credits : [];
+      puckAfter.hidden = credits.length === 0;
+      puckAfter.replaceChildren(
+        ...(credits.length ? ['After '] : []),
+        ...credits.flatMap((c, i) => {
+          const cite = c.year === undefined ? creditName(c.by) : `${creditName(c.by)} ${c.year}`;
+          const title = `${c.work}, ${c.by}${c.year === undefined ? '' : `, ${c.year}`} (${c.relation})${c.note ? `: ${c.note}` : ''}`;
+          const name = c.url ? el('a', { href: c.url, target: '_blank', rel: 'noopener', title, text: cite }) : el('span', { title, text: cite });
+          return i ? [' · ', name] : [name];
+        })
+      );
       const tax = st.taxonomy || {};
       facets.replaceChildren(
         ...Object.entries(tax).map(([facet, def]) =>
