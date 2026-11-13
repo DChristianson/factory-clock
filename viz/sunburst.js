@@ -14,7 +14,7 @@
   window.factoryClock.register({
     id: 'sunburst',
     title: 'Sunburst',
-    tags: { subject: ['sessions', 'code', 'plans'], category: ['quantitative'], purpose: ['expressive'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'actor'], language: ['standard'] },
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['quantitative'], purpose: ['expressive'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'actor', 'structure', 'status'], language: ['standard'] },
     mount(host, ctx) {
       const { svg, svgText, fmt, compact, clip, arcPath, sessionName, sessionClass, legendKey, vizPanel, interact, shapeChildren, shapeClass, shapeLegend, shapeSelection, shapeSelected, shapeTip, shapeNote } = ctx;
       let views = [];

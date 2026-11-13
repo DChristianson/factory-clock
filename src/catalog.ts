@@ -314,8 +314,8 @@ export const CATALOG: VisualizerEntry[] = [
   {
     id: 'sunburst',
     title: 'Sunburst',
-    description: 'The turn tree as rings: sessions, prompts, agents, then tool categories, with angle for tokens.',
-    why: 'To follow the tokens from session to tool in one round picture.',
+    description: 'The turn tree as rings: sessions, prompts, agents, then tool categories, with angle for tokens. Also draws code (packages, modules, and files by lines) and plans (epics and items by count, colored by status).',
+    why: 'To follow a hierarchy from root to leaf in one round picture: tokens, code, or plans.',
     credits: [{ work: 'Focus+Context Display and Navigation Techniques for Enhancing Radial, Space-Filling Hierarchy Visualizations', by: 'John Stasko and Eugene Zhang', year: 2000, url: 'https://doi.org/10.1109/INFVIS.2000.885091', relation: 'form', note: 'The sunburst' }],
     tags: { subject: ['sessions', 'code', 'plans'], category: ['quantitative'], purpose: ['expressive'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'actor', 'structure', 'status'], language: ['standard'] },
   },
