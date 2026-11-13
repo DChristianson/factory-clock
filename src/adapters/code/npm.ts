@@ -288,7 +288,14 @@ const RESOLVE_EXTS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.mts', '.ct
 // TypeScript's convention: a file imports `./a.js` and means `./a.ts`.
 const TS_FOR_JS: Record<string, string[]> = { '.js': ['.ts', '.tsx'], '.jsx': ['.tsx'], '.mjs': ['.mts'], '.cjs': ['.cts'] };
 
-/** Resolves a relative specifier against the files; `inferred` when it took a guess. */
+/**
+ * Resolves a relative specifier against the files, by the rules TypeScript
+ * and Node use: the exact path, `./a.js` meaning `./a.ts`, an added
+ * extension, then a folder's index file. Following those rules isn't a
+ * guess, so the result is `inferred` only when the rules leave more than one
+ * file that could be meant (`a.ts` beside `a.js`, `a.ts` beside `a/index.ts`),
+ * and the first in rule order is taken.
+ */
 function resolveRelative(fromDir: string, spec: string, exists: (p: string) => boolean): { path: string; inferred: boolean } | null {
   const target = joinPath(fromDir, spec);
   if (target === null) return null;
@@ -298,8 +305,11 @@ function resolveRelative(fromDir: string, spec: string, exists: (p: string) => b
   if (m) for (const e of TS_FOR_JS[m[0]]) candidates.push(target.slice(0, -m[0].length) + e);
   if (target !== '') for (const e of RESOLVE_EXTS) candidates.push(target + e);
   for (const e of RESOLVE_EXTS) candidates.push((target === '' ? '' : target + '/') + 'index' + e);
-  for (const c of candidates) if (exists(c)) return { path: c, inferred: true };
-  return null;
+  // `a.d.ts` beside `a.ts` is the same module's types, not a second candidate.
+  const hits = [...new Set(candidates.filter(exists))];
+  const distinct = hits.filter((h) => !(h.endsWith('.d.ts') && hits.includes(h.slice(0, -5) + '.ts')));
+  if (distinct.length === 0) return null;
+  return { path: distinct[0], inferred: distinct.length > 1 };
 }
 
 // ---------- manifests ----------

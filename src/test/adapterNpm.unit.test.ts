@@ -155,8 +155,9 @@ async function main() {
 
   test('relative imports resolve: exact, .js meaning .ts, index files; misses are skipped', () => {
     const g = read(monorepo());
-    assert.deepStrictEqual(dep(g, 'packages/core/src/index.ts', 'packages/core/src/util.ts'), { from: 'packages/core/src/index.ts', to: 'packages/core/src/util.ts', kind: 'import', weight: 1, inferred: true });
-    assert.strictEqual(dep(g, 'packages/core/src/index.ts', 'packages/core/src/lib/index.ts')?.inferred, true);
+    // Following TypeScript's rules (.js meaning .ts, an added extension, an index file) isn't a guess.
+    assert.deepStrictEqual(dep(g, 'packages/core/src/index.ts', 'packages/core/src/util.ts'), { from: 'packages/core/src/index.ts', to: 'packages/core/src/util.ts', kind: 'import', weight: 1 });
+    assert.strictEqual(dep(g, 'packages/core/src/index.ts', 'packages/core/src/lib/index.ts')?.inferred, undefined);
     assert.deepStrictEqual(dep(g, 'packages/core/src/index.ts', 'packages/core/src/exact.js'), { from: 'packages/core/src/index.ts', to: 'packages/core/src/exact.js', kind: 'import', weight: 1 });
     assert.strictEqual(dep(g, 'packages/core/src/util.ts', 'packages/core/src/lazy.ts')?.kind, 'import', 'dynamic import');
     assert.strictEqual(dep(g, 'packages/core/test/util.test.ts', 'packages/core/src/util.ts')?.weight, 2, 'two statements');
@@ -164,6 +165,20 @@ async function main() {
     assert.ok(dep(g, 'packages/app/src/ui/button.spec.tsx', 'packages/app/src/ui/button.tsx'));
     assert.ok(!g.dependencies.some((d) => d.from === 'packages/app/dist/main.js'), 'unresolvable import skipped');
     assert.ok(!g.artifacts.some((a) => /missing|chunk/.test(a.id)), 'nothing invented');
+  });
+
+  test('an import is a guess only when the rules leave more than one file it could mean', () => {
+    const file = (path: string, text = '') => ({ path, text, bytes: text.length });
+    const g = read([
+      file('package.json', '{"name":"amb"}'),
+      file('src/main.ts', "import './a';\nimport './b';\nimport './c';\n"),
+      file('src/a.ts'), file('src/a.js'),           // two files for './a'
+      file('src/b.ts'), file('src/b/index.ts'),     // a file and a folder for './b'
+      file('src/c.ts'), file('src/c.d.ts'),         // a module and its types: one module
+    ]);
+    assert.deepStrictEqual(dep(g, 'src/main.ts', 'src/a.ts'), { from: 'src/main.ts', to: 'src/a.ts', kind: 'import', weight: 1, inferred: true });
+    assert.deepStrictEqual(dep(g, 'src/main.ts', 'src/b.ts'), { from: 'src/main.ts', to: 'src/b.ts', kind: 'import', weight: 1, inferred: true });
+    assert.deepStrictEqual(dep(g, 'src/main.ts', 'src/c.ts'), { from: 'src/main.ts', to: 'src/c.ts', kind: 'import', weight: 1 });
   });
 
   test('comments and strings are not imports', () => {
