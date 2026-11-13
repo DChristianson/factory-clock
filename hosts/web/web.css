@@ -8,7 +8,7 @@
   :root { color-scheme: dark; }
 }
 
-/* The page-only parts: a one-line header above the explorer, so the carousel gets the window, and the
+/* The page-only parts: a one-line header above the explorer, so the explorer gets the window, and the
    description, data notes, and loader below it. */
 .web-head .title-row { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
 .web-head .repo { color: var(--fc-link); text-decoration: none; font-size: 0.9em; }

@@ -275,8 +275,8 @@
   // ---------- fitting a slide ----------
   /**
    * The height a visualizer mounted at host can use without its slide scrolling: what's left of the
-   * carousel's slide below the host's top (for a stacked session, one slide's height less its
-   * heading). null outside the carousel (the Sessions tab), where a view keeps its own height.
+   * explorer's slide below the host's top (for a stacked session, one slide's height less its
+   * heading). null outside the explorer (the Sessions tab), where a view keeps its own height.
    */
   const FIT_SLACK = 14; // the note's bottom margin, which a host's scrollHeight doesn't count
   function fitHeight(host) {
@@ -296,7 +296,7 @@
    *   const fit = fitter(host);
    *   in draw():  const h = fit.height(fallback, min);  ...draw at h...;  fit.settle(h, draw);
    * height() is the slide's room less what surrounded the drawing last time (the fallback outside
-   * the carousel); settle() measures that surround and draws once more if it changed.
+   * the explorer); settle() measures that surround and draws once more if it changed.
    */
   function fitter(host) {
     let chrome = null;
