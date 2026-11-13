@@ -617,61 +617,112 @@ select, input[type="search"] {
 .swim-call { fill: var(--fc-ink-muted); background: var(--fc-ink-muted); }
 .swim-compaction { fill: var(--fc-warn); }
 
-/* Explore tab: picker, carousel, puck (see docs/visualization-explorer.md) */
+/* The hidden attribute always hides: a class that sets display (.slide, .card) would otherwise beat the browser's own [hidden] rule. */
+[hidden] { display: none !important; }
+
+/* Explore tab: picker, stage and shelf, puck (see docs/workspace-explorer.md, "Stage and shelf") */
 .picker { margin-top: 12px; }
 .picker th.pick, .picker td.pick { width: 1.4em; padding-right: 4px; }
 .picker td.pick input { margin: 0; vertical-align: middle; }
-.carousel { margin-top: 4px; }
+.project-picker { margin-top: 14px; }
+.project-picker .unit-group { display: grid; grid-template-columns: 66px 1fr; gap: 6px; align-items: start; margin-top: 6px; }
+.project-picker .unit-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.project-picker input { margin: 0 4px 0 0; vertical-align: -1px; }
+.explorer { margin-top: 4px; }
 .below-carousel { margin-top: 28px; border-top: 1px solid var(--fc-rule); padding-top: 10px; }
-.nav .to-picker { margin-left: 12px; }
-.strip {
-  position: relative;
-  display: flex;
-  gap: 16px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  overflow-y: hidden;
-  scrollbar-width: thin;
-  padding-bottom: 6px;
-  box-sizing: border-box;
-}
-.strip:focus-visible { outline: 1px solid var(--fc-accent); outline-offset: 2px; }
+/* The stage: one view, or two side by side when comparing. Off-stage neighbors stay mounted, out of sight, at the stage's size. */
+.stage { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; box-sizing: border-box; }
+.stage.comparing { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.stage:focus-visible { outline: 1px solid var(--fc-accent); outline-offset: 2px; }
 .slide {
-  flex: 0 0 100%;
   min-width: 0;
-  scroll-snap-align: start;
+  min-height: 0;
   border: 1px solid var(--fc-rule);
   border-radius: 4px;
   padding: 10px 12px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  min-height: 0;
 }
+.slide.offstage { position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
+.slide.pinned { order: -1; }
+.stage.comparing .slide:not(.offstage) { border-color: var(--fc-ink-muted); }
 .slide-head { flex: none; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-/* The strip's height is set to fit the window (fitStrip in explore.js); a taller drawing scrolls here. */
+/* The stage's height is set to fit the window (fitStage in explore.js); a taller drawing scrolls here. */
 .slide-host { flex: 1; min-height: 0; width: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-gutter: stable; }
+/* The stage while data loads: in the page from its first paint until the explorer mounts, and over the stage (the veil) while files are read. */
+.stage-loading {
+  box-sizing: border-box;
+  height: max(320px, 70vh);
+  border: 1px dashed var(--fc-rule);
+  border-radius: 4px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--fc-ink-muted);
+  text-align: center;
+}
+.stage-loading.veil { position: absolute; inset: 0; height: auto; z-index: 2; background: var(--fc-surface); }
+.stage-loading-bar { width: min(240px, 60%); height: 3px; border-radius: 2px; background: var(--fc-rule); overflow: hidden; }
+.stage-loading-bar i { display: block; width: 40%; height: 100%; background: var(--fc-accent); animation: fc-loading 1.2s ease-in-out infinite; }
+.stage-loading-text { margin: 0; }
+@keyframes fc-loading {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-loading-bar i { animation: none; width: 100%; opacity: 0.5; }
+}
 .stacked { border-top: 1px solid var(--fc-rule); padding-top: 8px; margin-top: 12px; }
 .stacked:first-child { border-top: none; margin-top: 0; padding-top: 0; }
 .stack-head { display: flex; align-items: baseline; gap: 4px; margin-bottom: 6px; }
 .viz-host { width: 100%; }
-/* Sticky for windows too short to fit the strip, and over the puck (20) so nothing covers it. */
-.nav {
+/* The dock: the shelf and the nav under the stage. Sticky for windows too short to fit the stage, and over the puck (20) so nothing covers it;
+   it leaves room on the side the puck sits when the puck is at the bottom. */
+.dock {
   position: sticky;
   bottom: 0;
   z-index: 21;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: fit-content;
   padding: 6px 0;
-  flex-wrap: wrap;
   background: var(--fc-surface);
 }
-.carousel[data-puck$="left"] .nav { margin-left: auto; }
-.dots { display: flex; gap: 6px; align-items: center; }
-.dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--fc-ink-muted); background: none; padding: 0; }
-.dot[aria-current="true"] { background: var(--fc-pressed-bg); border-color: var(--fc-pressed-bg); }
+.explorer[data-puck="bottom-right"] .dock { padding-right: 112px; }
+.explorer[data-puck="bottom-left"] .dock { padding-left: 112px; }
+.shelf { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; padding: 2px 2px 6px; }
+.card {
+  flex: none;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 2px 6px;
+  align-items: center;
+  width: 148px;
+  padding: 5px 8px;
+  text-align: left;
+  font: inherit;
+  font-size: 0.85em;
+  color: var(--fc-ink);
+  background: none;
+  border: 1px solid var(--fc-rule);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.card:hover { background: var(--fc-button-hover, var(--fc-toolbar-hover)); }
+.card:focus-visible { outline: 1px solid var(--fc-accent); outline-offset: 1px; }
+.card.current { border-color: var(--fc-pressed-bg); box-shadow: inset 0 0 0 1px var(--fc-pressed-bg); }
+.card.pinned { border-style: dashed; border-color: var(--fc-ink-muted); }
+.card.hero .card-title { font-weight: 600; }
+.card-glyph { grid-row: 1 / span 2; color: var(--fc-ink-muted); font-size: 1.1em; }
+.card-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* One slot per category, in a fixed order: a slot's place says which category, a filled slot that the view answers it. */
+.card-dots { display: flex; gap: 3px; }
+.card-dots i { width: 5px; height: 5px; border-radius: 50%; border: 1px solid var(--fc-rule); }
+.card-dots i.on { background: var(--fc-ink-muted); border-color: var(--fc-ink-muted); }
+.nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.nav .spacer { flex: 1; }
 .puck {
   position: fixed;
   z-index: 20; /* above .tooltip (10) */
@@ -733,9 +784,6 @@ select, input[type="search"] {
 .tag.on { color: var(--fc-pressed-ink); background: var(--fc-pressed-bg); border-color: var(--fc-pressed-bg); }
 .tag:hover { background: var(--fc-button-hover, var(--fc-toolbar-hover)); }
 .tag.on:hover { background: var(--fc-pressed-hover, var(--fc-pressed-bg)); }
-@media (prefers-reduced-motion: reduce) {
-  .strip { scroll-behavior: auto; }
-}
 /* The shared replay bar (shared.js replayBar). A hero view restyles it under its own scoped class. */
 .replay-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 6px; }
 .replay-bar .replay-scrub { flex: 1 1 160px; min-width: 120px; }

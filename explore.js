@@ -1,11 +1,13 @@
-// The explorer: a session picker, a carousel with one slide per visualizer
-// in the catalog, and a puck that names the current visualizer and filters
-// the carousel by its tags. See docs/visualization-explorer.md. It sees only
+// The explorer: a stage with one view on it, a shelf of cards (one per view
+// the filters allow) under it, pickers for sessions and the project, and a
+// puck that names the view on stage and filters the shelf by its tags. See
+// docs/workspace-explorer.md, "Stage and shelf". It sees only
 // ctx (the visualization kit and the tooltip) and a source object, which the
 // web page (src/web/page.ts) gives it.
 // Plain DOM; all data is written with textContent, never innerHTML.
 //
-//   window.factoryClockExplore.mount(root, source, ctx) -> { shown(), destroy() }
+//   window.factoryClockExplore.mount(root, source, ctx) -> { shown(), hidden(), loading(text | null), destroy() }
+//     mount replaces root's children; loading(text) covers the stage with a loading screen until loading(null)
 //   window.factoryClockExplore.shown()  forwards to the mounted tab (for the page's tab switch)
 //   window.factoryClockExplore.hidden() the tab was hidden: every slide stops (setActive(false))
 //
@@ -18,21 +20,27 @@
 //   onSessions(cb)       cb({ sessions, headlines }) on each list push
 //   onExplorer(cb)       cb(ExplorerState | null) on each explorer push (src/explorerModel.ts)
 //   openSessionId()      the session open in the Sessions tab, or null (pre-checked the first time)
+//   listUnits(subject)   optional: the pickable units of 'code' or 'plans' ({ subject, id, label, detail }[])
+//   loadUnits(subject, ids) optional: pick those units; answered through onWorkspace
+//   onWorkspace(cb)      optional: cb(Workspace) whenever any subject's picks change
 //
 // ctx: the helpers from vizkit.js plus tooltip, showTip(evt, rows), hideTip(). The tab adds
 // select(selection) for each visualizer it mounts (see viz/registry.js).
 //
-// Saved state: { picked: string[], current: visualizer id, filters: { facet: [values] }, replay: { speed, loop },
+// Saved state: { picked: string[], current: visualizer id, compare: visualizer id | null, filters: { facet: [values] }, replay: { speed, loop },
 // collapsed: boolean, corner: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
 // selection: { sessionId?, turnId?, range?, focusId? } | null }.
 (function () {
   // The most sessions the picker allows; matches EXPLORE_SESSION_CAP in src/catalog.ts.
   const CAP = 8;
   const CORNERS = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
-  // The strip never gets shorter than this; in a window too short for it, the page scrolls and the nav sticks to the window's bottom.
-  const MIN_STRIP_HEIGHT = 320;
-  // Below the nav: the body's bottom padding, and a little air.
-  const BELOW_NAV = 16;
+  // The stage never gets shorter than this; in a window too short for it, the page scrolls and the dock sticks to the window's bottom.
+  const MIN_STAGE_HEIGHT = 320;
+  // Below the dock: the body's bottom padding, and a little air.
+  const BELOW_DOCK = 16;
+  // A card's glyph per subject, and the order of a card's category dots (a dot's place says which category).
+  const SUBJECT_GLYPH = { sessions: '◷', code: '⌗', plans: '☰', workspace: '◫' };
+  const CATEGORY_ORDER = ['temporal', 'actor', 'conversational', 'dependency', 'quantitative', 'state', 'semantic'];
   const DRAG_THRESHOLD = 4; // px of movement before a press on the puck's head counts as a drag
   let mounted = null;
 
@@ -51,6 +59,8 @@
     const st = {
       picked: Array.isArray(saved.picked) ? saved.picked.slice(0, CAP) : null, // null until the first show pre-checks the open session
       currentId: typeof saved.current === 'string' ? saved.current : null,
+      compareId: typeof saved.compare === 'string' ? saved.compare : null, // the view pinned on the stage's left while comparing
+      workspace: null, // the Workspace for every subject's picks, when the source serves one
       filters: saved.filters && typeof saved.filters === 'object' ? saved.filters : {},
       collapsed: saved.collapsed !== false, // starts collapsed
       corner: CORNERS.includes(saved.corner) ? saved.corner : 'bottom-right',
@@ -90,19 +100,21 @@
       loadedNote,
     ]);
 
-    const strip = el('div', { class: 'strip', tabindex: 0, role: 'group', 'aria-label': 'Visualizers; the arrow keys move between them' });
-    const prevBtn = el('button', { text: '‹ Previous', 'aria-label': 'Previous visualizer' });
-    const nextBtn = el('button', { text: 'Next ›', 'aria-label': 'Next visualizer' });
-    const dots = el('div', { class: 'dots', role: 'group', 'aria-label': 'Go to a visualizer' });
+    const stage = el('div', { class: 'stage', tabindex: 0, role: 'group', 'aria-label': 'The view on stage; the arrow keys move along the shelf' });
+    const prevBtn = el('button', { text: '‹ Previous', 'aria-label': 'Previous view on the shelf' });
+    const nextBtn = el('button', { text: 'Next ›', 'aria-label': 'Next view on the shelf' });
+    const compareBtn = el('button', { text: 'Compare', 'aria-pressed': 'false', title: 'Keep this view on the left and step through the others beside it' });
     const navNote = el('span', { class: 'muted small', 'aria-live': 'polite' });
-    const toPicker = el('button', { class: 'link to-picker', text: 'Sessions ↓', title: 'Pick and load sessions, below the carousel' });
+    const toPicker = el('button', { class: 'link to-picker', text: 'Sessions and project ↓', title: 'Pick and load sessions and the project, below the explorer' });
     toPicker.addEventListener('click', () => picker.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-    const nav = el('div', { class: 'nav' }, [prevBtn, dots, nextBtn, navNote, toPicker]);
-    const carousel = el('section', { class: 'carousel', 'aria-label': 'Visualizers' }, [strip, nav]);
+    const shelf = el('div', { class: 'shelf', role: 'group', 'aria-label': 'Views the filters allow; click one to put it on the stage' });
+    const nav = el('div', { class: 'nav' }, [prevBtn, nextBtn, compareBtn, navNote, el('span', { class: 'spacer' }), toPicker]);
+    const dock = el('div', { class: 'dock' }, [shelf, nav]);
+    const explorer = el('section', { class: 'explorer', 'aria-label': 'Visualizers' }, [stage, dock]);
     prevBtn.addEventListener('click', () => step(-1));
     nextBtn.addEventListener('click', () => step(1));
-    strip.addEventListener('keydown', (e) => {
-      if (e.target !== strip) return; // a visualizer's own focusable parts keep their keys
+    compareBtn.addEventListener('click', toggleCompare);
+    const arrowKeys = (e) => {
       if (e.key === 'ArrowRight') {
         e.preventDefault();
         step(1);
@@ -110,6 +122,12 @@
         e.preventDefault();
         step(-1);
       }
+    };
+    stage.addEventListener('keydown', (e) => {
+      if (e.target === stage) arrowKeys(e); // a visualizer's own focusable parts keep their keys
+    });
+    shelf.addEventListener('keydown', (e) => {
+      if (e.target.classList && e.target.classList.contains('card')) arrowKeys(e);
     });
 
     const puckTitle = el('strong', { text: 'Explore' });
@@ -129,7 +147,7 @@
     clearBtn.addEventListener('click', () => {
       st.filters = {};
       save({ filters: st.filters });
-      applyFilters('smooth');
+      applyFilters();
     });
     const mismatchNote = el('p', { class: 'muted small', hidden: true });
     const puckBody = el('div', { class: 'puck-body' }, [puckDesc, puckAfter, facets, el('div', { class: 'puck-foot' }, [filterNote, el('span', { class: 'spacer' }), clearBtn]), mismatchNote]);
@@ -144,11 +162,11 @@
     }
     renderCollapsed();
 
-    // The puck sits in one of the window's corners. The carousel hears which, so its nav can stand clear.
+    // The puck sits in one of the window's corners. The explorer hears which, so its dock can stand clear.
     function placePuck(corner) {
       st.corner = corner;
       puck.dataset.corner = corner;
-      carousel.dataset.puck = corner;
+      explorer.dataset.puck = corner;
     }
     function movePuck(corner) {
       placePuck(corner);
@@ -215,21 +233,23 @@
       movePuck(to);
     });
 
-    // The carousel takes the window; picking and loading sessions sit below it, a scroll (or the nav's button) away.
-    root.append(
-      carousel,
-      el('div', { class: 'below-carousel' }, [el('p', { class: 'muted small', text: 'Experimental: every visualizer draws the same loaded sessions its own way. The puck names the one in view and filters by its tags.' }), picker]),
+    // The explorer takes the window; picking and loading sit below it, a scroll (or the nav's button) away.
+    const projectHost = el('div', { class: 'project-picker' });
+    // Replaces whatever the page put here before mounting (the web page's loading screen).
+    root.replaceChildren(
+      explorer,
+      el('div', { class: 'below-carousel' }, [el('p', { class: 'muted small', text: 'Experimental: every view draws the same loaded data its own way. The puck names the one on stage and filters the shelf by its tags.' }), picker, projectHost]),
       puck
     );
 
-    // ---------- pane height ----------
-    // The strip takes the height left in the window, so the nav under it stays
+    // ---------- stage height ----------
+    // The stage takes the height left in the window, so the dock under it stays
     // in view and a drawing taller than that scrolls inside its slide. The
-    // height doesn't follow the slide, so the nav stays put between slides.
-    function fitStrip() {
-      if (!carousel.offsetParent) return; // the tab is hidden; shown() fits it
-      const top = strip.getBoundingClientRect().top + window.scrollY;
-      strip.style.height = `${Math.max(MIN_STRIP_HEIGHT, window.innerHeight - top - nav.offsetHeight - BELOW_NAV)}px`;
+    // height doesn't follow the view, so the dock stays put between views.
+    function fitStage() {
+      if (!explorer.offsetParent) return; // the tab is hidden; shown() fits it
+      const top = stage.getBoundingClientRect().top + window.scrollY;
+      stage.style.height = `${Math.max(MIN_STAGE_HEIGHT, window.innerHeight - top - dock.offsetHeight - BELOW_DOCK)}px`;
     }
 
     // ---------- session picker ----------
@@ -303,150 +323,208 @@
       loadedNote.textContent = `Loaded ${st.sessions.length} session${st.sessions.length === 1 ? '' : 's'}: ${names || '—'}.${missing ? ` Not loaded (unknown, or no longer retained): ${missing}.` : ''}`;
     }
 
-    // ---------- carousel ----------
-    const slides = []; // [{ entry, slide, host, parts: [{ host, instance, sessionIds }] }] in catalog order
-    let io = null;
-    let settling = null; // a timer while a programmatic scroll is in flight
-    const ratios = new Map(); // slide element -> last intersection ratio
+    // ---------- project picker ----------
+    // Code roots and plan roots, as the source lists them; checked when the
+    // workspace it last sent has them. No view draws them yet (that comes with
+    // the Shape views), so this only picks.
+    function renderProject() {
+      if (typeof source.listUnits !== 'function') {
+        projectHost.replaceChildren();
+        return;
+      }
+      const ws = st.workspace;
+      const groups = [['code', 'Code'], ['plans', 'Plans']].map(([subject, label]) => {
+        const units = source.listUnits(subject) || [];
+        if (!units.length) return null;
+        const have = new Set(((ws && ws[subject]) || []).map((g) => g.source.root));
+        const rows = units.map((u) => {
+          const box = el('input', { type: 'checkbox', 'aria-label': `Pick ${u.label}` });
+          box.checked = have.has(u.id);
+          box.addEventListener('change', () => {
+            const now = units.filter((x) => (x.id === u.id ? box.checked : have.has(x.id))).map((x) => x.id);
+            source.loadUnits(subject, now);
+          });
+          return el('li', {}, [el('label', {}, [box, ` ${u.label} `, el('span', { class: 'muted small', text: u.detail })])]);
+        });
+        return el('div', { class: 'unit-group' }, [el('span', { class: 'muted small', text: label }), el('ul', { class: 'unit-list' }, rows)]);
+      }).filter(Boolean);
+      projectHost.replaceChildren(
+        ...(groups.length
+          ? [el('div', { class: 'controls' }, [el('span', { class: 'muted small', text: 'Project: code and plans' })]), ...groups, el('p', { class: 'muted small', text: 'Views that draw code and plans arrive next; the picks are kept for them.' })]
+          : [])
+      );
+    }
+
+    // ---------- stage and shelf ----------
+    // [{ entry, slide, host, card, allowed, parts: [{ host, instance, sessionIds }] }] in catalog order
+    const slides = [];
 
     function matches(entry) {
       return Object.entries(st.filters).every(([facet, vals]) => !vals.length || vals.some((v) => (entry.tags[facet] || []).includes(v)));
     }
-    const visible = () => slides.filter((s) => !s.slide.hidden);
+    const allowed = () => slides.filter((s) => s.allowed);
     const current = () => slides.find((s) => s.entry.id === st.currentId) || null;
+    const onStage = (s) => s.allowed && (s.entry.id === st.currentId || s.entry.id === st.compareId);
+
+    function card(entry) {
+      const subjects = entry.tags.subject || [];
+      const cats = entry.tags.category || [];
+      const c = el(
+        'button',
+        {
+          class: `card${entry.hero ? ' hero' : ''}`,
+          title: `${entry.title}: ${entry.description}${entry.why ? `\n${entry.why}` : ''}\n${cats.join(', ')}`,
+          'aria-label': entry.title,
+        },
+        [
+          el('span', { class: 'card-glyph', 'aria-hidden': 'true', text: subjects.map((x) => SUBJECT_GLYPH[x] || '·').join('') }),
+          el('span', { class: 'card-title', text: entry.title }),
+          el('span', { class: 'card-dots', 'aria-hidden': 'true' }, CATEGORY_ORDER.map((cat) => el('i', { class: cats.includes(cat) ? 'on' : undefined }))),
+        ]
+      );
+      c.addEventListener('click', () => goTo(entry.id));
+      return c;
+    }
 
     function buildSlides() {
       for (const s of slides) destroyParts(s);
       slides.length = 0;
-      ratios.clear();
-      strip.replaceChildren();
+      stage.replaceChildren();
+      shelf.replaceChildren();
       st.catalog.forEach((entry, i) => {
         const host = el('div', { class: 'slide-host' });
-        const slide = el('article', { class: 'slide', 'aria-label': entry.title, 'aria-roledescription': 'slide' }, [
+        const slide = el('article', { class: 'slide', 'aria-label': entry.title, hidden: true }, [
           el('div', { class: 'slide-head' }, [el('span', { class: 'muted small', text: `${i + 1}/${st.catalog.length}` }), el('strong', { text: entry.title }), el('span', { class: 'muted small', text: entry.description })]),
           host,
         ]);
-        slides.push({ entry, slide, host, parts: [] });
-        strip.append(slide);
+        const c = card(entry);
+        slides.push({ entry, slide, host, card: c, allowed: true, parts: [] });
+        stage.append(slide);
+        shelf.append(c);
       });
       if (!current()) st.currentId = st.catalog.length ? st.catalog[0].id : null;
-      observe();
-      applyFilters('auto');
+      applyFilters();
     }
 
-    // The slide most in view becomes current, except while a scroll we started settles.
-    function observe() {
-      if (io) io.disconnect();
-      io = null;
-      if (typeof IntersectionObserver !== 'function') return;
-      io = new IntersectionObserver(
-        (entries) => {
-          for (const e of entries) ratios.set(e.target, e.isIntersecting ? e.intersectionRatio : 0);
-          if (!settling) syncCurrent();
-        },
-        { root: strip, threshold: [0.25, 0.5, 0.75, 1] }
-      );
-      for (const s of slides) io.observe(s.slide);
-    }
-    function syncCurrent() {
-      let best = null;
-      let bestRatio = 0.5;
-      for (const s of visible()) {
-        const r = ratios.get(s.slide) || 0;
-        if (r > bestRatio) {
-          best = s;
-          bestRatio = r;
+    function applyFilters() {
+      for (const s of slides) {
+        s.allowed = matches(s.entry);
+        s.card.hidden = !s.allowed;
+      }
+      const vis = allowed();
+      if (vis.length) {
+        const cur = current();
+        if (!cur || !cur.allowed) {
+          // The nearest view that stays, by catalog distance.
+          const at = cur ? slides.indexOf(cur) : 0;
+          const nearest = vis.reduce((best, s) => (Math.abs(slides.indexOf(s) - at) < Math.abs(slides.indexOf(best) - at) ? s : best), vis[0]);
+          st.currentId = nearest.entry.id;
+          save({ current: st.currentId });
         }
       }
-      if (best && best.entry.id !== st.currentId) setCurrent(best.entry.id);
+      const pinned = slides.find((s) => s.entry.id === st.compareId);
+      if (st.compareId && (!pinned || !pinned.allowed || st.compareId === st.currentId)) setCompare(null);
+      layout();
     }
 
-    function setCurrent(id) {
-      st.currentId = id;
-      save({ current: id });
-      renderDots();
-      renderPuck();
-      mountAround();
-    }
-
-    function applyFilters(behavior) {
-      const vis = slides.filter((s) => matches(s.entry));
-      for (const s of slides) s.slide.hidden = !vis.includes(s);
-      for (const s of slides) if (s.slide.hidden) destroyParts(s);
-      if (!vis.length) {
-        renderDots();
-        renderPuck();
-        return;
-      }
-      const cur = current();
-      if (!cur || cur.slide.hidden) {
-        // The nearest slide that stays, by catalog distance.
-        const at = cur ? slides.indexOf(cur) : 0;
-        const nearest = vis.reduce((best, s) => (Math.abs(slides.indexOf(s) - at) < Math.abs(slides.indexOf(best) - at) ? s : best), vis[0]);
-        st.currentId = nearest.entry.id;
-        save({ current: st.currentId });
-      }
-      goTo(st.currentId, behavior);
-    }
-
-    function goTo(id, behavior) {
+    function goTo(id) {
       const s = slides.find((x) => x.entry.id === id);
-      if (!s || s.slide.hidden) return;
+      if (!s || !s.allowed) return;
+      if (id === st.compareId) setCompare(st.currentId === id ? null : st.currentId); // the pinned view swaps sides
       st.currentId = id;
       save({ current: id });
-      const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      clearTimeout(settling);
-      settling = setTimeout(() => {
-        settling = null;
-        syncCurrent();
-      }, 600);
-      strip.scrollTo({ left: s.slide.offsetLeft, behavior: reduce || behavior === 'auto' ? 'auto' : 'smooth' });
-      renderDots();
-      renderPuck();
-      mountAround();
+      layout();
     }
 
     function step(dir) {
-      const vis = visible();
+      const vis = allowed().filter((s) => s.entry.id !== st.compareId);
       const pos = vis.findIndex((s) => s.entry.id === st.currentId);
       const next = vis[pos + dir];
-      if (next) goTo(next.entry.id, 'smooth');
+      if (next) goTo(next.entry.id);
     }
 
-    function renderDots() {
-      const vis = visible();
-      const pos = vis.findIndex((s) => s.entry.id === st.currentId);
-      dots.replaceChildren(
-        ...vis.map((s) => {
-          const d = el('button', { class: 'dot', title: s.entry.title, 'aria-label': s.entry.title, 'aria-current': String(s.entry.id === st.currentId) });
-          d.addEventListener('click', () => goTo(s.entry.id, 'smooth'));
-          return d;
-        })
-      );
-      const out = slides.length - vis.length;
-      navNote.textContent = !slides.length ? '' : vis.length ? `${pos + 1} of ${vis.length}${out ? ` (${out} filtered out)` : ''}` : 'No visualizer has every picked tag.';
-      prevBtn.disabled = pos <= 0;
-      nextBtn.disabled = pos < 0 || pos >= vis.length - 1;
+    function setCompare(id) {
+      st.compareId = id;
+      save({ compare: id });
     }
 
-    // Only the current slide and its two neighbors (in the visible order) are mounted.
-    function mountAround() {
-      const vis = visible();
+    // Compare pins the view on stage to the left and moves the stage on to its neighbor, so the two halves differ.
+    function toggleCompare() {
+      if (st.compareId) {
+        setCompare(null);
+        layout();
+        return;
+      }
+      const vis = allowed();
       const pos = vis.findIndex((s) => s.entry.id === st.currentId);
+      const other = vis[pos + 1] || vis[pos - 1];
+      if (!other) return;
+      setCompare(st.currentId);
+      st.currentId = other.entry.id;
+      save({ current: st.currentId });
+      layout();
+    }
+
+    /**
+     * Puts the current view (and the pinned one, comparing) on the stage, keeps
+     * the current view's two shelf neighbors mounted off stage so the next
+     * press is instant, and unmounts the rest: the carousel's three-mounted rule.
+     */
+    function layout() {
+      const vis = allowed();
+      const pos = vis.findIndex((s) => s.entry.id === st.currentId);
+      stage.classList.toggle('comparing', !!st.compareId);
       for (const s of slides) {
         const i = vis.indexOf(s);
-        const near = pos >= 0 && i >= 0 && Math.abs(i - pos) <= 1;
-        if (near) updateSlide(s);
+        const shown = onStage(s);
+        const near = !shown && pos >= 0 && i >= 0 && Math.abs(i - pos) <= 1;
+        const wasShown = !s.slide.hidden && !s.slide.classList.contains('offstage');
+        s.slide.hidden = !(shown || near);
+        s.slide.classList.toggle('offstage', near);
+        s.slide.classList.toggle('pinned', shown && s.entry.id === st.compareId);
+        if (shown || near) updateSlide(s);
         else destroyParts(s);
+        // Its width may have changed (off stage, or the other half of a comparison).
+        if (shown && !wasShown) for (const p of s.parts) p.instance.resize();
       }
       activate();
+      renderShelf();
+      renderPuck();
     }
 
-    // Only the current slide runs: a visualizer that animates stops while it's a neighbor or the tab is hidden.
+    function renderShelf() {
+      const vis = allowed();
+      const pos = vis.findIndex((s) => s.entry.id === st.currentId);
+      for (const s of slides) {
+        const isCur = s.entry.id === st.currentId;
+        s.card.classList.toggle('current', isCur);
+        s.card.classList.toggle('pinned', s.entry.id === st.compareId);
+        s.card.setAttribute('aria-current', String(isCur));
+      }
+      const out = slides.length - vis.length;
+      navNote.textContent = !slides.length ? '' : vis.length ? `${pos + 1} of ${vis.length}${out ? ` (${out} filtered out)` : ''}` : 'No view has every picked tag.';
+      const stepable = vis.filter((s) => s.entry.id !== st.compareId);
+      const at = stepable.findIndex((s) => s.entry.id === st.currentId);
+      prevBtn.disabled = at <= 0;
+      nextBtn.disabled = at < 0 || at >= stepable.length - 1;
+      compareBtn.setAttribute('aria-pressed', String(!!st.compareId));
+      compareBtn.disabled = !st.compareId && vis.length < 2;
+      compareBtn.textContent = st.compareId ? 'Stop comparing' : 'Compare';
+      // Keep the current card in view, scrolling only the shelf.
+      const cur = current();
+      if (cur && cur.allowed && shelf.offsetParent) {
+        const left = cur.card.offsetLeft - shelf.offsetLeft;
+        const right = left + cur.card.offsetWidth;
+        if (left < shelf.scrollLeft) shelf.scrollLeft = left - 8;
+        else if (right > shelf.scrollLeft + shelf.clientWidth) shelf.scrollLeft = right - shelf.clientWidth + 8;
+      }
+    }
+
+    // Only what's on stage runs: a visualizer that animates stops while it's off stage or the tab is hidden.
     let tabVisible = true;
     function activate() {
       for (const s of slides) {
-        const on = tabVisible && s.entry.id === st.currentId && !s.slide.hidden;
+        const on = tabVisible && onStage(s);
         for (const p of s.parts) if (typeof p.instance.setActive === 'function') p.instance.setActive(on);
       }
     }
@@ -463,7 +541,7 @@
       const sessions = st.sessions;
       if (!sessions.length) {
         destroyParts(s);
-        s.host.replaceChildren(el('p', { class: 'muted', text: 'No sessions loaded. Pick sessions below (Sessions ↓) and press Load.' }));
+        s.host.replaceChildren(el('p', { class: 'muted', text: 'No sessions loaded. Pick sessions below (Sessions and project ↓) and press Load.' }));
         return;
       }
       const def = viz.get(s.entry.id);
@@ -500,7 +578,7 @@
     // ---------- puck ----------
     function renderPuck() {
       const cur = current();
-      const entry = cur && !cur.slide.hidden ? cur.entry : null;
+      const entry = cur && cur.allowed ? cur.entry : null;
       puckTitle.textContent = entry ? entry.title : st.catalog.length ? 'Nothing matches' : 'Explore';
       puckPos.textContent = entry ? `${slides.indexOf(cur) + 1}/${slides.length}` : '';
       puckDesc.textContent = entry ? entry.description : st.catalog.length ? 'Clear a filter to see visualizers again.' : 'Waiting for the catalog…';
@@ -536,7 +614,7 @@
                   const f = st.filters[facet] || [];
                   st.filters = { ...st.filters, [facet]: on ? f.filter((x) => x !== v) : [...f, v] };
                   save({ filters: st.filters });
-                  applyFilters('smooth');
+                  applyFilters();
                 });
                 return chip;
               })
@@ -574,29 +652,35 @@
         st.notLoaded = [];
       }
       renderLoaded();
-      mountAround();
-      renderPuck();
+      layout();
     });
+    if (typeof source.onWorkspace === 'function') {
+      source.onWorkspace((workspace) => {
+        st.workspace = workspace;
+        renderProject();
+      });
+    }
     let resizeTimer;
     const onResize = () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        fitStrip();
+        fitStage();
         for (const s of slides) for (const p of s.parts) p.instance.resize();
-        const cur = current();
-        if (cur && !cur.slide.hidden) strip.scrollTo({ left: cur.slide.offsetLeft, behavior: 'auto' });
+        renderShelf();
       }, 150);
     };
     window.addEventListener('resize', onResize);
-    // What's above the strip changes height too (the picker's list, the notes, the web demo's header).
-    const pageObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(fitStrip) : null;
+    // What's above the stage changes height too (the picker's list, the notes, the web demo's header).
+    const pageObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(fitStage) : null;
     if (pageObserver) pageObserver.observe(document.body);
 
     renderPicker();
     renderLoaded();
+    renderProject();
     renderPuck();
-    renderDots();
+    renderShelf();
 
+    let veil = null; // the loading screen over the stage, while the page reads data
     const tab = {
       /** The tab was just made visible: ask for what it hasn't got, and lay out at its real width. */
       shown() {
@@ -612,13 +696,31 @@
           st.requested = true;
           source.loadSessions(st.picked);
         }
-        fitStrip();
+        fitStage();
+        renderProject();
         for (const s of slides) for (const p of s.parts) p.instance.resize();
-        const cur = current();
-        if (cur && !cur.slide.hidden) strip.scrollTo({ left: cur.slide.offsetLeft, behavior: 'auto' });
+        renderShelf();
         activate();
       },
-      /** The tab was hidden: stop every slide. */
+      /** Covers the stage with the loading screen and this text while the page reads data; null takes it away. */
+      loading(text) {
+        if (!text) {
+          if (veil) veil.remove();
+          veil = null;
+          stage.removeAttribute('aria-busy');
+          return;
+        }
+        if (!veil) {
+          veil = el('div', { class: 'stage-loading veil', role: 'status' }, [
+            el('div', { class: 'stage-loading-bar', 'aria-hidden': 'true' }, [el('i')]),
+            el('p', { class: 'stage-loading-text' }),
+          ]);
+        }
+        veil.lastChild.textContent = text;
+        stage.append(veil); // again after a rebuild emptied the stage
+        stage.setAttribute('aria-busy', 'true');
+      },
+      /** The tab was hidden: stop every view. */
       hidden() {
         tabVisible = false;
         activate();
@@ -628,7 +730,6 @@
         window.removeEventListener('resize', onResize);
         if (pageObserver) pageObserver.disconnect();
         if (drag) stopDragging();
-        if (io) io.disconnect();
         for (const s of slides) destroyParts(s);
         root.replaceChildren();
         if (mounted === tab) mounted = null;

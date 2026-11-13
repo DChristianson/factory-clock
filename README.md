@@ -1,6 +1,6 @@
 # Factory Clock
 
-Factory Clock is a set of visualizations for coding-agent sessions. It draws each session 32 ways: timelines, trees, graphs, distributions, and five "hero" views with a look of their own. A carousel called the explorer moves through them. A small panel called the puck filters them by tags.
+Factory Clock is a set of visualizations for coding-agent sessions. It draws each session 32 ways: timelines, trees, graphs, distributions, and five "hero" views with a look of their own. The explorer puts one on a stage, with a shelf of cards under it to move between them (or two side by side, to compare). A small panel called the puck filters the shelf by tags.
 
 It runs as a static web page: <https://dchristianson.github.io/factory-clock/>. The page shows generated example sessions. You can also load your own event files. Nothing is installed and nothing leaves your browser.
 
@@ -8,7 +8,7 @@ Factory Clock started inside [Snagboat](https://github.com/DChristianson/snagboa
 
 ## The views
 
-The carousel shows them in this order. Standard views use the page's theme. Hero views draw their own ground and palette, and go last.
+The shelf shows them in this order. Standard views use the page's theme. Hero views draw their own ground and palette, and go last.
 
 **Hero views**
 
@@ -91,7 +91,7 @@ The page sends nothing anywhere and has no analytics. See [PRIVACY.md](PRIVACY.m
 | --- | --- |
 | `viz/` | One script per visualizer, and `registry.js`, which they register with |
 | `vizkit.js` | The helpers the visualizers get as `ctx`: DOM, formatting, tooltip, replay clock, force layout |
-| `explore.js` | The explorer: session picker, carousel, and puck |
+| `explore.js` | The explorer: session and project pickers, stage and shelf, and puck |
 | `theme.css`, `viz.css` | The color tokens, and the visualizers' and explorer's styles |
 | `hosts/web/` | The page's `index.html` and stylesheet |
 | `src/main.ts` | The page's bundle entry |

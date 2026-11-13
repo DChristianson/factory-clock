@@ -41,6 +41,8 @@ interface ExploreSource {
 
 interface ExploreTab {
   shown(): void;
+  /** Covers the stage with a loading screen and this text; null takes it away. */
+  loading(text: string | null): void;
   destroy(): void;
 }
 
@@ -245,6 +247,24 @@ export function startPage(findingsFor?: FindingsFor): void {
     tab.shown();
   }
 
+  /**
+   * Puts the loading screen over the stage and waits until it has painted, so
+   * the reading and drawing after it (much of it synchronous) can't hide it.
+   * A remount replaces the tab, which takes the screen with it.
+   */
+  async function showLoading(text: string): Promise<void> {
+    tab?.loading(text);
+    await new Promise<void>((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+  }
+  const hideLoading = (): void => tab?.loading(null);
+  /** Runs work behind the loading screen. */
+  function behindLoading(text: string, work: () => unknown): Promise<void> {
+    return showLoading(text)
+      .then(work)
+      .then(() => undefined)
+      .finally(hideLoading);
+  }
+
   const n = (count: number, noun: string) => `${count.toLocaleString()} ${noun}${count === 1 ? '' : 's'}`;
 
   /** Shows one of the built-in sets; the other's button stays offered. */
@@ -274,6 +294,7 @@ export function startPage(findingsFor?: FindingsFor): void {
     const list = Array.from(files);
     if (!list.length) return;
     dataNote.textContent = `Reading ${n(list.length, 'file')}…`;
+    await showLoading(`Reading ${n(list.length, 'file')}…`);
     const read = [];
     for (const file of list) read.push({ name: file.name, text: await file.text() });
     const sorted = readSingleFiles(read);
@@ -356,6 +377,7 @@ export function startPage(findingsFor?: FindingsFor): void {
     if (!entries.length) return;
     const plan = planWalk(entries.map((e) => ({ ...e, bytes: e.file.size })));
     dataNote.textContent = `Reading ${n(plan.keep.length, 'file')} from ${plan.name}…`;
+    await showLoading(`Reading ${n(plan.keep.length, 'file')} from ${plan.name}…`);
     const files: ProjectFile[] = [];
     let binary = plan.skipped.binary;
     for (const { entry, path } of plan.keep) {
@@ -376,19 +398,24 @@ export function startPage(findingsFor?: FindingsFor): void {
 
   filesInput.addEventListener('change', () => {
     void loadFiles(filesInput.files ?? []).finally(() => {
+      hideLoading();
       filesInput.value = ''; // so picking the same files again reloads them
     });
   });
   folderInput.addEventListener('change', () => {
     const chosen = Array.from(folderInput.files ?? []).map((file) => ({ file, path: file.webkitRelativePath || file.name }));
     void loadFolder(chosen).finally(() => {
+      hideLoading();
       folderInput.value = '';
     });
   });
-  keepText.addEventListener('change', readFolderAgain);
-  hintGlobals.addEventListener('change', readFolderAgain);
-  examplesBtn.addEventListener('click', () => useBuiltIn('generated'));
-  tracesBtn.addEventListener('click', () => useBuiltIn('traces'));
+  const readAgainBehindLoading = () => {
+    if (project) void behindLoading(`Reading ${project.name} again…`, readFolderAgain);
+  };
+  keepText.addEventListener('change', readAgainBehindLoading);
+  hintGlobals.addEventListener('change', readAgainBehindLoading);
+  examplesBtn.addEventListener('click', () => void behindLoading('Loading the generated sessions…', () => useBuiltIn('generated')));
+  tracesBtn.addEventListener('click', () => void behindLoading('Loading the example traces…', () => useBuiltIn('traces')));
 
   // The drop zone; a drop anywhere else must not make the browser open the file.
   for (const type of ['dragover', 'drop']) document.addEventListener(type, (e) => e.preventDefault());
@@ -400,9 +427,9 @@ export function startPage(findingsFor?: FindingsFor): void {
     const items = Array.from(e.dataTransfer?.items ?? []);
     const entries = items.map((item) => item.webkitGetAsEntry?.()).filter((x): x is FileSystemEntry => !!x);
     if (entries.some((x) => x.isDirectory)) {
-      void Promise.all(entries.filter((x) => x.isDirectory).map(filesOfEntry)).then((lists) => loadFolder(lists.flat()));
+      void behindLoading('Reading the folder…', () => Promise.all(entries.filter((x) => x.isDirectory).map(filesOfEntry)).then((lists) => loadFolder(lists.flat())));
     } else {
-      void loadFiles(e.dataTransfer?.files ?? []);
+      void loadFiles(e.dataTransfer?.files ?? []).finally(hideLoading);
     }
   });
 

@@ -14,7 +14,7 @@
 //   selection: { sessionId?, turnId?, range?: [fromMs, toMs], focusId? } or null; a visualizer
 //              ignores the fields it doesn't use, and may add focusId (the tree does)
 //   options:   what the host passes: { expanded } from the Sessions tab, nothing from the explorer
-//   setActive: optional; the carousel calls it with true for the current slide and false for its
+//   setActive: optional; the explorer calls it with true for each view on stage and false for its
 //              mounted neighbors and while the tab is hidden, so a view that animates (through
 //              ctx.createReplay) runs only when it can be seen
 //   ctx:       the helpers from vizkit.js plus tooltip (the element), showTip(evt, rows) and
