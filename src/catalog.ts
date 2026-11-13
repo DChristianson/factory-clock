@@ -354,10 +354,10 @@ export const CATALOG: VisualizerEntry[] = [
   {
     id: 'sankey',
     title: 'Sankey',
-    description: 'Where tokens went: from sessions, through the main agent or subagents, to models.',
-    why: 'To follow tokens from each session, through its agents, to the models that spent them.',
+    description: 'Where tokens went: from sessions, through the main agent or subagents, to models. Also draws code (what imports what, by weight, in columns by dependency depth) and plans (blocker to blocked).',
+    why: 'To follow what flows where: tokens to the models that spent them, imports between modules, blockers to what they block.',
     credits: [SANKEY],
-    tags: { subject: ['sessions'], category: ['actor', 'quantitative'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['quantity', 'actor'], language: ['standard'] },
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['actor', 'quantitative', 'dependency'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['quantity', 'actor', 'structure', 'dependency', 'status'], language: ['standard'] },
   },
   {
     id: 'adjacency-matrix',
