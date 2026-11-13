@@ -5,9 +5,11 @@
 import { CodeAdapter, PlanAdapter } from '../model';
 import { npmAdapter } from './code/npm';
 import { beadsAdapter } from './plan/beads';
+import { markdownAdapter } from './plan/markdown';
 
 export { npmAdapter } from './code/npm';
 export { beadsAdapter } from './plan/beads';
+export { markdownAdapter } from './plan/markdown';
 
 export const CODE_ADAPTERS: CodeAdapter[] = [npmAdapter];
-export const PLAN_ADAPTERS: PlanAdapter[] = [beadsAdapter];
+export const PLAN_ADAPTERS: PlanAdapter[] = [beadsAdapter, markdownAdapter];
