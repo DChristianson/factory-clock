@@ -47,13 +47,12 @@ async function main() {
     assert.deepStrictEqual(unusedValues([CATALOG[0]], TAXONOMY).includes('language:horology'), true);
   });
 
-  test('every view credits the work it draws on, and every hero names its design and concept page', () => {
+  test('every view credits prior art, and only prior art: never this project or its own design docs', () => {
     for (const v of CATALOG) {
       assert.ok(v.credits.length > 0, v.id);
-      for (const c of v.credits) if (c.url) assert.match(c.url, /^https:\/\//, `${v.id}: ${c.work}`);
-      if (v.hero) {
-        assert.ok(v.credits.some((c) => c.relation === 'design' && c.url?.includes('docs/visualization-explorer.md#')), `${v.id}: design doc`);
-        assert.ok(v.credits.some((c) => c.work === 'Hero visualization concept pages'), `${v.id}: concept page`);
+      for (const c of v.credits) {
+        if (c.url) assert.match(c.url, /^https:\/\//, `${v.id}: ${c.work}`);
+        assert.ok(!/DChristianson|ChatGPT|factory-clock|snagboat/i.test(`${c.by} ${c.url ?? ''}`), `${v.id}: ${c.work} credits this project`);
       }
     }
     const treemap = CATALOG.find((v) => v.id === 'treemap')!;
@@ -65,7 +64,6 @@ async function main() {
     assert.strictEqual(creditName('Richard Wettel and Michele Lanza'), 'Wettel & Lanza');
     assert.strictEqual(creditName('Susan Havre, Beth Hetzler, and Lucy Nowell'), 'Havre et al.');
     assert.strictEqual(creditName('Karen Spärck Jones (Spärck Jones)'), 'Spärck Jones');
-    assert.strictEqual(creditName('DChristianson'), 'DChristianson');
     const c: Credit = { work: 'Gantt chart', by: 'Henry L. Gantt', relation: 'form' };
     assert.strictEqual(creditCite(c), 'Gantt');
     assert.strictEqual(creditCite({ ...c, year: 1910 }), 'Gantt 1910');
@@ -107,7 +105,7 @@ async function main() {
     assert.match(problems([entry({ tags: { ...CATALOG[0].tags, mood: ['calm'] } as VisualizerEntry['tags'] })])[0], /"mood" is not a facet/);
     const credit: Credit = { work: 'Tree visualization with tree-maps', by: 'Ben Shneiderman', year: 1992, url: 'https://doi.org/10.1145/102377.115768', relation: 'form' };
     assert.deepStrictEqual(problems([entry({ credits: [credit] })]), []);
-    assert.deepStrictEqual(problems([entry({ credits: [{ work: 'Original', by: 'Factory Clock', relation: 'design' }] })]), []);
+    assert.match(problems([entry({ credits: [{ ...credit, relation: 'design' as 'form' }] })])[0], /"design" is not a relation/);
     assert.match(problems([entry({ credits: [] })])[0], /turn-tree: no credits/);
     assert.match(problems([entry({ credits: undefined as unknown as Credit[] })])[0], /no credits/);
     assert.match(problems([entry({ credits: [{ ...credit, relation: 'homage' as 'form' }] })])[0], /credit 1: "homage" is not a relation/);

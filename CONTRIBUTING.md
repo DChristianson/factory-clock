@@ -57,7 +57,7 @@ The explorer draws its slides from the catalog, not from what registered. Add an
 - Give every one of the five facets at least one value, each from that facet's list in `TAXONOMY` in the same file.
 - `level` decides how the view is mounted. With `project`, it gets one instance with every loaded session. Without it, it gets one instance per session.
 - Array order is carousel order. Put a standard view before the hero views.
-- Give `credits`, at least one: the chart type's originator (`form`), any technique or metaphor it borrows, and for an original view a `design` credit naming this project's design document. Record a `url` only after opening it. See "Credits" in [docs/workspace-explorer.md](docs/workspace-explorer.md#credits).
+- Give `credits`, at least one: the chart type's originator (`form`), and any technique or metaphor it borrows. Credits acknowledge prior art only, never this project or its own design documents. Record a `url` only after opening it. See "Credits" in [docs/workspace-explorer.md](docs/workspace-explorer.md#credits).
 - Use `language: ['standard']` unless you are adding a hero view with a look of its own. A new language value comes only with the view that uses it.
 
 ### 3. Load it
