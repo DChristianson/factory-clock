@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img">
+<!-- Drawn from docs/images/workspace-explorer-sketches.html (sketch "atlas"), light theme, motion off. -->
+<rect x="0" y="0" width="480" height="300" rx="0" fill="#9fbccf" stroke="none" stroke-width="1"></rect>
+<defs><pattern id="sea" width="8" height="8" patternUnits="userSpaceOnUse"><line x1="0" y1="4" x2="8" y2="4" stroke="#f3eee2" stroke-width="0.6" opacity="0.6"></line></pattern></defs>
+<rect x="0" y="0" width="480" height="300" rx="0" fill="url(#sea)" stroke="none" stroke-width="1"></rect>
+<path d="M150 140 Q227.5 97.5 265 95" fill="none" stroke="#2b2a26" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"></path>
+<path d="M150 140 Q260 150 330 200" fill="none" stroke="#2b2a26" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"></path>
+<path d="M265 95 Q317.5 127.5 330 200" fill="none" stroke="#2b2a26" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"></path>
+<path d="M95 245 Q142.5 172.5 150 140" fill="none" stroke="#2b2a26" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"></path>
+<line x1="150" y1="140" x2="20" y2="60" stroke="#2b2a26" stroke-width="1" stroke-dasharray="2 4" opacity="0.7"></line>
+<line x1="330" y1="200" x2="460" y2="280" stroke="#2b2a26" stroke-width="1" stroke-dasharray="2 4" opacity="0.7"></line>
+<line x1="265" y1="95" x2="300" y2="12" stroke="#2b2a26" stroke-width="1" stroke-dasharray="2 4" opacity="0.7"></line>
+<text x="14" y="52" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8" font-weight="400" text-anchor="start" opacity="0.8">esbuild</text>
+<text x="420" y="292" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8" font-weight="400" text-anchor="start" opacity="0.8">typescript</text>
+<path d="M213.20863858191296 140 L219.2665556226811 158.55991764158284 L208.81818942529043 173.9586974979378 L200.82681166240087 190.82681166240087 L180.41084940400907 192.6731362690694 L168.37171936085588 208.564190077111 L150 204.74841296747326 L134.24590733484305 198.7950742535139 L119.46666057188997 192.88529521423266 L98.66574034837024 191.3342596516298 L87.25009992673068 176.22867169892413 L85.3855896825903 157.31337906396314 L84.10659393621609 140 L85.18369528171439 122.63252349436584 L91.26316625294825 106.08827322479337 L100.50573694338034 90.50573694338036 L114.9871820809785 79.35602044809681 L133.05569301790146 76.76298544376417 L150 73.8262392198667 L168.359848634333 71.48011207739509 L182.38352265437135 83.91009343457111 L196.85783895545035 93.14216104454962 L203.1379849062368 109.32077011018988 L217.26623295313556 121.97606720232356 Z" fill="#f3eee2" stroke="#2b2a26" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="129.76675851969048" cy="143.9022217115853" r="12.736585769802332" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="129.76675851969048" cy="143.9022217115853" r="8.736585769802332" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="129.76675851969048" cy="143.9022217115853" r="4.736585769802332" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="171.47653165343218" cy="131.0276631009765" r="12.64940088475123" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="171.47653165343218" cy="131.0276631009765" r="8.64940088475123" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="171.47653165343218" cy="131.0276631009765" r="4.6494008847512305" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="160.53645108174533" cy="131.41407604864798" r="4.339235025458038" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="169.56901307054795" cy="113.65848774090409" r="11.920021077152342" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="169.56901307054795" cy="113.65848774090409" r="7.920021077152342" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="169.56901307054795" cy="113.65848774090409" r="3.9200210771523416" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="153.41977581987157" cy="158.52380564180203" r="10.917292783036828" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="153.41977581987157" cy="158.52380564180203" r="6.917292783036828" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="153.41977581987157" cy="158.52380564180203" r="2.917292783036828" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="181.803803605726" cy="114.37405496044084" r="7.5727612604387105" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="181.803803605726" cy="114.37405496044084" r="3.5727612604387105" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<text x="150" y="222" fill="#2b2a26" font-family="Georgia, &quot;Times New Roman&quot;, serif" font-size="9" font-weight="400" text-anchor="middle" letter-spacing="0.14em">SRC · WEB</text>
+<path d="M307.4265627507307 95 L302.5043245146912 105.04925346638626 L297.4517896304367 113.73604947881773 L295.7889368346161 125.78893683461607 L283.5214101841208 127.08002346672077 L275.2383951262215 133.21021079902434 L265 134.5698056513816 L255.44012002608164 130.6779577769235 L246.50898340529764 127.02738022562377 L236.13641891723387 123.86358108276613 L228.65933478979943 115.98129284163937 L229.49340367907388 104.51396381017004 L224.3019122100808 95 L223.34619786234543 83.83889735552971 L231.9794029373832 75.93554939709604 L236.30258654728988 66.30258654728989 L245.60664841326883 61.40972972273515 L255.03948332141934 57.82684568589976 L265 55.005761550180615 L275.7410834141459 54.913730970072045 L284.2308806690481 61.69113760691461 L291.38637423539836 68.61362576460164 L302.00394347019426 73.63576327640561 L304.45744766161135 84.42740876367796 Z" fill="#f3eee2" stroke="#2b2a26" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="252.8779600339476" cy="101.53184697749093" r="9.583668493200094" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="252.8779600339476" cy="101.53184697749093" r="5.5836684932000935" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="279.59607509709895" cy="74.20733896945603" r="10.126509555615485" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="279.59607509709895" cy="74.20733896945603" r="6.126509555615485" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="279.59607509709895" cy="74.20733896945603" r="2.1265095556154847" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="245.03578154030257" cy="85.97471246365458" r="9.426386359613389" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="245.03578154030257" cy="85.97471246365458" r="5.426386359613389" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="279.3955282443203" cy="100.15721759810113" r="8.768142774701118" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="279.3955282443203" cy="100.15721759810113" r="4.7681427747011185" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="265.9828546774108" cy="103.88825755110011" r="13.20055957743898" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="265.9828546774108" cy="103.88825755110011" r="9.20055957743898" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="265.9828546774108" cy="103.88825755110011" r="5.20055957743898" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="259.41588152404876" cy="86.70015758373775" r="7.724764375947416" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="259.41588152404876" cy="86.70015758373775" r="3.724764375947416" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<text x="265" y="149" fill="#2b2a26" font-family="Georgia, &quot;Times New Roman&quot;, serif" font-size="9" font-weight="400" text-anchor="middle" letter-spacing="0.14em">SCHEMA</text>
+<path d="M387.5531450743042 200 L392.24360801839606 216.67812450252856 L380.8596752105267 229.36384717369452 L369.1087370353731 239.1087370353731 L358.07566172936004 248.6284725713686 L346.4595051586236 261.4277095194253 L330 259.88193623095754 L314.7764311911331 256.8151322672121 L302.36413250372743 247.86672661478536 L288.8725591001236 241.12744089987638 L282.0977293125458 227.656388876196 L278.47479361533595 213.80613744061768 L268.96128115376456 200 L270.3038051430259 184.00445279686286 L282.4251704481086 172.53265935156494 L288.0118640630367 158.01186406303668 L299.20024309103377 146.65325617289994 L313.6498023760832 138.98023175375042 L330 142.5358224215731 L344.97481691498774 144.11322243922376 L360.222093766341 147.65379808558677 L374.24180173399367 155.75819826600633 L381.04388397588593 170.5297998460382 L386.6970110426987 184.80808167785045 Z" fill="#f3eee2" stroke="#2b2a26" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="312.13199112564325" cy="215.82824708423578" r="6.430751216597855" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="312.13199112564325" cy="215.82824708423578" r="2.430751216597855" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="354.07110320315695" cy="214.7590705918148" r="7.603618226479739" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="354.07110320315695" cy="214.7590705918148" r="3.603618226479739" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="329.9257364465855" cy="180.9585884877015" r="4.51353769376874" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="355.16852895407936" cy="170.35712471911683" r="5.616264472249895" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="329.87281713094563" cy="209.8347230109852" r="5.483826371841133" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="353.54447178211996" cy="198.1929689489305" r="7.876767491456121" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="353.54447178211996" cy="198.1929689489305" r="3.876767491456121" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<text x="330" y="274" fill="#2b2a26" font-family="Georgia, &quot;Times New Roman&quot;, serif" font-size="9" font-weight="400" text-anchor="middle" letter-spacing="0.14em">VIZ</text>
+<path d="M123.03996563252062 245 L122.91936539110272 252.48097140973542 L117.26999223366138 257.8575860109553 L115.18051162690402 265.18051162690404 L107.5619615108706 266.7579555795526 L101.59407422383202 269.6094200322214 L95 273.86640953615307 L87.83512588855312 271.73967421375465 L82.43384065935389 266.7652264340053 L77.78706894793983 262.2129310520602 L72.8635397586448 257.78049127925186 L67.71938003885948 252.309820087608 L67.08957282599062 245 L70.71507871362672 238.4928749530629 L71.92319763542639 231.67660194277764 L75.27725129790647 225.27725129790647 L81.90832101868465 222.32454684798026 L88.3373428553302 220.13462502268052 L95 219.1445841870457 L101.50045781642069 220.7399611566597 L109.23446081036703 220.34519065809627 L112.75582951009235 227.24417048990765 L118.81696083171974 231.24927125252782 L121.66588425689696 237.85489784790266 Z" fill="#f3eee2" stroke="#2b2a26" stroke-width="1.2" stroke-dasharray="3 2" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="86.94251325214282" cy="254.9419165857136" r="13.277833939995617" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="86.94251325214282" cy="254.9419165857136" r="9.277833939995617" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="86.94251325214282" cy="254.9419165857136" r="5.277833939995617" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="107.01092487145215" cy="241.39254745813088" r="5.080726897343993" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="108.24240221520886" cy="233.81816408839077" r="9.60068902792409" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<circle cx="108.24240221520886" cy="233.81816408839077" r="5.600689027924091" fill="none" stroke="#2b2a26" stroke-width="0.5" opacity="0.6"></circle>
+<text x="95" y="285" fill="#2b2a26" font-family="Georgia, &quot;Times New Roman&quot;, serif" font-size="9" font-weight="400" text-anchor="middle" letter-spacing="0.14em">HOSTS</text>
+<path d="M135 120 l-4 -8 a4.5 4.5 0 1 1 8 0 z" fill="#c8552f" stroke="#2b2a26" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M170 160 l-4 -8 a4.5 4.5 0 1 1 8 0 z" fill="#d9a441" stroke="#2b2a26" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M275 90 l-4 -8 a4.5 4.5 0 1 1 8 0 z" fill="#5f8a4a" stroke="#2b2a26" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M320 190 l-4 -8 a4.5 4.5 0 1 1 8 0 z" fill="#c8552f" stroke="#2b2a26" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M350 215 l-4 -8 a4.5 4.5 0 1 1 8 0 z" fill="#5f8a4a" stroke="#2b2a26" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M98 240 l-4 -8 a4.5 4.5 0 1 1 8 0 z" fill="#c8552f" stroke="#2b2a26" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M135 112 Q 160 90 275 82" fill="none" stroke="#c8552f" stroke-width="1" stroke-dasharray="3 3" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M320 182 Q 250 150 170 152" fill="none" stroke="#c8552f" stroke-width="1" stroke-dasharray="3 3" stroke-linecap="round" stroke-linejoin="round"></path>
+<text x="230" y="60" fill="#c8552f" font-family="Georgia, serif" font-size="8" font-weight="400" text-anchor="middle" letter-spacing="0.2em">WORKSPACE EXPLORER</text>
+<path d="M160 150 C 200 120 230 110 270 95 S 300 150 330 195 S 350 230 345 240" fill="none" stroke="#e4572e" stroke-width="1.6" stroke-dasharray="0.1 4" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"></path>
+<path d="M160 150 C 200 120 230 110 270 95" fill="none" stroke="#e4572e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"></path>
+<line x1="20" y1="280" x2="100" y2="280" stroke="#2b2a26" stroke-width="1.2" stroke-linecap="butt"></line>
+<line x1="20" y1="276" x2="20" y2="284" stroke="#2b2a26" stroke-width="1"></line>
+<line x1="100" y1="276" x2="100" y2="284" stroke="#2b2a26" stroke-width="1"></line>
+<text x="60" y="274" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="middle">500 lines</text>
+<circle cx="440" cy="50" r="14" fill="none" stroke="#2b2a26" stroke-width="0.8"></circle>
+<path d="M440 36 L444 50 L440 64 L436 50 Z" fill="#2b2a26" stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
+<text x="440" y="32" fill="#2b2a26" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="8" font-weight="400" text-anchor="middle">N</text>
+<rect x="372" y="240" width="100" height="50" rx="0" fill="#f3eee2" stroke="#2b2a26" stroke-width="0.8"></rect>
+<text x="378" y="252" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">unsurveyed ·· ·· ··</text>
+<text x="378" y="264" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">road ───  lane ····</text>
+<text x="378" y="276" fill="#e4572e" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">trail  session</text>
+<text x="378" y="286" fill="#c8552f" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">pin  plan item</text>
+<g><circle cx="150" cy="72" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="150" y="75.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">1</text></g>
+<g><circle cx="212" cy="110" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="212" y="113.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">2</text></g>
+<g><circle cx="128" cy="100" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="128" y="103.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">3</text></g>
+<g><circle cx="300" cy="140" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="300" y="143.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">4</text></g>
+<g><circle cx="112" cy="290" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="112" y="293.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">5</text></g>
+</svg>

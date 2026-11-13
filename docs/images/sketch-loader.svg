@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 330" width="960" height="330" role="img">
+<!-- Drawn from docs/images/workspace-explorer-sketches.html (sketch "loader"), light theme, motion off. -->
+<rect x="0" y="0" width="960" height="330" rx="2" fill="#ffffff" stroke="none" stroke-width="1"></rect>
+<rect x="24" y="16" width="912" height="70" rx="4" fill="#f8f8f8" stroke="#005fb8" stroke-width="1" stroke-dasharray="5 4"></rect>
+<text x="480" y="46" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="500" text-anchor="middle">Drop files here, or choose files</text>
+<text x="480" y="66" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="middle">Event logs (events/YYYY-MM-DD.jsonl), code graphs (*.code.json), plan graphs (*.plan.json). Read in this browser; nothing is sent.</text>
+<circle cx="35" cy="113" r="6" fill="none" stroke="#2a78d6" stroke-width="1.4"></circle>
+<line x1="35" y1="113" x2="35" y2="109.5" stroke="#2a78d6" stroke-width="1.4"></line>
+<line x1="35" y1="113" x2="38" y2="114.5" stroke="#2a78d6" stroke-width="1.4"></line>
+<text x="50" y="118" fill="#3b3b3b" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="11.5" font-weight="400" text-anchor="start">2026-11-02.jsonl</text>
+<rect x="244" y="105" width="51.2" height="18" rx="9" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1" opacity="1"></rect>
+<text x="269.6" y="117.5" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="middle">events</text>
+<text x="364" y="118" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="start">4 sessions · 1,212 events</text>
+<path d="M33 138 q-3 0 -3 3 v2 q0 2 -2 2 q2 0 2 2 v2 q0 3 3 3 M37 138 q3 0 3 3 v2 q0 2 2 2 q-2 0 -2 2 v2 q0 3 -3 3" fill="none" stroke="#6250d6" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path>
+<text x="50" y="148" fill="#3b3b3b" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="11.5" font-weight="400" text-anchor="start">factory-clock.code.json</text>
+<rect x="244" y="135" width="76" height="18" rx="9" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1" opacity="1"></rect>
+<text x="282" y="147.5" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="middle">code graph</text>
+<text x="364" y="148" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="start">1 package · 61 files · 188 imports · npm adapter</text>
+<rect x="29.5" y="167.5" width="11" height="11" rx="2" fill="none" stroke="#1baf7a" stroke-width="1.4"></rect>
+<path d="M32 173 l2.5 2.5 l4 -5" fill="none" stroke="#1baf7a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+<text x="50" y="178" fill="#3b3b3b" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="11.5" font-weight="400" text-anchor="start">factory-clock.plan.json</text>
+<rect x="244" y="165" width="76" height="18" rx="9" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1" opacity="1"></rect>
+<text x="282" y="177.5" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="middle">plan graph</text>
+<text x="364" y="178" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="start">21 items · 20 links · beads adapter</text>
+<text x="30" y="208" fill="#e4572e" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="400" text-anchor="start">×</text>
+<text x="50" y="208" fill="#3b3b3b" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="11.5" font-weight="400" text-anchor="start">notes.txt</text>
+<rect x="244" y="195" width="100.8" height="18" rx="9" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1" opacity="1"></rect>
+<text x="294.4" y="207.5" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="middle">not recognized</text>
+<text x="364" y="208" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="start">not an event log or a graph file; skipped</text>
+<line x1="24" y1="234" x2="936" y2="234" stroke="#c8c8c8" stroke-width="1"></line>
+<text x="24" y="256" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="start">Examples:</text>
+<rect x="94" y="241" width="150" height="22" rx="3" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<text x="169" y="256" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" text-anchor="middle">This repository (demo)</text>
+<rect x="252" y="241" width="130" height="22" rx="3" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<text x="317" y="256" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" text-anchor="middle">Generated sessions</text>
+<rect x="390" y="241" width="110" height="22" rx="3" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<text x="445" y="256" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" text-anchor="middle">Example traces</text>
+<text x="24" y="286" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="start">Make your own:</text>
+<rect x="124" y="272" width="560" height="20" rx="3" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<text x="132" y="286" fill="#3b3b3b" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="400" text-anchor="start">npm run adapt -- code npm --root ../my-project --out my-project.code.json</text>
+<rect x="124" y="296" width="560" height="20" rx="3" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<text x="132" y="310" fill="#3b3b3b" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="400" text-anchor="start">npm run adapt -- plan beads --root ../my-project --out my-project.plan.json</text>
+<g><circle cx="34" cy="26" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="34" y="29.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">1</text></g>
+<g><circle cx="234" cy="116" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="234" y="119.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">2</text></g>
+<g><circle cx="926" cy="72" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="926" y="75.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">3</text></g>
+<g><circle cx="84" cy="252" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="84" y="255.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">4</text></g>
+<g><circle cx="114" cy="282" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="114" y="285.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">5</text></g>
+</svg>

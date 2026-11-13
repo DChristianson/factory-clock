@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img">
+<!-- Drawn from docs/images/workspace-explorer-sketches.html (sketch "transit"), light theme, motion off. -->
+<rect x="0" y="0" width="480" height="300" rx="0" fill="#ffffff" stroke="none" stroke-width="1"></rect>
+<rect x="20" y="40" width="180" height="110" rx="14" fill="#eceae4" stroke="none" stroke-width="1"></rect>
+<text x="30" y="142" fill="#9a968c" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="9" font-weight="400" text-anchor="start" letter-spacing="0.1em">src</text>
+<rect x="220" y="30" width="140" height="90" rx="14" fill="#eceae4" stroke="none" stroke-width="1"></rect>
+<text x="230" y="112" fill="#9a968c" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="9" font-weight="400" text-anchor="start" letter-spacing="0.1em">viz</text>
+<rect x="60" y="170" width="150" height="90" rx="14" fill="#eceae4" stroke="none" stroke-width="1"></rect>
+<text x="70" y="252" fill="#9a968c" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="9" font-weight="400" text-anchor="start" letter-spacing="0.1em">docs</text>
+<rect x="300" y="150" width="150" height="110" rx="14" fill="#eceae4" stroke="none" stroke-width="1"></rect>
+<text x="310" y="252" fill="#9a968c" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="9" font-weight="400" text-anchor="start" letter-spacing="0.1em">hosts</text>
+<path d="M40 90 H140 L180 130 H260 L300 90 H420" fill="none" stroke="#d7263d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M60 60 H120 L160 100 H240 L280 60 H360 L400 100 V220" fill="none" stroke="#1b6ca8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M100 230 H200 L240 190 H320" fill="none" stroke="#2a9d4a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="40" cy="90" r="5" fill="#fff" stroke="#d7263d" stroke-width="2.2"></circle>
+<circle cx="40" cy="90" r="2.6" fill="#d7263d" stroke="none" stroke-width="1"></circle>
+<circle cx="80" cy="90" r="5" fill="#fff" stroke="#d7263d" stroke-width="2.2"></circle>
+<circle cx="80" cy="90" r="2.6" fill="#d7263d" stroke="none" stroke-width="1"></circle>
+<circle cx="120" cy="90" r="5" fill="#fff" stroke="#d7263d" stroke-width="2.2"></circle>
+<path d="M120 87.4 A2.6 2.6 0 0 1 120 92.6 Z" fill="#d7263d" stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="200" cy="130" r="5" fill="#fff" stroke="#d7263d" stroke-width="2.2"></circle>
+<circle cx="240" cy="130" r="5" fill="#fff" stroke="#d7263d" stroke-width="2.2"></circle>
+<circle cx="320" cy="90" r="5" fill="#fff" stroke="#d7263d" stroke-width="2.2"></circle>
+<circle cx="370" cy="90" r="5" fill="#fff" stroke="#d7263d" stroke-width="2.2"></circle>
+<circle cx="420" cy="90" r="5" fill="#fff" stroke="#d7263d" stroke-width="2.2"></circle>
+<circle cx="60" cy="60" r="5" fill="#fff" stroke="#1b6ca8" stroke-width="2.2"></circle>
+<circle cx="60" cy="60" r="2.6" fill="#1b6ca8" stroke="none" stroke-width="1"></circle>
+<circle cx="100" cy="60" r="5" fill="#fff" stroke="#1b6ca8" stroke-width="2.2"></circle>
+<circle cx="100" cy="60" r="2.6" fill="#1b6ca8" stroke="none" stroke-width="1"></circle>
+<circle cx="200" cy="100" r="5" fill="#fff" stroke="#1b6ca8" stroke-width="2.2"></circle>
+<circle cx="200" cy="100" r="2.6" fill="#1b6ca8" stroke="none" stroke-width="1"></circle>
+<circle cx="240" cy="100" r="5" fill="#fff" stroke="#1b6ca8" stroke-width="2.2"></circle>
+<circle cx="240" cy="100" r="2.6" fill="#1b6ca8" stroke="none" stroke-width="1"></circle>
+<circle cx="320" cy="60" r="5" fill="#fff" stroke="#1b6ca8" stroke-width="2.2"></circle>
+<circle cx="320" cy="60" r="2.6" fill="#1b6ca8" stroke="none" stroke-width="1"></circle>
+<circle cx="360" cy="60" r="5" fill="#fff" stroke="#1b6ca8" stroke-width="2.2"></circle>
+<line x1="357.5" y1="57.5" x2="362.5" y2="62.5" stroke="#1b6ca8" stroke-width="1.4"></line>
+<line x1="357.5" y1="62.5" x2="362.5" y2="57.5" stroke="#1b6ca8" stroke-width="1.4"></line>
+<circle cx="400" cy="160" r="5" fill="#fff" stroke="#1b6ca8" stroke-width="2.2"></circle>
+<circle cx="400" cy="160" r="2.6" fill="#1b6ca8" stroke="none" stroke-width="1"></circle>
+<circle cx="400" cy="220" r="5" fill="#fff" stroke="#1b6ca8" stroke-width="2.2"></circle>
+<path d="M400 217.4 A2.6 2.6 0 0 1 400 222.6 Z" fill="#1b6ca8" stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="100" cy="230" r="5" fill="#fff" stroke="#2a9d4a" stroke-width="2.2"></circle>
+<circle cx="100" cy="230" r="2.6" fill="#2a9d4a" stroke="none" stroke-width="1"></circle>
+<circle cx="160" cy="230" r="5" fill="#fff" stroke="#2a9d4a" stroke-width="2.2"></circle>
+<circle cx="160" cy="230" r="2.6" fill="#2a9d4a" stroke="none" stroke-width="1"></circle>
+<circle cx="280" cy="190" r="5" fill="#fff" stroke="#2a9d4a" stroke-width="2.2"></circle>
+<circle cx="280" cy="190" r="2.6" fill="#2a9d4a" stroke="none" stroke-width="1"></circle>
+<circle cx="320" cy="190" r="5" fill="#fff" stroke="#2a9d4a" stroke-width="2.2"></circle>
+<circle cx="320" cy="190" r="2.6" fill="#2a9d4a" stroke="none" stroke-width="1"></circle>
+<circle cx="170" cy="118" r="7" fill="#fff" stroke="#2b2a26" stroke-width="2.2"></circle>
+<circle cx="170" cy="118" r="3.5" fill="#fff" stroke="#2b2a26" stroke-width="1.5"></circle>
+<line x1="280" y1="60" x2="300" y2="90" stroke="#2b2a26" stroke-width="1.2" stroke-dasharray="3 3"></line>
+<text x="30" y="80" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">bqx.1 review</text>
+<text x="114" y="80" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">bqx.2 models</text>
+<text x="188" y="146" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">bqx.5 taxonomy</text>
+<text x="306" y="80" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">bqx.6 stage</text>
+<text x="406" y="80" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">bqx.15 atlas</text>
+<text x="54" y="50" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">step 1</text>
+<text x="314" y="50" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">step 6</text>
+<text x="352" y="50" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">step 7</text>
+<text x="408" y="164" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">heroes</text>
+<text x="408" y="224" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">traces review</text>
+<text x="92" y="246" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">bd init</text>
+<text x="286" y="206" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7.5" font-weight="400" text-anchor="start">host check</text>
+<rect x="96" y="84" width="16" height="12" rx="3" fill="#2b2a26" stroke="none" stroke-width="1"></rect>
+<rect x="99" y="87" width="4" height="4" rx="0.5" fill="#f2c14e" stroke="none" stroke-width="1"></rect>
+<rect x="105" y="87" width="4" height="4" rx="0.5" fill="#f2c14e" stroke="none" stroke-width="1"></rect>
+<text x="104" y="76" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="7" font-weight="400" text-anchor="middle">session 7f3a</text>
+<line x1="20" y1="272" x2="38" y2="272" stroke="#d7263d" stroke-width="5" stroke-linecap="round"></line>
+<text x="44" y="275" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8" font-weight="400" text-anchor="start">Workspace explorer (beads)</text>
+<line x1="200" y1="272" x2="218" y2="272" stroke="#1b6ca8" stroke-width="5" stroke-linecap="round"></line>
+<text x="224" y="275" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8" font-weight="400" text-anchor="start">Visualization explorer (markdown)</text>
+<line x1="20" y1="286" x2="38" y2="286" stroke="#2a9d4a" stroke-width="5" stroke-linecap="round"></line>
+<text x="44" y="289" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8" font-weight="400" text-anchor="start">Dev container</text>
+<circle cx="210" cy="286" r="5" fill="#fff" stroke="#2b2a26" stroke-width="2.2"></circle>
+<circle cx="226" cy="286" r="5" fill="#fff" stroke="#2b2a26" stroke-width="2.2"></circle>
+<path d="M226 283.4 A2.6 2.6 0 0 1 226 288.6 Z" fill="#2b2a26" stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="242" cy="286" r="5" fill="#fff" stroke="#2b2a26" stroke-width="2.2"></circle>
+<circle cx="242" cy="286" r="2.6" fill="#2b2a26" stroke="none" stroke-width="1"></circle>
+<circle cx="258" cy="286" r="5" fill="#fff" stroke="#2b2a26" stroke-width="2.2"></circle>
+<line x1="255.5" y1="283.5" x2="260.5" y2="288.5" stroke="#2b2a26" stroke-width="1.4"></line>
+<line x1="255.5" y1="288.5" x2="260.5" y2="283.5" stroke="#2b2a26" stroke-width="1.4"></line>
+<text x="268" y="289" fill="#2b2a26" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8" font-weight="400" text-anchor="start">open · in progress · done · dropped</text>
+<g><circle cx="440" cy="110" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="440" y="113.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">1</text></g>
+<g><circle cx="170" cy="100" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="170" y="103.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">2</text></g>
+<g><circle cx="40" cy="150" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="40" y="153.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">3</text></g>
+<g><circle cx="128" cy="74" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="128" y="77.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">4</text></g>
+</svg>

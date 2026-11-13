@@ -1,0 +1,1088 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Workspace Explorer Sketches</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: one drafting sheet. Each frame is a wireframe SVG with numbered callouts beside it;
+     the wireframes use Factory Clock's own --fc-* neutrals and accent so they read as the product. */
+  :root {
+    --sheet: #f3f3f1;          /* the sheet under the frames: fc panel, warmed a touch */
+    --surface: #ffffff;        /* fc surface */
+    --ink: #3b3b3b;            /* fc ink */
+    --muted: #717171;          /* fc ink-muted */
+    --rule: #c8c8c8;           /* fc rule */
+    --panel: #f8f8f8;          /* fc panel */
+    --accent: #005fb8;         /* fc accent */
+    --accent-soft: rgba(0, 95, 184, 0.12);
+    --callout: #e4572e;        /* the Factory Clock dial's sweep-hand orange, for annotation only */
+    --cat-1: #eb6834; --cat-2: #1baf7a; --cat-3: #6250d6; --cat-4: #eda100; --cat-5: #e87ba4; --series-1: #2a78d6;
+    --sans: "IBM Plex Sans", -apple-system, "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --sheet: #181818; --surface: #1f1f1f; --ink: #cccccc; --muted: #9d9d9d; --rule: #3a3a3a; --panel: #262626;
+      --accent: #4daafc; --accent-soft: rgba(77, 170, 252, 0.16); --callout: #ff7a4d;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --sheet: #181818; --surface: #1f1f1f; --ink: #cccccc; --muted: #9d9d9d; --rule: #3a3a3a; --panel: #262626;
+    --accent: #4daafc; --accent-soft: rgba(77, 170, 252, 0.16); --callout: #ff7a4d;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--sheet); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-block: 40px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 40px; }
+  h1, h2, h3 { font-weight: 600; line-height: 1.2; text-wrap: balance; margin: 0; }
+  h1 { font-size: 30px; }
+  h2 { font-size: 20px; }
+  p { margin: 0; max-width: 64ch; }
+  a { color: var(--accent); }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  header.sheet-head { display: grid; gap: 10px; }
+  header.sheet-head p { color: var(--muted); }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--mono); font-size: 12.5px; }
+  nav.toc a { text-decoration: none; color: var(--ink); border-bottom: 1px solid var(--rule); }
+  nav.toc a:hover, nav.toc a:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+
+  section.part { display: grid; gap: 18px; }
+  section.part > .part-head { display: grid; gap: 4px; border-top: 1px solid var(--rule); padding-top: 14px; }
+  section.part > .part-head p { color: var(--muted); }
+
+  figure.frame { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px 28px; align-items: start; }
+  figure.frame.wide { grid-template-columns: 1fr; }
+  figure.frame .board { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+  figure.frame .board svg { display: block; width: 100%; height: auto; }
+  figure.frame .board.artboard { border-color: transparent; }
+  figcaption { display: grid; gap: 10px; }
+  figcaption h3 { font-size: 16px; }
+  figcaption .state { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  ol.callouts { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+  ol.callouts li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: 14px; line-height: 1.45; }
+  ol.callouts li b { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--callout); color: #fff; font-family: var(--mono); font-size: 11.5px; font-weight: 500; margin-top: 1px; }
+  figure.frame .boards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  figure.frame .boards .board { padding: 0; }
+  figure.frame .boards .label { font-family: var(--mono); font-size: 12px; color: var(--muted); padding: 8px 10px 0; }
+  .palette { display: flex; flex-wrap: wrap; gap: 6px; }
+  .palette span { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+  .palette i { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.15); }
+  .note { font-size: 14px; color: var(--muted); max-width: 72ch; }
+  @media (max-width: 760px) {
+    figure.frame { grid-template-columns: 1fr; }
+    h1 { font-size: 25px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="sheet-head">
+    <span class="eyebrow">Factory Clock · design sketches · 2026-11-12</span>
+    <h1>Workspace Explorer Sketches</h1>
+    <p>Wireframes for every screen and state in the <a href="https://github.com/DChristianson/factory-clock/blob/main/docs/workspace-explorer.md">workspace explorer proposal</a>, drawn in the page's own neutrals and accent. Grey marks are chrome that exists today; blue marks are what the proposal adds. Orange numbers are callouts. The four hero looks at the end are color artboards, since their design language is the point.</p>
+    <nav class="toc" aria-label="Frames">
+      <a href="#shell">1 Shell</a><a href="#cards">2 Shelf cards</a><a href="#gallery">3 Gallery</a><a href="#compare">4 Compare</a><a href="#tour">5 Tour</a><a href="#puck">6 Puck</a><a href="#picker">7 Picker</a><a href="#loader">8 Loader</a><a href="#atlas">9 Atlas</a><a href="#skyline">10 Skyline</a><a href="#transit">11 Transit</a><a href="#strata">12 Strata</a>
+    </nav>
+  </header>
+
+  <section class="part" id="shell">
+    <div class="part-head"><h2>The explorer</h2><p>Stage and shelf replace the carousel. Keys, buttons, and the three-mounted rule stay.</p></div>
+
+    <figure class="frame">
+      <div class="board"><svg data-sketch="shell" viewBox="0 0 960 620" role="img" aria-label="Wireframe of the page at rest: header, stage with one view, shelf of cards, picker and loader below, puck collapsed in the corner"></svg></div>
+      <figcaption>
+        <h3>1 · The page at rest</h3>
+        <span class="state">first visit, demo workspace loaded</span>
+        <ol class="callouts">
+          <li><b>1</b>The stage: one view, full width, the window's height less the shelf (320px minimum). Header is the view's title and description, as the slide header is today.</li>
+          <li><b>2</b>Previous and Next, and the arrow keys when the stage has focus, move along the shelf. Unchanged behavior.</li>
+          <li><b>3</b>The shelf: one card per view the filters allow, in guide order. The current card is marked and kept in view. Replaces the dots and the "7 of 32" count.</li>
+          <li><b>4</b>Gallery toggle and Tour play live at the shelf's left edge; the count of allowed views is beside them.</li>
+          <li><b>5</b>The puck, collapsed to a circle in its corner, draggable to any corner as now. First visit opens it on Ask once.</li>
+          <li><b>6</b>Picker and loader below the fold, reached by scrolling or the shelf's "Data ↓" link, as the session picker is today.</li>
+        </ol>
+      </figcaption>
+    </figure>
+
+    <figure class="frame" id="cards">
+      <div class="board"><svg data-sketch="cards" viewBox="0 0 960 330" role="img" aria-label="Three shelf cards enlarged, the middle one current"></svg></div>
+      <figcaption>
+        <h3>2 · Shelf card anatomy</h3>
+        <span class="state">three cards, enlarged</span>
+        <ol class="callouts">
+          <li><b>1</b>Subject glyph: a dial for sessions, braces for code, a checkbox for plans, three stacked for workspace views.</li>
+          <li><b>2</b>Title, and one line of the view's <em>why</em> sentence, clipped.</li>
+          <li><b>3</b>Facet dots: category hue, purpose (filled is informative, hollow expressive), and a language swatch when the view has its own look.</li>
+          <li><b>4</b>The current card: accent border and an "on stage" rule. Cards for the two mounted neighbors are plain; everything else is just a card.</li>
+          <li><b>5</b>Cards are 120px wide on the shelf; the tour's progress bar runs under the current card.</li>
+        </ol>
+      </figcaption>
+    </figure>
+
+    <figure class="frame" id="gallery">
+      <div class="board"><svg data-sketch="gallery" viewBox="0 0 960 560" role="img" aria-label="Gallery mode: a grid of live thumbnails in place of the stage"></svg></div>
+      <figcaption>
+        <h3>3 · Gallery</h3>
+        <span class="state">filters: code · dependency</span>
+        <ol class="callouts">
+          <li><b>1</b>The shelf becomes a grid in the stage's place; the filter line names what's showing and offers Clear.</li>
+          <li><b>2</b>Each tile is the view drawn live at card size with replay stopped and tooltips off. Tiles mount as they scroll into view.</li>
+          <li><b>3</b>Hero views show their long exposure, the rest state after a full replay. A view that can't read small shows a title card.</li>
+          <li><b>4</b>Click a tile to put it on the stage; the gallery collapses back to the shelf with that card current.</li>
+          <li><b>5</b>Empty cells aren't drawn: the grid takes as many columns as the width allows and the tiles fill them.</li>
+        </ol>
+      </figcaption>
+    </figure>
+
+    <figure class="frame" id="compare">
+      <div class="board"><svg data-sketch="compare" viewBox="0 0 960 460" role="img" aria-label="Compare mode: the stage split in two with the same item selected in both"></svg></div>
+      <figcaption>
+        <h3>4 · Compare</h3>
+        <span class="state">plans: Blocking graph beside Roadmap</span>
+        <ol class="callouts">
+          <li><b>1</b>The compare toggle splits the stage. The left half is the current view; the right half takes the next card you click.</li>
+          <li><b>2</b>The shared selection links both halves: the item picked in the graph is ringed in the roadmap, as turns link across session views today.</li>
+          <li><b>3</b>Each half keeps its own header and note. Previous and Next move the half that last had focus.</li>
+          <li><b>4</b>Below 760px the halves stack instead of sitting side by side.</li>
+        </ol>
+      </figcaption>
+    </figure>
+
+    <figure class="frame" id="tour">
+      <div class="board"><svg data-sketch="tour" viewBox="0 0 960 560" role="img" aria-label="Tour mode: the shelf playing through views with the puck narrating"></svg></div>
+      <figcaption>
+        <h3>5 · Tour</h3>
+        <span class="state">playing, 14s left on this view</span>
+        <ol class="callouts">
+          <li><b>1</b>Play on the shelf. The current card's bar drains over the tour pace (20s default; a hero view gets its replay's length).</li>
+          <li><b>2</b>The puck opens on Here and narrates: the view's why, and what's next.</li>
+          <li><b>3</b>Any click on the page ends the tour; Pause holds it. With reduced motion the tour never starts on its own.</li>
+          <li><b>4</b>The badge on the stage says TOUR, the way replay says REPLAY ×60, so nobody mistakes it for the page moving by itself.</li>
+        </ol>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="part" id="puck">
+    <div class="part-head"><h2>The puck as a guide</h2><p>Same panel, same corner, three bodies. Preferences are the filters with a friendlier front.</p></div>
+    <figure class="frame wide">
+      <div class="boards">
+        <div class="board"><div class="label">collapsed</div><svg data-sketch="puck-collapsed" viewBox="0 0 240 320"></svg></div>
+        <div class="board"><div class="label">Here</div><svg data-sketch="puck-here" viewBox="0 0 240 320"></svg></div>
+        <div class="board"><div class="label">Ask</div><svg data-sketch="puck-ask" viewBox="0 0 240 320"></svg></div>
+        <div class="board"><div class="label">Map</div><svg data-sketch="puck-map" viewBox="0 0 240 320"></svg></div>
+      </div>
+      <figcaption>
+        <h3>6 · Four states</h3>
+        <ol class="callouts">
+          <li><b>1</b>Collapsed: the circle with the subject glyph of the view on stage. Drag it to a corner; arrow keys do the same from its toggle.</li>
+          <li><b>2</b>Here: the tab row, then title, description, the <em>why</em> line, the <em>next</em> line, and the facet chips as today, every value shown, picked values lit.</li>
+          <li><b>3</b>Ask: six questions with chip answers. Picking an answer filters the shelf at once; the count under the questions says how many views remain. Subjects not loaded are dimmed with "load a file".</li>
+          <li><b>4</b>Map: a dot per view, subjects as rows, categories as columns, colored by language. Lit dots are allowed by the filters; the ringed dot is on stage; click opens. Empty cells show where the catalog has gaps.</li>
+          <li><b>5</b>Clear resets Ask and the chips together, since they are one state.</li>
+        </ol>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="part" id="picker">
+    <div class="part-head"><h2>Picker and loader</h2><p>Below the shelf, as the session picker is today. Three subjects, one drop zone.</p></div>
+
+    <figure class="frame">
+      <div class="board"><svg data-sketch="picker" viewBox="0 0 960 400" role="img" aria-label="The picker with three subject tabs, Plans active, listing epics with checkboxes"></svg></div>
+      <figcaption>
+        <h3>7 · Picker per subject</h3>
+        <span class="state">Plans tab, demo workspace</span>
+        <ol class="callouts">
+          <li><b>1</b>One tab per loaded subject; a subject with nothing loaded is a dimmed tab that says so.</li>
+          <li><b>2</b>Sessions list as today (newest first, cap 8). Code lists packages and build targets with file counts. Plans lists epics and documents with item counts and a done fraction.</li>
+          <li><b>3</b>Load sends the picked units to the explorer; a `unit`-level view stacks one drawing per unit, a `project` view draws them all.</li>
+          <li><b>4</b>Unload drops the subject's units; the shelf hides views that need them.</li>
+        </ol>
+      </figcaption>
+    </figure>
+
+    <figure class="frame" id="loader">
+      <div class="board"><svg data-sketch="loader" viewBox="0 0 960 330" role="img" aria-label="One drop zone and the list of files it sorted by content"></svg></div>
+      <figcaption>
+        <h3>8 · Loader</h3>
+        <span class="state">after dropping four files</span>
+        <ol class="callouts">
+          <li><b>1</b>One zone for any file. The page sorts by content: events JSONL, code-graph JSON, plan-graph JSON.</li>
+          <li><b>2</b>Each file gets a row: what it was read as and what it held. A file the page doesn't recognize is named and refused, nothing else.</li>
+          <li><b>3</b>The privacy line stays: files are read in this browser and nothing is sent.</li>
+          <li><b>4</b>The examples row offers the demo workspace (this repository) and the generated sessions, as the traces button does today.</li>
+          <li><b>5</b>How to make a code or plan file: the two adapter commands, copyable.</li>
+        </ol>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="part" id="atlas">
+    <div class="part-head"><h2>Hero looks</h2><p>Four whole-project pictures, each its own design language. Rough artboards at 480×300; the real views fill the stage.</p></div>
+
+    <figure class="frame">
+      <div class="board artboard"><svg data-sketch="atlas" viewBox="0 0 480 300" role="img" aria-label="Atlas artboard: islands on paper joined by roads, with pins and a trail"></svg></div>
+      <figcaption>
+        <h3>9 · Atlas <span class="state">cartographic</span></h3>
+        <div class="palette"><span><i style="background:#f3eee2"></i>paper</span><span><i style="background:#2b2a26"></i>ink</span><span><i style="background:#9fbccf"></i>water</span><span><i style="background:#c8552f"></i>open</span><span><i style="background:#d9a441"></i>in progress</span><span><i style="background:#5f8a4a"></i>done</span></div>
+        <ol class="callouts">
+          <li><b>1</b>Islands are packages, placed by dependency so neighbors import each other; contours inside follow file size.</li>
+          <li><b>2</b>Roads are imports, width by count; dotted sea lanes run to externals in the margin.</li>
+          <li><b>3</b>Pins are plan items on the files they name, hue by status; dashed routes are blocks links.</li>
+          <li><b>4</b>A trail is a session's path across the files it touched, fading with age. Needs the session→code join; without it the note says so.</li>
+          <li><b>5</b>Scale bar in lines of code; the rose is the layout's hashed orientation, the same each visit.</li>
+        </ol>
+      </figcaption>
+    </figure>
+
+    <figure class="frame" id="skyline">
+      <div class="board artboard"><svg data-sketch="skyline" viewBox="0 0 480 300" role="img" aria-label="Skyline artboard: isometric blocks of buildings, one under scaffolding, windows lit"></svg></div>
+      <figcaption>
+        <h3>10 · Skyline <span class="state">isometric</span></h3>
+        <div class="palette"><span><i style="background:#e9eef4"></i>sky</span><span><i style="background:#c9d3de"></i>ground</span><span><i style="background:#5b7aa0"></i>source</span><span><i style="background:#8fb3a1"></i>test</span><span><i style="background:#d8c08a"></i>doc</span><span><i style="background:#f2c14e"></i>lit window</span></div>
+        <ol class="callouts">
+          <li><b>1</b>Blocks are packages on a grid snapped from the force layout; buildings are files, height by lines, footprint by fan-in.</li>
+          <li><b>2</b>Tests are low glass buildings; docs are pavilions; streets between blocks carry package imports.</li>
+          <li><b>3</b>Scaffolding on a building is an open plan item naming it; a crane marks an epic. In replay it comes down when the item closes.</li>
+          <li><b>4</b>Windows light as a session touches a file and dim as it moves on; the sky darkens as the day ends.</li>
+        </ol>
+      </figcaption>
+    </figure>
+
+    <figure class="frame" id="transit">
+      <div class="board artboard"><svg data-sketch="transit" viewBox="0 0 480 300" role="img" aria-label="Transit artboard: three colored metro lines with stations over shaded districts"></svg></div>
+      <figcaption>
+        <h3>11 · Transit map <span class="state">transit</span></h3>
+        <div class="palette"><span><i style="background:#ffffff;border-color:#bbb"></i>ground</span><span><i style="background:#d7263d"></i>line A</span><span><i style="background:#1b6ca8"></i>line B</span><span><i style="background:#2a9d4a"></i>line C</span><span><i style="background:#eceae4"></i>district</span></div>
+        <ol class="callouts">
+          <li><b>1</b>A line is an epic (or a document); stations are its items in dependency order; routing is octilinear, stable by hashing.</li>
+          <li><b>2</b>A station's ring is its status: hollow open, half in progress, filled done, crossed dropped. A double ring is an interchange, an item two epics share or a blocks link across lines.</li>
+          <li><b>3</b>Districts underneath are the packages the line's items name, shaded and labeled.</li>
+          <li><b>4</b>A train is a session, stopping at the items it mentions as replay runs; in the depot otherwise.</li>
+        </ol>
+      </figcaption>
+    </figure>
+
+    <figure class="frame" id="strata">
+      <div class="board artboard"><svg data-sketch="strata" viewBox="0 0 480 300" role="img" aria-label="Strata artboard: three stacked isometric planes, code at the bottom, sessions and agents in the middle, plans on top, with message dots traveling between them"></svg></div>
+      <figcaption>
+        <h3>12 · Strata <span class="state">layered 3D</span></h3>
+        <div class="palette"><span><i style="background:#141a2b"></i>void</span><span><i style="background:#3a7ca5"></i>code</span><span><i style="background:#8a6fd1"></i>sessions</span><span><i style="background:#d4a72c"></i>plans</span><span><i style="background:#ffb347"></i>down</span><span><i style="background:#5fe0c0"></i>up</span></div>
+        <ol class="callouts">
+          <li><b>1</b>The floor is code as a wheel: packages are wedges sized by file count, files are low blocks inside them, height by lines, inner ring to outer by depth from the entry point.</li>
+          <li><b>2</b>The middle plane is sessions and their agents: sessions sit on an inner ring at the angle of the wedge they work in most, subagents on an outer orbit, joined by spawn lines.</li>
+          <li><b>3</b>The roof is the plan: each epic is a ring, its items placed around it in dependency order, hue by status; bigger epics take outer rings.</li>
+          <li><b>4</b>Messages travel between planes as replay runs: reads and edits drop to the files they touch (amber); claims, comments, and closes rise to the items they name (teal). Faint shafts keep each trail after it passes.</li>
+          <li><b>5</b>Session-to-agent messages stay on the middle plane (white). Drag tilts the stack; hovering a plane lifts it apart to read alone. Needs the session→code join, as Atlas does; without it, only the upward messages draw.</li>
+        </ol>
+      </figcaption>
+    </figure>
+
+    <p class="note">Not sketched: the standard views for code and plans (dependency layers, blocking graph, roadmap, status strips, package wheel, burn-up, file grid, confidence map, plan over code). They use the page's shared look and the existing chart conventions, and each is specified in the design document's tables.</p>
+  </section>
+</div>
+
+<script>
+(function () {
+  const NS = 'http://www.w3.org/2000/svg';
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  // Wireframe palette from the page tokens, read at draw time so the sketches follow the theme.
+  const T = {};
+  function readTokens() {
+    T.ink = css('--ink'); T.muted = css('--muted'); T.rule = css('--rule'); T.panel = css('--panel'); T.surface = css('--surface');
+    T.accent = css('--accent'); T.accentSoft = css('--accent-soft'); T.callout = css('--callout');
+    T.cats = [css('--cat-1'), css('--cat-2'), css('--cat-3'), css('--cat-4'), css('--cat-5')]; T.series = css('--series-1');
+  }
+  const SANS = getComputedStyle(document.body).getPropertyValue('--sans') || 'sans-serif';
+  const MONO = getComputedStyle(document.body).getPropertyValue('--mono') || 'monospace';
+
+  function el(tag, attrs, parent) {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) if (attrs[k] != null) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function g(parent, attrs) { return el('g', attrs || {}, parent); }
+  function rect(p, x, y, w, h, o = {}) {
+    return el('rect', { x, y, width: w, height: h, rx: o.r ?? 2, fill: o.fill ?? 'none', stroke: o.stroke ?? T.rule, 'stroke-width': o.sw ?? 1, 'stroke-dasharray': o.dash, opacity: o.op }, p);
+  }
+  function line(p, x1, y1, x2, y2, o = {}) {
+    return el('line', { x1, y1, x2, y2, stroke: o.stroke ?? T.rule, 'stroke-width': o.sw ?? 1, 'stroke-dasharray': o.dash, 'stroke-linecap': o.cap, opacity: o.op }, p);
+  }
+  function circ(p, cx, cy, r, o = {}) {
+    return el('circle', { cx, cy, r, fill: o.fill ?? 'none', stroke: o.stroke ?? T.rule, 'stroke-width': o.sw ?? 1, 'stroke-dasharray': o.dash, opacity: o.op }, p);
+  }
+  function path(p, d, o = {}) {
+    return el('path', { d, fill: o.fill ?? 'none', stroke: o.stroke ?? T.rule, 'stroke-width': o.sw ?? 1, 'stroke-dasharray': o.dash, 'stroke-linecap': o.cap ?? 'round', 'stroke-linejoin': 'round', opacity: o.op }, p);
+  }
+  function text(p, x, y, str, o = {}) {
+    const t = el('text', { x, y, fill: o.fill ?? (o.muted ? T.muted : T.ink), 'font-family': o.mono ? MONO : SANS, 'font-size': o.size ?? 12, 'font-weight': o.weight ?? 400, 'text-anchor': o.anchor ?? 'start', 'letter-spacing': o.ls, 'font-style': o.italic ? 'italic' : null, opacity: o.op }, p);
+    t.textContent = str;
+    return t;
+  }
+  // A numbered orange callout.
+  function callout(p, x, y, n) {
+    const c = g(p);
+    circ(c, x, y, 9, { fill: T.callout, stroke: 'none' });
+    text(c, x, y + 3.8, String(n), { fill: '#fff', size: 10.5, weight: 500, anchor: 'middle', mono: true });
+    return c;
+  }
+  // Placeholder text: a few short rules.
+  function textLines(p, x, y, w, n, o = {}) {
+    for (let i = 0; i < n; i++) {
+      const len = i === n - 1 ? w * 0.6 : w;
+      line(p, x, y + i * (o.gap ?? 8), x + len, y + i * (o.gap ?? 8), { stroke: o.stroke ?? T.rule, sw: o.sw ?? 2, cap: 'round' });
+    }
+  }
+  function button(p, x, y, w, label, o = {}) {
+    rect(p, x, y, w, 22, { r: 3, fill: o.pressed ? T.accent : T.panel, stroke: o.pressed ? T.accent : T.rule });
+    text(p, x + w / 2, y + 15, label, { anchor: 'middle', size: 11.5, fill: o.pressed ? '#fff' : T.ink });
+  }
+  function chip(p, x, y, label, o = {}) {
+    const w = label.length * 6.2 + 14;
+    rect(p, x, y, w, 18, { r: 9, fill: o.lit ? T.accent : (o.dim ? 'none' : T.panel), stroke: o.lit ? T.accent : T.rule, op: o.dim ? 0.5 : 1 });
+    text(p, x + w / 2, y + 12.5, label, { anchor: 'middle', size: 10.5, fill: o.lit ? '#fff' : (o.dim ? T.muted : T.ink) });
+    return w;
+  }
+  // Subject glyphs, 14px, at (x, y) top-left.
+  function glyph(p, x, y, kind, color) {
+    const s = color ?? T.muted;
+    if (kind === 'sessions') { circ(p, x + 7, y + 7, 6, { stroke: s, sw: 1.4 }); line(p, x + 7, y + 7, x + 7, y + 3.5, { stroke: s, sw: 1.4 }); line(p, x + 7, y + 7, x + 10, y + 8.5, { stroke: s, sw: 1.4 }); }
+    else if (kind === 'code') { path(p, `M${x + 5} ${y + 2} q-3 0 -3 3 v2 q0 2 -2 2 q2 0 2 2 v2 q0 3 3 3 M${x + 9} ${y + 2} q3 0 3 3 v2 q0 2 2 2 q-2 0 -2 2 v2 q0 3 -3 3`, { stroke: s, sw: 1.4 }); }
+    else if (kind === 'plans') { rect(p, x + 1.5, y + 1.5, 11, 11, { r: 2, stroke: s, sw: 1.4 }); path(p, `M${x + 4} ${y + 7} l2.5 2.5 l4 -5`, { stroke: s, sw: 1.5 }); }
+    else { rect(p, x + 1, y + 5, 9, 8, { r: 1.5, stroke: s, sw: 1.2 }); rect(p, x + 3.5, y + 3, 9, 8, { r: 1.5, stroke: s, sw: 1.2, fill: T.surface }); rect(p, x + 6, y + 1, 8, 8, { r: 1.5, stroke: s, sw: 1.2, fill: T.surface }); }
+  }
+
+  // ---------- catalog sample used by the shelf, gallery, and map ----------
+  const VIEWS = [
+    { t: 'Turn tree', s: 'sessions', c: 4, inf: true },
+    { t: 'Context timeline', s: 'sessions', c: 0, inf: true },
+    { t: 'Session strips', s: 'sessions', c: 0, inf: false },
+    { t: 'Sankey', s: 'sessions', c: 1, inf: false, multi: true },
+    { t: 'Treemap', s: 'code', c: 4, inf: true, multi: true },
+    { t: 'Dependency layers', s: 'code', c: 3, inf: true },
+    { t: 'Package wheel', s: 'code', c: 3, inf: false },
+    { t: 'File grid', s: 'code', c: 4, inf: true },
+    { t: 'Blocking graph', s: 'plans', c: 3, inf: true },
+    { t: 'Roadmap', s: 'plans', c: 0, inf: true },
+    { t: 'Status strips', s: 'plans', c: 5, inf: false },
+    { t: 'Burn-up', s: 'plans', c: 4, inf: true },
+    { t: 'Plan over code', s: 'workspace', c: 3, inf: true },
+    { t: 'Atlas', s: 'workspace', c: 3, inf: false, lang: '#c8552f' },
+    { t: 'Skyline', s: 'workspace', c: 4, inf: false, lang: '#5b7aa0' },
+    { t: 'Transit map', s: 'workspace', c: 3, inf: false, lang: '#d7263d' },
+    { t: 'Factory Clock', s: 'sessions', c: 0, inf: false, lang: '#e4572e' },
+  ];
+  const CAT_HUES = () => [T.series, T.cats[1], T.cats[4], T.cats[2], T.cats[0], T.cats[3], T.muted]; // temporal, actor, conversational, dependency, quantitative, state, semantic
+  const CAT_NAMES = ['temporal', 'actor', 'conv.', 'dependency', 'quantitative', 'state', 'semantic'];
+
+  // One shelf card.
+  function card(p, x, y, w, h, v, o = {}) {
+    const cur = o.current;
+    rect(p, x, y, w, h, { r: 4, fill: cur ? T.accentSoft : T.surface, stroke: cur ? T.accent : T.rule, sw: cur ? 1.5 : 1 });
+    // thumbnail area
+    const th = g(p);
+    rect(th, x + 8, y + 8, w - 16, h * 0.42, { r: 2, fill: T.panel, stroke: 'none' });
+    miniViz(th, x + 8, y + 8, w - 16, h * 0.42, v);
+    glyph(p, x + 8, y + h * 0.42 + 14, v.s, cur ? T.accent : T.muted);
+    text(p, x + 26, y + h * 0.42 + 25, v.t, { size: o.big ? 13 : 10.5, weight: 500, fill: cur ? T.accent : T.ink });
+    // facet dots
+    const dy = y + h - 12;
+    circ(p, x + 13, dy, 3.5, { fill: CAT_HUES()[v.c], stroke: 'none' });
+    circ(p, x + 24, dy, 3.5, { fill: v.inf ? T.muted : 'none', stroke: T.muted, sw: 1.2 });
+    if (v.lang) rect(p, x + 33, dy - 3.5, 7, 7, { r: 1, fill: v.lang, stroke: 'none' });
+    if (cur) line(p, x + 8, y + h + 5, x + w - 8, y + h + 5, { stroke: T.accent, sw: 2, cap: 'round' });
+  }
+  // A tiny abstract drawing that hints at the view's shape.
+  function miniViz(p, x, y, w, h, v) {
+    const k = v.t;
+    const s = T.muted;
+    if (/strips|Roadmap|Status/.test(k)) { for (let i = 0; i < 3; i++) { const yy = y + 6 + i * (h - 12) / 3; rect(p, x + 6 + i * 4, yy, w * (0.5 + 0.15 * i), 4, { fill: i === 1 ? T.series : s, stroke: 'none', op: 0.8 }); } }
+    else if (/tree|Treemap|grid/.test(k)) { rect(p, x + 5, y + 5, w * 0.5, h - 10, { fill: s, stroke: 'none', op: 0.35 }); rect(p, x + 5 + w * 0.52, y + 5, w * 0.4, (h - 10) * 0.5, { fill: s, stroke: 'none', op: 0.5 }); rect(p, x + 5 + w * 0.52, y + 5 + (h - 10) * 0.55, w * 0.4, (h - 10) * 0.45, { fill: s, stroke: 'none', op: 0.25 }); }
+    else if (/timeline|Burn/.test(k)) { path(p, `M${x + 5} ${y + h - 6} L${x + w * 0.3} ${y + h * 0.6} L${x + w * 0.55} ${y + h * 0.45} L${x + w - 5} ${y + 8}`, { stroke: T.series, sw: 1.5 }); }
+    else if (/layers|Blocking/.test(k)) { for (let i = 0; i < 3; i++) for (let j = 0; j < 2 + i; j++) circ(p, x + 12 + i * (w - 24) / 2, y + 8 + j * (h - 16) / (1 + i), 3, { fill: s, stroke: 'none' }); line(p, x + 12, y + 8, x + 12 + (w - 24) / 2, y + 8 + (h - 16) / 2, { stroke: s }); }
+    else if (/wheel|Clock/.test(k)) { circ(p, x + w / 2, y + h / 2, h * 0.4, { stroke: s, sw: 1.5 }); circ(p, x + w / 2, y + h / 2, h * 0.22, { stroke: s }); }
+    else if (/Sankey|Plan over/.test(k)) { path(p, `M${x + 5} ${y + 8} C${x + w / 2} ${y + 8} ${x + w / 2} ${y + h - 10} ${x + w - 5} ${y + h - 10}`, { stroke: s, sw: 5, op: 0.4, cap: 'butt' }); path(p, `M${x + 5} ${y + h - 8} C${x + w / 2} ${y + h - 8} ${x + w / 2} ${y + 12} ${x + w - 5} ${y + 12}`, { stroke: T.series, sw: 4, op: 0.5, cap: 'butt' }); }
+    else { text(p, x + w / 2, y + h / 2 + 4, k, { anchor: 'middle', size: 9, muted: true, italic: true }); }
+  }
+
+  // The shelf: cards along a row, current one marked.
+  function shelf(p, x, y, w, current, o = {}) {
+    const cw = 120, ch = 84, gap = 10;
+    const n = Math.floor((w - 150) / (cw + gap));
+    // left controls
+    button(p, x, y + 4, 60, '▦ Gallery', { pressed: o.gallery });
+    button(p, x, y + 32, 60, o.playing ? '❚❚ Pause' : '▶ Tour', { pressed: o.playing });
+    text(p, x + 30, y + 74, `${o.count ?? 44} views`, { anchor: 'middle', size: 10.5, muted: true, mono: true });
+    const sx = x + 80;
+    for (let i = 0; i < n; i++) {
+      const v = VIEWS[(i + (o.offset ?? 0)) % VIEWS.length];
+      card(p, sx + i * (cw + gap), y, cw, ch, v, { current: i === current });
+    }
+    if (o.playing) rect(p, sx + current * (cw + gap) + 8, y + ch + 3, (cw - 16) * 0.3, 4, { r: 2, fill: T.accent, stroke: 'none' });
+    // scroll hint
+    rect(p, sx + n * (cw + gap), y, 20, ch, { fill: T.surface, stroke: 'none' });
+    text(p, sx + n * (cw + gap) + 6, y + ch / 2 + 4, '›', { size: 16, muted: true });
+    return { sx, cw, ch, gap };
+  }
+
+  function stageHeader(p, x, y, w, title, desc, o = {}) {
+    text(p, x, y + 14, title, { size: 15, weight: 600 });
+    text(p, x, y + 30, desc, { size: 11.5, muted: true });
+    if (o.badge) { rect(p, x + w - 86, y + 2, 86, 18, { r: 9, fill: T.panel, stroke: T.rule }); text(p, x + w - 43, y + 14.5, o.badge, { anchor: 'middle', size: 10, mono: true, muted: true }); }
+  }
+  // A session-strips-like drawing that fills a stage area.
+  function stripsView(p, x, y, w, h) {
+    const rows = 4;
+    for (let r = 0; r < rows; r++) {
+      const yy = y + 16 + r * ((h - 30) / rows);
+      text(p, x, yy + 10, ['Explorer carousel', 'Fix hook routing', 'README pass', 'session 1e8d'][r], { size: 10.5, muted: true });
+      let xx = x + 110;
+      const seed = [5, 3, 4, 6][r];
+      for (let i = 0; i < 6 + seed; i++) {
+        const bw = 18 + ((i * 37 + seed * 11) % 60);
+        rect(p, xx, yy, bw, 14, { r: 1, fill: i % 2 ? T.cats[0] : T.series, stroke: 'none', op: i % 2 ? 0.55 : 0.5 });
+        xx += bw + 6 + ((i * 13) % 20);
+        if (xx > x + w - 40) break;
+      }
+    }
+    line(p, x + 110, y + h - 6, x + w, y + h - 6, { stroke: T.rule });
+    for (let i = 0; i <= 6; i++) text(p, x + 110 + i * (w - 110) / 6, y + h + 6, `${9 + i}:00`, { size: 9.5, mono: true, muted: true, anchor: 'middle' });
+  }
+  function puckCollapsed(p, cx, cy, kind) {
+    circ(p, cx, cy, 22, { fill: T.surface, stroke: T.rule, sw: 1.5 });
+    glyph(p, cx - 7, cy - 7, kind || 'sessions', T.accent);
+  }
+
+  // ---------- Frame 1: shell ----------
+  function sketchShell(svg) {
+    const W = 960;
+    rect(svg, 0, 0, W, 620, { fill: T.surface, stroke: 'none' });
+    // header
+    text(svg, 24, 30, 'Factory Clock', { size: 18, weight: 600 });
+    text(svg, 150, 30, 'Visualizations of a software project: its sessions, code, and plans', { size: 11.5, muted: true });
+    text(svg, W - 24, 30, 'github.com/DChristianson/factory-clock', { size: 10.5, muted: true, anchor: 'end', mono: true });
+    line(svg, 24, 44, W - 24, 44, { stroke: T.rule });
+    // stage
+    const sx = 24, sy = 58, sw = W - 48, sh = 330;
+    rect(svg, sx, sy, sw, sh, { r: 4, fill: T.surface, stroke: T.accent, dash: '4 3', op: 0.9 });
+    stageHeader(svg, sx + 16, sy + 12, sw - 32, 'Session strips', 'One row per session, x is clock time; each turn a block, compactions as ticks.');
+    stripsView(svg, sx + 16, sy + 56, sw - 32, sh - 90);
+    // prev/next
+    button(svg, sx + 16, sy + sh - 30, 78, '‹ Previous');
+    button(svg, sx + sw - 94, sy + sh - 30, 78, 'Next ›');
+    // shelf
+    const shy = sy + sh + 14;
+    const sh1 = shelf(svg, sx, shy, sw, 2, { count: 44 });
+    text(svg, W - 24, shy + 74, 'Data ↓', { size: 11, anchor: 'end', fill: T.accent });
+    // below the fold
+    const by = shy + 110;
+    line(svg, sx, by, sx + sw, by, { stroke: T.rule, dash: '2 4' });
+    text(svg, sx, by + 18, 'Pick', { size: 13, weight: 600 });
+    ['Sessions · 6', 'Code · 3 packages', 'Plans · 2 epics, 1 document'].forEach((t, i) => chip(svg, sx + 48 + i * 130, by + 6, t, { lit: i === 0 }));
+    rect(svg, sx, by + 36, sw, 36, { r: 3, fill: T.panel, stroke: T.rule, dash: '4 3' });
+    text(svg, sx + sw / 2, by + 58, 'Drop event files, code graphs, or plan graphs here, or choose files. Read in this browser; nothing is sent.', { anchor: 'middle', size: 11, muted: true });
+    // puck
+    puckCollapsed(svg, W - 50, 560, 'sessions');
+    // callouts
+    callout(svg, sx + sw - 24, sy + 24, 1);
+    callout(svg, sx + 104, sy + sh - 19, 2);
+    callout(svg, sh1.sx + 2 * (sh1.cw + sh1.gap) + sh1.cw - 6, shy - 2, 3);
+    callout(svg, sx + 70, shy + 4, 4);
+    callout(svg, W - 50, 522, 5);
+    callout(svg, sx + 30, by - 10, 6);
+  }
+
+  // ---------- Frame 2: cards ----------
+  function sketchCards(svg) {
+    rect(svg, 0, 0, 960, 330, { fill: T.surface, stroke: 'none' });
+    const cw = 250, ch = 170, y = 60;
+    const xs = [70, 355, 640];
+    [VIEWS[3], VIEWS[5], VIEWS[13]].forEach((v, i) => card(svg, xs[i], y, cw, ch, v, { current: i === 1, big: true }));
+    text(svg, xs[1] + cw / 2, y + ch + 24, 'on stage', { anchor: 'middle', size: 10.5, mono: true, fill: T.accent });
+    text(svg, xs[0] + cw / 2, y + ch + 24, 'mounted neighbor', { anchor: 'middle', size: 10.5, mono: true, muted: true });
+    text(svg, xs[2] + cw / 2, y + ch + 24, 'not mounted', { anchor: 'middle', size: 10.5, mono: true, muted: true });
+    // why line in each card
+    [VIEWS[3], VIEWS[5], VIEWS[13]].forEach((v, i) => text(svg, xs[i] + 26, y + ch * 0.42 + 42, ['Where the tokens flowed, actor to actor.', 'What depends on what, and where the cycles are.', 'The whole project as a map.'][i], { size: 10, muted: true }));
+    // dimension line
+    line(svg, xs[0], y - 14, xs[0] + cw, y - 14, { stroke: T.muted, sw: 1 }); text(svg, xs[0] + cw / 2, y - 18, '120 px on the shelf · 250 px here', { anchor: 'middle', size: 10, mono: true, muted: true });
+    callout(svg, xs[0] + 4, y + ch * 0.42 + 20, 1);
+    callout(svg, xs[0] + cw - 10, y + ch * 0.42 + 22, 2);
+    callout(svg, xs[0] + 50, y + ch - 12, 3);
+    callout(svg, xs[1] + cw + 4, y + 8, 4);
+    callout(svg, xs[1] - 6, y + ch + 5, 5);
+    // keyboard hint
+    text(svg, 480, 300, '← →  move along the shelf   ·   Enter opens the focused card   ·   Esc returns to the stage', { anchor: 'middle', size: 11, mono: true, muted: true });
+  }
+
+  // ---------- Frame 3: gallery ----------
+  function sketchGallery(svg) {
+    const W = 960;
+    rect(svg, 0, 0, W, 560, { fill: T.surface, stroke: 'none' });
+    text(svg, 24, 30, 'Gallery', { size: 15, weight: 600 });
+    text(svg, 90, 30, '12 of 44 views ·', { size: 11.5, muted: true });
+    let cx = 190; cx += chip(svg, cx, 17, 'code', { lit: true }) + 6; cx += chip(svg, cx, 17, 'dependency', { lit: true }) + 10;
+    text(svg, cx, 30, 'Clear', { size: 11.5, fill: T.accent });
+    button(svg, W - 104, 12, 80, '▭ Stage');
+    const cols = 4, tw = 212, th = 128, gx = 14, gy = 16, x0 = 24, y0 = 52;
+    const picks = [5, 6, 4, 7, 12, 13, 14, 15, 8, 3, 9, 10];
+    picks.forEach((pi, i) => {
+      const v = VIEWS[pi];
+      const x = x0 + (i % cols) * (tw + gx), y = y0 + Math.floor(i / cols) * (th + gy);
+      rect(svg, x, y, tw, th, { r: 4, fill: T.surface, stroke: T.rule });
+      if (v.lang && i !== 7) { // hero: long exposure
+        rect(svg, x + 1, y + 1, tw - 2, th - 32, { r: 3, fill: v.lang, stroke: 'none', op: 0.18 });
+        for (let k = 0; k < 7; k++) path(svg, `M${x + 20 + k * 25} ${y + 20 + (k % 3) * 20} q 30 20 60 ${10 + k * 5}`, { stroke: v.lang, sw: 1, op: 0.6 });
+        text(svg, x + tw - 8, y + th - 38, 'long exposure', { anchor: 'end', size: 9, mono: true, muted: true });
+      } else if (i === 7) { // title card
+        rect(svg, x + 1, y + 1, tw - 2, th - 32, { r: 3, fill: T.panel, stroke: 'none' });
+        text(svg, x + tw / 2, y + 50, v.t, { anchor: 'middle', size: 14, weight: 600 });
+        text(svg, x + tw / 2, y + 68, 'title card', { anchor: 'middle', size: 9.5, mono: true, muted: true });
+      } else {
+        rect(svg, x + 1, y + 1, tw - 2, th - 32, { r: 3, fill: T.panel, stroke: 'none' });
+        miniViz(svg, x + 10, y + 10, tw - 20, th - 50, v);
+      }
+      glyph(svg, x + 8, y + th - 24, v.s);
+      text(svg, x + 26, y + th - 13, v.t, { size: 11, weight: 500 });
+      circ(svg, x + tw - 14, y + th - 17, 3.5, { fill: CAT_HUES()[v.c], stroke: 'none' });
+    });
+    // below the fold hint
+    text(svg, W / 2, 540, 'tiles below mount as they scroll into view', { anchor: 'middle', size: 10.5, mono: true, muted: true });
+    callout(svg, 180, 12, 1);
+    callout(svg, x0 + tw - 10, y0 + 10, 2);
+    callout(svg, x0 + (tw + gx) + tw - 10, y0 + (th + gy) + 10, 3);
+    callout(svg, x0 + 3 * (tw + gx) + 10, y0 + 10, 4);
+    callout(svg, x0 + 3 * (tw + gx) + tw - 10, y0 + 2 * (th + gy) + th - 10, 5);
+  }
+
+  // ---------- Frame 4: compare ----------
+  function sketchCompare(svg) {
+    const W = 960;
+    rect(svg, 0, 0, W, 460, { fill: T.surface, stroke: 'none' });
+    const sx = 24, sy = 16, sw = W - 48, sh = 330, half = (sw - 12) / 2;
+    [0, 1].forEach((i) => {
+      const x = sx + i * (half + 12);
+      rect(svg, x, sy, half, sh, { r: 4, fill: T.surface, stroke: T.accent, dash: '4 3', op: 0.9 });
+      stageHeader(svg, x + 14, sy + 10, half - 28, i ? 'Roadmap' : 'Blocking graph', i ? 'Created to closed, by epic; open items run to today.' : 'Left to right by dependency depth; critical path lit.');
+    });
+    // blocking graph: small DAG
+    const bx = sx + 30, by = sy + 70;
+    const nodes = [[0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 1], [3, 1], [3, 2]];
+    const pos = nodes.map(([c, r]) => [bx + c * 110, by + r * 70 + 20]);
+    const edges = [[0, 2], [0, 3], [1, 4], [2, 5], [3, 5], [4, 5], [5, 6], [4, 7]];
+    edges.forEach(([a, b]) => line(svg, pos[a][0], pos[a][1], pos[b][0], pos[b][1], { stroke: [0, 1, 3, 6].includes(a) && [3, 5, 6].includes(b) ? T.cats[0] : T.rule, sw: [0, 3, 5].includes(a) ? 2 : 1, dash: b === 7 ? '3 3' : null }));
+    pos.forEach((pt, i) => { circ(svg, pt[0], pt[1], 9, { fill: i === 5 ? T.accentSoft : T.panel, stroke: i === 5 ? T.accent : T.muted, sw: i === 5 ? 2.5 : 1.2 }); });
+    text(svg, pos[5][0], pos[5][1] - 16, 'bqx.6 Stage and shelf', { anchor: 'middle', size: 9.5, mono: true, fill: T.accent });
+    // roadmap: gantt
+    const rx = sx + half + 12 + 20, ry = sy + 70;
+    text(svg, rx, ry - 6, 'Workspace explorer', { size: 10.5, weight: 500 });
+    const bars = [[0, 60, '#5f8a4a'], [20, 70, '#5f8a4a'], [60, 90, '#d9a441'], [90, 150, '#c8552f'], [100, 150, '#c8552f'], [120, 150, '#c8552f'], [140, 150, '#c8552f']];
+    bars.forEach(([a, b, col], i) => {
+      const y = ry + 10 + i * 28;
+      line(svg, rx, y + 7, rx + 400, y + 7, { stroke: T.rule, op: 0.4 });
+      rect(svg, rx + a * 2.4, y, (b - a) * 2.4, 14, { r: 2, fill: col, stroke: i === 3 ? T.accent : 'none', sw: 2.5, op: 0.85 });
+      text(svg, rx + 400 - 2, y + 11, ['bqx.2', 'bqx.5', 'bqx.4', 'bqx.6', 'bqx.7', 'bqx.8', 'bqx.9'][i], { anchor: 'end', size: 9.5, mono: true, muted: true });
+    });
+    line(svg, rx + 150 * 2.4, ry, rx + 150 * 2.4, ry + 210, { stroke: T.muted, dash: '3 3' });
+    text(svg, rx + 150 * 2.4, ry + 224, 'today', { anchor: 'middle', size: 9.5, mono: true, muted: true });
+    // link between the two selections
+    path(svg, `M${pos[5][0] + 10} ${pos[5][1]} C ${sx + half + 6} ${pos[5][1]} ${sx + half + 6} ${ry + 10 + 3 * 28 + 7} ${rx + 90 * 2.4 - 4} ${ry + 10 + 3 * 28 + 7}`, { stroke: T.accent, dash: '3 3', sw: 1 });
+    // controls
+    button(svg, sx, sy + sh + 12, 90, '⫿ Compare', { pressed: true });
+    button(svg, sx + 100, sy + sh + 12, 78, '‹ Previous'); button(svg, sx + 186, sy + sh + 12, 78, 'Next ›');
+    text(svg, sx + 280, sy + sh + 27, 'moves the half that last had focus', { size: 10.5, mono: true, muted: true });
+    // stacked note
+    rect(svg, W - 150, sy + sh + 8, 126, 54, { r: 3, stroke: T.rule, dash: '3 3' });
+    rect(svg, W - 142, sy + sh + 14, 110, 18, { r: 2, fill: T.panel, stroke: 'none' }); rect(svg, W - 142, sy + sh + 36, 110, 18, { r: 2, fill: T.panel, stroke: 'none' });
+    text(svg, W - 87, sy + sh + 77, '< 760 px: stacked', { anchor: 'middle', size: 9.5, mono: true, muted: true });
+    callout(svg, sx + 94, sy + sh + 23, 1);
+    callout(svg, sx + half + 6, pos[5][1] - 12, 2);
+    callout(svg, sx + half + 12 + half - 20, sy + 22, 3);
+    callout(svg, W - 150, sy + sh + 8, 4);
+  }
+
+  // ---------- Frame 5: tour ----------
+  function sketchTour(svg) {
+    const W = 960;
+    rect(svg, 0, 0, W, 560, { fill: T.surface, stroke: 'none' });
+    const sx = 24, sy = 16, sw = W - 48, sh = 330;
+    rect(svg, sx, sy, sw, sh, { r: 4, fill: T.surface, stroke: T.rule });
+    stageHeader(svg, sx + 16, sy + 12, sw - 32, 'Package wheel', 'Which packages talk to which: ribbons by import count, externals on their own arc.', { badge: 'TOUR · 14s' });
+    // a wheel
+    const cx = sx + sw / 2 - 120, cy = sy + 190, R = 110;
+    const segs = [['src', 0, 1.6, T.series], ['viz', 1.7, 3.2, T.cats[0]], ['hosts', 3.3, 4.0, T.cats[1]], ['scripts', 4.1, 4.6, T.cats[2]], ['externals', 4.7, 6.2, T.muted]];
+    segs.forEach(([n, a0, a1, col]) => {
+      const p0 = [cx + R * Math.cos(a0), cy + R * Math.sin(a0)], p1 = [cx + R * Math.cos(a1), cy + R * Math.sin(a1)];
+      path(svg, `M${p0[0]} ${p0[1]} A${R} ${R} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${p1[0]} ${p1[1]}`, { stroke: col, sw: 10, cap: 'butt' });
+      const am = (a0 + a1) / 2; text(svg, cx + (R + 22) * Math.cos(am), cy + (R + 22) * Math.sin(am) + 4, n, { anchor: 'middle', size: 10, mono: true, muted: true });
+    });
+    [[0.8, 2.4, T.series], [0.4, 3.6, T.series], [2.5, 5.4, T.cats[0]], [1.2, 4.3, T.series], [3.7, 5.0, T.cats[1]]].forEach(([a, b, col]) => {
+      const r = R - 6; path(svg, `M${cx + r * Math.cos(a)} ${cy + r * Math.sin(a)} Q${cx} ${cy} ${cx + r * Math.cos(b)} ${cy + r * Math.sin(b)}`, { stroke: col, sw: 6, op: 0.35, cap: 'butt' });
+    });
+    // puck expanded, Here, narrating
+    const px = W - 24 - 230, py = sy + 60;
+    puckHere(svg, px, py, { narrating: true });
+    // shelf
+    const shy = sy + sh + 14;
+    const s = shelf(svg, sx, shy, sw, 2, { playing: true, offset: 4, count: 44 });
+    text(svg, s.sx + 2 * (s.cw + s.gap) + s.cw / 2, shy + s.ch + 20, 'next in 14 s', { anchor: 'middle', size: 10, mono: true, muted: true });
+    callout(svg, sx + 70, shy + 36, 1);
+    callout(svg, px - 6, py + 8, 2);
+    callout(svg, sx + 60, sy + sh - 16, 3);
+    callout(svg, sx + sw - 104, sy + 12, 4);
+  }
+
+  // ---------- Puck bodies ----------
+  function puckFrame(p, x, y, w, h, tab) {
+    rect(p, x, y, w, h, { r: 10, fill: T.surface, stroke: T.rule, sw: 1.2 });
+    // head
+    circ(p, x + 18, y + 18, 9, { fill: T.accentSoft, stroke: T.accent });
+    text(p, x + 34, y + 22, 'Explore', { size: 12, weight: 600 });
+    text(p, x + w - 14, y + 22, '–', { anchor: 'end', size: 14, muted: true });
+    // tabs
+    ['Here', 'Ask', 'Map'].forEach((t, i) => {
+      const tx = x + 14 + i * 52;
+      text(p, tx, y + 46, t, { size: 11, weight: t === tab ? 600 : 400, fill: t === tab ? T.accent : T.muted });
+      if (t === tab) line(p, tx, y + 50, tx + t.length * 6.5, y + 50, { stroke: T.accent, sw: 2 });
+    });
+    line(p, x + 10, y + 56, x + w - 10, y + 56, { stroke: T.rule });
+  }
+  function puckHere(p, x, y, o = {}) {
+    const w = 230, h = 250;
+    puckFrame(p, x, y, w, h, 'Here');
+    text(p, x + 14, y + 76, 'Package wheel', { size: 13, weight: 600 });
+    text(p, x + 14, y + 91, 'Which packages talk to which.', { size: 10, muted: true });
+    text(p, x + 14, y + 112, 'Why this view', { size: 9.5, mono: true, muted: true, ls: '0.06em' });
+    text(p, x + 14, y + 126, 'Imports between packages are the shape', { size: 10 });
+    text(p, x + 14, y + 138, 'of the build; ribbons show the heavy ones.', { size: 10 });
+    text(p, x + 14, y + 158, 'Next', { size: 9.5, mono: true, muted: true, ls: '0.06em' });
+    text(p, x + 14, y + 172, 'Dependency layers · where the cycles are', { size: 10, fill: T.accent });
+    // chips
+    let cx = x + 14, cy = y + 188;
+    [['code', true], ['dependency', true], ['quantitative', false], ['expressive', true], ['project', false], ['standard', true]].forEach(([l, lit]) => {
+      const cw = l.length * 6.2 + 14; if (cx + cw > x + w - 10) { cx = x + 14; cy += 22; }
+      cx += chip(p, cx, cy, l, { lit, dim: !lit }) + 5;
+    });
+    text(p, x + w - 14, y + h - 10, 'Clear', { anchor: 'end', size: 10, fill: T.accent });
+  }
+  function sketchPuckCollapsed(svg) {
+    rect(svg, 0, 0, 240, 320, { fill: T.surface, stroke: 'none' });
+    puckCollapsed(svg, 190, 270, 'code');
+    // corners
+    [[30, 40], [210, 40], [30, 280]].forEach(([cx, cy]) => circ(svg, cx, cy, 22, { stroke: T.rule, dash: '3 3' }));
+    path(svg, 'M160 250 q-40 -60 -120 -30', { stroke: T.muted, dash: '3 3' }); text(svg, 40, 196, 'drag to any corner', { size: 10, mono: true, muted: true });
+    text(svg, 120, 150, '⇡ ⇣ ⇠ ⇢', { anchor: 'middle', size: 12, muted: true }); text(svg, 120, 166, 'arrow keys from its toggle', { anchor: 'middle', size: 10, mono: true, muted: true });
+    callout(svg, 218, 240, 1);
+  }
+  function sketchPuckHere(svg) {
+    rect(svg, 0, 0, 240, 320, { fill: T.surface, stroke: 'none' });
+    puckHere(svg, 5, 20);
+    callout(svg, 224, 70, 2);
+  }
+  function sketchPuckAsk(svg) {
+    rect(svg, 0, 0, 240, 320, { fill: T.surface, stroke: 'none' });
+    const x = 5, y = 10, w = 230, h = 300;
+    puckFrame(svg, x, y, w, h, 'Ask');
+    const q = (yy, label, answers) => {
+      text(svg, x + 14, yy, label, { size: 9.5, mono: true, muted: true, ls: '0.06em' });
+      let cx = x + 14, cy = yy + 6;
+      answers.forEach(([l, lit, dim]) => { const cw = l.length * 6.2 + 14; if (cx + cw > x + w - 10) { cx = x + 14; cy += 21; } cx += chip(svg, cx, cy, l, { lit, dim }) + 4; });
+      return cy + 30;
+    };
+    let yy = y + 72;
+    yy = q(yy, 'Looking at', [['sessions', false], ['code', true], ['plans', false], ['workspace', false, true]]);
+    yy = q(yy, 'Asking', [['when?', false], ['who?', false], ['what depends?', true], ['how much?', false]]);
+    yy = q(yy, 'For', [['understanding', false], ['impressing', true]]);
+    yy = q(yy, 'Look', [['any', true], ['shared', false], ['cartographic', false]]);
+    text(svg, x + 14, yy - 2, 'Motion', { size: 9.5, mono: true, muted: true, ls: '0.06em' }); chip(svg, x + 60, yy - 14, 'on', { lit: true }); chip(svg, x + 92, yy - 14, 'stills', {});
+    text(svg, x + 14, y + h - 12, '12 of 44 views remain', { size: 10, mono: true, fill: T.accent });
+    text(svg, x + w - 14, y + h - 12, 'Clear', { anchor: 'end', size: 10, fill: T.accent });
+    callout(svg, 224, 72, 3);
+    callout(svg, 224, h - 2, 5);
+  }
+  function sketchPuckMap(svg) {
+    rect(svg, 0, 0, 240, 320, { fill: T.surface, stroke: 'none' });
+    const x = 5, y = 10, w = 230, h = 300;
+    puckFrame(svg, x, y, w, h, 'Map');
+    const rows = ['sessions', 'code', 'plans', 'workspace'];
+    const gx = x + 70, gy = y + 90, cw = 21, rh = 34;
+    CAT_NAMES.forEach((c, i) => { const t = text(svg, gx + i * cw + 10, gy - 12, c.slice(0, 4), { size: 8.5, mono: true, muted: true, anchor: 'middle' }); t.setAttribute('transform', `rotate(-45 ${gx + i * cw + 10} ${gy - 12})`); });
+    rows.forEach((r, ri) => {
+      text(svg, gx - 6, gy + ri * rh + 14, r, { anchor: 'end', size: 9.5, mono: true, muted: true });
+      for (let ci = 0; ci < 7; ci++) rect(svg, gx + ci * cw, gy + ri * rh, cw - 2, rh - 2, { r: 2, fill: T.panel, stroke: 'none' });
+    });
+    // dots: a sample distribution. lit = allowed by current filters (code · dependency)
+    const dots = [[0, 0, 5, 1], [0, 1, 3, 1], [0, 2, 2, 1], [0, 4, 9, 2], [0, 5, 2, 1], [0, 6, 2, 1], [1, 3, 4, 1, true], [1, 4, 4, 1], [2, 3, 2, 1], [2, 0, 2, 1], [2, 5, 2, 1], [2, 4, 2, 1], [3, 3, 3, 2]];
+    dots.forEach(([r, c, n, lang, lit]) => {
+      for (let k = 0; k < Math.min(n, 4); k++) {
+        const dx = gx + c * cw + 5 + (k % 2) * 9, dy = gy + r * rh + 8 + Math.floor(k / 2) * 10;
+        circ(svg, dx, dy, 3, { fill: lit ? T.accent : (lang === 2 ? T.cats[0] : T.muted), stroke: 'none', op: lit ? 1 : 0.35 });
+      }
+      if (lit) circ(svg, gx + c * cw + 5, gy + r * rh + 8, 5.5, { stroke: T.accent, sw: 1.5 });
+    });
+    text(svg, x + 14, y + h - 44, 'colored by language · lit = allowed', { size: 9, mono: true, muted: true });
+    text(svg, x + 14, y + h - 30, 'ring = on stage · click opens', { size: 9, mono: true, muted: true });
+    text(svg, x + 14, y + h - 12, 'empty cells: no view yet', { size: 9, mono: true, fill: T.callout });
+    callout(svg, 224, 72, 4);
+  }
+
+  // ---------- Frame 7: picker ----------
+  function sketchPicker(svg) {
+    const W = 960;
+    rect(svg, 0, 0, W, 400, { fill: T.surface, stroke: 'none' });
+    const x = 24, y = 20, w = W - 48;
+    text(svg, x, y + 14, 'Pick', { size: 14, weight: 600 });
+    // tabs
+    const tabs = [['Sessions · 6', false], ['Code · 3 packages', false], ['Plans · 2 epics, 1 document', true], ['Workspace', false, true]];
+    let tx = x + 60;
+    tabs.forEach(([t, on, dim]) => { tx += chip(svg, tx, y + 2, t, { lit: on, dim }) + 8; });
+    text(svg, tx + 4, y + 14, 'nothing loaded', { size: 10, mono: true, muted: true });
+    line(svg, x, y + 32, x + w, y + 32, { stroke: T.rule });
+    // header row
+    text(svg, x, y + 54, 'Epics and documents, newest first', { size: 11, muted: true });
+    text(svg, x + w - 170, y + 54, '2 picked', { size: 11, muted: true });
+    button(svg, x + w - 110, y + 40, 50, 'Load', { pressed: true }); button(svg, x + w - 54, y + 40, 54, 'Unload');
+    const rows = [
+      ['☑', 'Workspace explorer: code, plans, and sessions', 'factory-clock-bqx', '20 items', 0.05, 'beads'],
+      ['☑', 'Design: visualization explorer', 'docs/visualization-explorer.md', '41 items', 0.9, 'markdown · inferred'],
+      ['☐', 'Design: the workspace explorer', 'docs/workspace-explorer.md', '20 items', 0.0, 'markdown · inferred'],
+      ['☐', 'Dev container with beads', 'factory-clock-7hq', '3 items', 1.0, 'beads'],
+    ];
+    rows.forEach((r, i) => {
+      const ry = y + 70 + i * 44;
+      rect(svg, x, ry, w, 38, { r: 3, fill: i % 2 ? T.panel : T.surface, stroke: 'none' });
+      text(svg, x + 12, ry + 24, r[0], { size: 14, fill: r[0] === '☑' ? T.accent : T.muted });
+      text(svg, x + 36, ry + 17, r[1], { size: 12, weight: 500 });
+      text(svg, x + 36, ry + 31, r[2], { size: 10, mono: true, muted: true });
+      text(svg, x + w - 330, ry + 24, r[3], { size: 11, muted: true, anchor: 'end' });
+      // done fraction bar
+      rect(svg, x + w - 310, ry + 15, 180, 8, { r: 4, fill: T.panel, stroke: T.rule });
+      if (r[4] > 0) rect(svg, x + w - 310, ry + 15, 180 * r[4], 8, { r: 4, fill: '#5f8a4a', stroke: 'none' });
+      text(svg, x + w - 310 + 186, ry + 23, `${Math.round(r[4] * 100)}% done`, { size: 10, mono: true, muted: true });
+      text(svg, x + w - 12, ry + 24, r[5], { size: 10, mono: true, muted: true, anchor: 'end' });
+    });
+    text(svg, x, y + 70 + 4 * 44 + 16, 'Up to 8 units per subject. A unit-level view stacks one drawing per unit; a project view draws them all.', { size: 10.5, muted: true });
+    // the other tabs, as ghosts
+    const gy = y + 70 + 4 * 44 + 40;
+    text(svg, x, gy + 12, 'Code tab lists:', { size: 10.5, mono: true, muted: true });
+    text(svg, x + 110, gy + 12, 'factory-clock (package) · 61 files      src/schema (module) · 7 files      viz (scripts) · 33 files', { size: 10.5, mono: true, muted: true });
+    text(svg, x, gy + 30, 'Sessions tab lists:', { size: 10.5, mono: true, muted: true });
+    text(svg, x + 110, gy + 30, 'as today: name, agent, start, turns, with a checkbox each', { size: 10.5, mono: true, muted: true });
+    callout(svg, x + 56, y + 2, 1);
+    callout(svg, x + w - 130, y + 90, 2);
+    callout(svg, x + w - 112, y + 36, 3);
+    callout(svg, x + w - 2, y + 36, 4);
+  }
+
+  // ---------- Frame 8: loader ----------
+  function sketchLoader(svg) {
+    const W = 960;
+    rect(svg, 0, 0, W, 330, { fill: T.surface, stroke: 'none' });
+    const x = 24, y = 16, w = W - 48;
+    rect(svg, x, y, w, 70, { r: 4, fill: T.panel, stroke: T.accent, dash: '5 4' });
+    text(svg, x + w / 2, y + 30, 'Drop files here, or choose files', { anchor: 'middle', size: 14, weight: 500 });
+    text(svg, x + w / 2, y + 50, 'Event logs (events/YYYY-MM-DD.jsonl), code graphs (*.code.json), plan graphs (*.plan.json). Read in this browser; nothing is sent.', { anchor: 'middle', size: 10.5, muted: true });
+    const rows = [
+      ['2026-11-02.jsonl', 'events', '4 sessions · 1,212 events', T.series, 'sessions'],
+      ['factory-clock.code.json', 'code graph', '1 package · 61 files · 188 imports · npm adapter', T.cats[2], 'code'],
+      ['factory-clock.plan.json', 'plan graph', '21 items · 20 links · beads adapter', T.cats[1], 'plans'],
+      ['notes.txt', 'not recognized', 'not an event log or a graph file; skipped', T.callout, null],
+    ];
+    rows.forEach((r, i) => {
+      const ry = y + 86 + i * 30;
+      if (r[4]) glyph(svg, x + 4, ry + 4, r[4], r[3]); else text(svg, x + 6, ry + 16, '×', { size: 14, fill: r[3] });
+      text(svg, x + 26, ry + 16, r[0], { size: 11.5, mono: true });
+      chip(svg, x + 220, ry + 3, r[1], { lit: false });
+      text(svg, x + 340, ry + 16, r[2], { size: 11, muted: true });
+    });
+    const ey = y + 86 + 4 * 30 + 12;
+    line(svg, x, ey, x + w, ey, { stroke: T.rule });
+    text(svg, x, ey + 22, 'Examples:', { size: 11, muted: true });
+    button(svg, x + 70, ey + 7, 150, 'This repository (demo)'); button(svg, x + 228, ey + 7, 130, 'Generated sessions'); button(svg, x + 366, ey + 7, 110, 'Example traces');
+    text(svg, x, ey + 52, 'Make your own:', { size: 11, muted: true });
+    rect(svg, x + 100, ey + 38, 560, 20, { r: 3, fill: T.panel, stroke: T.rule });
+    text(svg, x + 108, ey + 52, 'npm run adapt -- code npm --root ../my-project --out my-project.code.json', { size: 10.5, mono: true });
+    rect(svg, x + 100, ey + 62, 560, 20, { r: 3, fill: T.panel, stroke: T.rule });
+    text(svg, x + 108, ey + 76, 'npm run adapt -- plan beads --root ../my-project --out my-project.plan.json', { size: 10.5, mono: true });
+    callout(svg, x + 10, y + 10, 1);
+    callout(svg, x + 210, y + 100, 2);
+    callout(svg, x + w - 10, y + 56, 3);
+    callout(svg, x + 60, ey + 18, 4);
+    callout(svg, x + 90, ey + 48, 5);
+  }
+
+  // ---------- Hero artboards ----------
+  function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function sketchAtlas(svg) {
+    const paper = '#f3eee2', ink = '#2b2a26', water = '#9fbccf';
+    rect(svg, 0, 0, 480, 300, { fill: water, stroke: 'none', r: 0 });
+    // hatch pattern for water
+    const defs = el('defs', {}, svg);
+    const pat = el('pattern', { id: 'sea', width: 8, height: 8, patternUnits: 'userSpaceOnUse' }, defs);
+    line(pat, 0, 4, 8, 4, { stroke: paper, sw: 0.6, op: 0.6 });
+    rect(svg, 0, 0, 480, 300, { fill: 'url(#sea)', stroke: 'none', r: 0 });
+    const islands = [
+      { n: 'SRC · WEB', x: 150, y: 140, r: 70, files: 14 },
+      { n: 'SCHEMA', x: 265, y: 95, r: 42, files: 7 },
+      { n: 'VIZ', x: 330, y: 200, r: 62, files: 11 },
+      { n: 'HOSTS', x: 95, y: 245, r: 28, files: 3 },
+    ];
+    // roads first (under land edges), then land
+    const roads = [[0, 1, 5], [0, 2, 3], [1, 2, 2], [3, 0, 1.5]];
+    roads.forEach(([a, b, w]) => { const A = islands[a], B = islands[b]; path(svg, `M${A.x} ${A.y} Q${(A.x + B.x) / 2 + 20} ${(A.y + B.y) / 2 - 20} ${B.x} ${B.y}`, { stroke: ink, sw: w, op: 0.85 }); });
+    // sea lanes to externals
+    [[islands[0], 20, 60], [islands[2], 460, 280], [islands[1], 300, 12]].forEach(([I, ex, ey]) => line(svg, I.x, I.y, ex, ey, { stroke: ink, sw: 1, dash: '2 4', op: 0.7 }));
+    text(svg, 14, 52, 'esbuild', { size: 8, mono: true, fill: ink, op: 0.8 }); text(svg, 420, 292, 'typescript', { size: 8, mono: true, fill: ink, op: 0.8 });
+    const r = rng(7);
+    islands.forEach((I, idx) => {
+      // coast as a wobbly circle
+      let d = '';
+      for (let a = 0; a < 24; a++) { const t = a / 24 * Math.PI * 2, rr = I.r * (0.86 + 0.18 * r()); d += (a ? 'L' : 'M') + (I.x + rr * Math.cos(t)) + ' ' + (I.y + rr * Math.sin(t)) + ' '; }
+      path(svg, d + 'Z', { fill: paper, stroke: ink, sw: 1.2, dash: idx === 3 ? '3 2' : null });
+      // contours: a few files as hills
+      const rf = rng(idx + 3);
+      for (let f = 0; f < Math.min(I.files, 6); f++) {
+        const fx = I.x + (rf() - 0.5) * I.r * 1.1, fy = I.y + (rf() - 0.5) * I.r * 1.1, fr = 4 + rf() * 10;
+        for (let c = fr; c > 2; c -= 4) circ(svg, fx, fy, c, { stroke: ink, sw: 0.5, op: 0.6 });
+      }
+      const lab = text(svg, I.x, I.y + I.r + 12, I.n, { anchor: 'middle', size: 9, fill: ink, ls: '0.14em' });
+      lab.setAttribute('font-family', 'Georgia, "Times New Roman", serif');
+    });
+    // pins
+    const pin = (x, y, col) => { path(svg, `M${x} ${y} l-4 -8 a4.5 4.5 0 1 1 8 0 z`, { fill: col, stroke: ink, sw: 0.6 }); };
+    pin(135, 120, '#c8552f'); pin(170, 160, '#d9a441'); pin(275, 90, '#5f8a4a'); pin(320, 190, '#c8552f'); pin(350, 215, '#5f8a4a'); pin(98, 240, '#c8552f');
+    path(svg, 'M135 112 Q 160 90 275 82', { stroke: '#c8552f', sw: 1, dash: '3 3' });
+    path(svg, 'M320 182 Q 250 150 170 152', { stroke: '#c8552f', sw: 1, dash: '3 3' });
+    // epic region label
+    const ep = text(svg, 230, 60, 'WORKSPACE EXPLORER', { anchor: 'middle', size: 8, fill: '#c8552f', ls: '0.2em' }); ep.setAttribute('font-family', 'Georgia, serif');
+    // trail
+    path(svg, 'M160 150 C 200 120 230 110 270 95 S 300 150 330 195 S 350 230 345 240', { stroke: '#e4572e', sw: 1.6, op: 0.75, dash: '0.1 4', cap: 'round' });
+    path(svg, 'M160 150 C 200 120 230 110 270 95', { stroke: '#e4572e', sw: 1.6, op: 0.95 });
+    // scale bar and rose
+    line(svg, 20, 280, 100, 280, { stroke: ink, sw: 1.2, cap: 'butt' }); line(svg, 20, 276, 20, 284, { stroke: ink, sw: 1 }); line(svg, 100, 276, 100, 284, { stroke: ink, sw: 1 });
+    text(svg, 60, 274, '500 lines', { anchor: 'middle', size: 7.5, mono: true, fill: ink });
+    const rx = 440, ry = 50; circ(svg, rx, ry, 14, { stroke: ink, sw: 0.8 }); path(svg, `M${rx} ${ry - 14} L${rx + 4} ${ry} L${rx} ${ry + 14} L${rx - 4} ${ry} Z`, { fill: ink, stroke: 'none' }); text(svg, rx, ry - 18, 'N', { anchor: 'middle', size: 8, fill: ink });
+    // legend
+    rect(svg, 372, 240, 100, 50, { fill: paper, stroke: ink, sw: 0.8, r: 0 });
+    text(svg, 378, 252, 'unsurveyed ·· ·· ··', { size: 7.5, mono: true, fill: ink }); text(svg, 378, 264, 'road ───  lane ····', { size: 7.5, mono: true, fill: ink }); text(svg, 378, 276, 'trail  session', { size: 7.5, mono: true, fill: '#e4572e' }); text(svg, 378, 286, 'pin  plan item', { size: 7.5, mono: true, fill: '#c8552f' });
+    callout(svg, 150, 72, 1); callout(svg, 212, 110, 2); callout(svg, 128, 100, 3); callout(svg, 300, 140, 4); callout(svg, 112, 290, 5);
+  }
+
+  function sketchSkyline(svg) {
+    const sky = '#e9eef4', ground = '#c9d3de', src = '#5b7aa0', test = '#8fb3a1', doc = '#d8c08a', lit = '#f2c14e';
+    const defs = el('defs', {}, svg);
+    const grad = el('linearGradient', { id: 'sky', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+    el('stop', { offset: 0, 'stop-color': '#dfe6ef' }, grad); el('stop', { offset: 1, 'stop-color': sky }, grad);
+    rect(svg, 0, 0, 480, 300, { fill: 'url(#sky)', stroke: 'none', r: 0 });
+    // iso helpers: grid unit u; point (i,j) -> screen
+    const ox = 240, oy = 110, u = 22;
+    const P = (i, j, h = 0) => [ox + (i - j) * u, oy + (i + j) * u * 0.5 - h];
+    const shade = (hex, f) => { const n = parseInt(hex.slice(1), 16); const c = [n >> 16, (n >> 8) & 255, n & 255].map((v) => Math.max(0, Math.min(255, Math.round(v * f)))); return '#' + c.map((v) => v.toString(16).padStart(2, '0')).join(''); };
+    const tile = (i, j, w, d, col) => { const a = P(i, j), b = P(i + w, j), c = P(i + w, j + d), e = P(i, j + d); path(svg, `M${a} L${b} L${c} L${e} Z`, { fill: col, stroke: shade(col, 0.85), sw: 0.6 }); };
+    const box = (i, j, w, d, h, col, o = {}) => {
+      const t0 = P(i, j, h), t1 = P(i + w, j, h), t2 = P(i + w, j + d, h), t3 = P(i, j + d, h);
+      const b1 = P(i + w, j, 0), b2 = P(i + w, j + d, 0), b3 = P(i, j + d, 0);
+      path(svg, `M${t3} L${t2} L${b2} L${b3} Z`, { fill: shade(col, 0.8), stroke: shade(col, 0.6), sw: 0.5 }); // left face
+      path(svg, `M${t2} L${t1} L${b1} L${b2} Z`, { fill: shade(col, 0.62), stroke: shade(col, 0.5), sw: 0.5 }); // right face
+      path(svg, `M${t0} L${t1} L${t2} L${t3} Z`, { fill: shade(col, 1.08), stroke: shade(col, 0.7), sw: 0.5 }); // top
+      if (o.windows) { for (let k = 1; k < h / 7; k++) { const wy = k * 7; const q = P(i + w, j + d * 0.3, wy), q2 = P(i + w, j + d * 0.7, wy); rect(svg, q[0] + 2, q[1] - 2, 3, 3, { fill: (k + i) % 3 ? '#4a5f7c' : lit, stroke: 'none', r: 0 }); rect(svg, q2[0] + 2, q2[1] - 2, 3, 3, { fill: (k + j) % 2 ? lit : '#4a5f7c', stroke: 'none', r: 0 }); } }
+      if (o.scaffold) { const s0 = P(i - 0.15, j - 0.15, h + 8), s1 = P(i + w + 0.15, j - 0.15, h + 8), s2 = P(i + w + 0.15, j + d + 0.15, h + 8), s3 = P(i - 0.15, j + d + 0.15, h + 8); path(svg, `M${s0} L${s1} L${s2} L${s3} Z`, { stroke: '#c8552f', sw: 0.8, dash: '2 2' }); [s1, s2, s3].forEach((s) => line(svg, s[0], s[1], s[0], s[1] + h + 8, { stroke: '#c8552f', sw: 0.8, dash: '2 2' })); }
+      return [t0, t1, t2, t3];
+    };
+    // ground blocks (packages)
+    tile(0, 0, 5, 4, ground); tile(6, 0, 4, 3, ground); tile(0, 5, 3, 3, ground); tile(6, 4, 4, 4, shade(ground, 1.03));
+    // streets
+    const sA = P(5, 2), sB = P(6, 2); line(svg, sA[0], sA[1], sB[0], sB[1], { stroke: '#8a98a8', sw: 2 });
+    const sC = P(2.5, 4), sD = P(2.5, 5); line(svg, sC[0], sC[1], sD[0], sD[1], { stroke: '#8a98a8', sw: 2 });
+    // buildings: draw back to front (sort by i+j)
+    const B = [
+      [0.4, 0.4, 1.1, 1.1, 48, src, { windows: true }], [2, 0.4, 1.2, 1, 30, src, { windows: true }], [3.6, 0.4, 1, 1, 70, src, { windows: true, scaffold: true }],
+      [0.4, 2.2, 1, 1, 22, src], [2, 2.2, 1.6, 1.2, 40, src, { windows: true }], [3.9, 2.4, 0.8, 1.2, 12, test],
+      [6.4, 0.4, 1, 1, 26, src], [7.8, 0.4, 1.8, 1.2, 34, src, { windows: true }], [6.4, 1.8, 1.3, 0.8, 10, test], [8.4, 1.8, 1.2, 0.9, 10, test],
+      [0.4, 5.4, 2.2, 2.2, 8, doc], [6.4, 4.4, 1, 1, 18, src], [7.8, 4.4, 1, 1.2, 14, src], [6.4, 6, 3.2, 1.6, 9, doc],
+    ];
+    B.sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]));
+    let craneTop = null;
+    B.forEach(([i, j, w, d, h, col, o]) => { const t = box(i, j, w, d, h, col, o || {}); if (o && o.scaffold) craneTop = t[1]; });
+    // crane beside the scaffolded building
+    if (craneTop) { const base = P(5.2, 0.2); line(svg, base[0], base[1], base[0], base[1] - 110, { stroke: '#c8552f', sw: 1.6 }); line(svg, base[0] - 50, base[1] - 110, base[0] + 25, base[1] - 110, { stroke: '#c8552f', sw: 1.6 }); line(svg, base[0] - 40, base[1] - 110, base[0] - 40, base[1] - 70, { stroke: '#c8552f', sw: 0.8 }); }
+    // labels
+    const lb = (i, j, s) => { const p = P(i, j); text(svg, p[0], p[1] + 12, s, { anchor: 'middle', size: 8, mono: true, fill: '#4a5a6e' }); };
+    lb(2.5, 4, 'src'); lb(8, 3, 'viz'); lb(1.5, 8, 'docs'); lb(8, 8, 'hosts');
+    // legend
+    text(svg, 12, 20, 'height · lines      footprint · fan-in', { size: 8, mono: true, fill: '#4a5a6e' });
+    text(svg, 12, 32, 'scaffold · open item   crane · epic', { size: 8, mono: true, fill: '#c8552f' });
+    text(svg, 12, 44, 'lit window · a session touched it', { size: 8, mono: true, fill: '#8a6a10' });
+    text(svg, 468, 290, '16:40 · day 3 of 5', { anchor: 'end', size: 8, mono: true, fill: '#4a5a6e' });
+    callout(svg, 100, 165, 1); callout(svg, 250, 120, 2); callout(svg, 310, 36, 3); callout(svg, 290, 180, 4);
+  }
+
+  function sketchTransit(svg) {
+    rect(svg, 0, 0, 480, 300, { fill: '#ffffff', stroke: 'none', r: 0 });
+    // districts
+    const dist = [[20, 40, 180, 110, 'src'], [220, 30, 140, 90, 'viz'], [60, 170, 150, 90, 'docs'], [300, 150, 150, 110, 'hosts']];
+    dist.forEach(([x, y, w, h, n]) => { rect(svg, x, y, w, h, { r: 14, fill: '#eceae4', stroke: 'none' }); text(svg, x + 10, y + h - 8, n, { size: 9, fill: '#9a968c', ls: '0.1em' }); });
+    const A = '#d7263d', Bc = '#1b6ca8', C = '#2a9d4a';
+    const lineOpts = (col) => ({ stroke: col, sw: 6, cap: 'round' });
+    // line A: workspace explorer epic
+    path(svg, 'M40 90 H140 L180 130 H260 L300 90 H420', lineOpts(A));
+    // line B: visualization explorer doc
+    path(svg, 'M60 60 H120 L160 100 H240 L280 60 H360 L400 100 V220', lineOpts(Bc));
+    // line C: dev container
+    path(svg, 'M100 230 H200 L240 190 H320', lineOpts(C));
+    const st = (x, y, col, kind) => {
+      circ(svg, x, y, 5, { fill: '#fff', stroke: col, sw: 2.2 });
+      if (kind === 'done') circ(svg, x, y, 2.6, { fill: col, stroke: 'none' });
+      if (kind === 'half') path(svg, `M${x} ${y - 2.6} A2.6 2.6 0 0 1 ${x} ${y + 2.6} Z`, { fill: col, stroke: 'none' });
+      if (kind === 'x') { line(svg, x - 2.5, y - 2.5, x + 2.5, y + 2.5, { stroke: col, sw: 1.4 }); line(svg, x - 2.5, y + 2.5, x + 2.5, y - 2.5, { stroke: col, sw: 1.4 }); }
+    };
+    // line A stations
+    [[40, 90, 'done'], [80, 90, 'done'], [120, 90, 'half'], [200, 130, 'open'], [240, 130, 'open'], [320, 90, 'open'], [370, 90, 'open'], [420, 90, 'open']].forEach(([x, y, k]) => st(x, y, A, k));
+    // line B stations
+    [[60, 60, 'done'], [100, 60, 'done'], [200, 100, 'done'], [240, 100, 'done'], [320, 60, 'done'], [360, 60, 'x'], [400, 160, 'done'], [400, 220, 'half']].forEach(([x, y, k]) => st(x, y, Bc, k));
+    // line C
+    [[100, 230, 'done'], [160, 230, 'done'], [280, 190, 'done'], [320, 190, 'done']].forEach(([x, y, k]) => st(x, y, C, k));
+    // interchange: A and B share near (160..180,100..130): draw an interchange at 170,115 joining both via a connector
+    circ(svg, 170, 118, 7, { fill: '#fff', stroke: '#2b2a26', sw: 2.2 }); circ(svg, 170, 118, 3.5, { fill: '#fff', stroke: '#2b2a26', sw: 1.5 });
+    // cross-line blocks link as a dashed connector
+    line(svg, 280, 60, 300, 90, { stroke: '#2b2a26', sw: 1.2, dash: '3 3' });
+    // labels (a few)
+    const lab = (x, y, s, col) => text(svg, x, y, s, { size: 7.5, fill: col ?? '#2b2a26', mono: true });
+    lab(30, 80, 'bqx.1 review'); lab(114, 80, 'bqx.2 models'); lab(188, 146, 'bqx.5 taxonomy'); lab(306, 80, 'bqx.6 stage'); lab(406, 80, 'bqx.15 atlas');
+    lab(54, 50, 'step 1'); lab(314, 50, 'step 6'); lab(352, 50, 'step 7'); lab(408, 164, 'heroes'); lab(408, 224, 'traces review');
+    lab(92, 246, 'bd init'); lab(286, 206, 'host check');
+    // train on line A between stations
+    rect(svg, 96, 84, 16, 12, { r: 3, fill: '#2b2a26', stroke: 'none' }); rect(svg, 99, 87, 4, 4, { fill: '#f2c14e', stroke: 'none', r: 0.5 }); rect(svg, 105, 87, 4, 4, { fill: '#f2c14e', stroke: 'none', r: 0.5 });
+    text(svg, 104, 76, 'session 7f3a', { anchor: 'middle', size: 7, mono: true, fill: '#2b2a26' });
+    // legend
+    const lx = 20, ly = 272;
+    line(svg, lx, ly, lx + 18, ly, { stroke: A, sw: 5, cap: 'round' }); text(svg, lx + 24, ly + 3, 'Workspace explorer (beads)', { size: 8, mono: true, fill: '#2b2a26' });
+    line(svg, lx + 180, ly, lx + 198, ly, { stroke: Bc, sw: 5, cap: 'round' }); text(svg, lx + 204, ly + 3, 'Visualization explorer (markdown)', { size: 8, mono: true, fill: '#2b2a26' });
+    line(svg, lx, ly + 14, lx + 18, ly + 14, { stroke: C, sw: 5, cap: 'round' }); text(svg, lx + 24, ly + 17, 'Dev container', { size: 8, mono: true, fill: '#2b2a26' });
+    st(lx + 190, ly + 14, '#2b2a26', 'open'); st(lx + 206, ly + 14, '#2b2a26', 'half'); st(lx + 222, ly + 14, '#2b2a26', 'done'); st(lx + 238, ly + 14, '#2b2a26', 'x');
+    text(svg, lx + 248, ly + 17, 'open · in progress · done · dropped', { size: 8, mono: true, fill: '#2b2a26' });
+    callout(svg, 440, 110, 1); callout(svg, 170, 100, 2); callout(svg, 40, 150, 3); callout(svg, 128, 74, 4);
+  }
+
+  function sketchStrata(svg) {
+    const bg = '#141a2b', codeC = '#3a7ca5', sessC = '#8a6fd1', planC = '#d4a72c', down = '#ffb347', up = '#5fe0c0', lateral = '#f4f1ff', label = '#aab4cc';
+    const done = '#6fbf73', prog = '#d4a72c', open = '#e36b4f';
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    rect(svg, 0, 0, 480, 300, { fill: bg, stroke: 'none', r: 0 });
+    // Each plane is a disc seen at a tilt; plane coords (x, y) are rotated 45° so boxes show two faces.
+    const cx = 275, cy = 244, k = 0.36, R = 118, Z = [0, 84, 168], s2 = Math.SQRT1_2;
+    const Pc = (x, y, z = 0) => [cx + (x - y) * s2, cy + (x + y) * s2 * k - z];
+    const rad = (d) => d * Math.PI / 180;
+    const Q = (r, deg, z = 0) => Pc(r * Math.cos(rad(deg)), r * Math.sin(rad(deg)), z);
+    const shade = (hex, f) => { const n = parseInt(hex.slice(1), 16); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map((v) => Math.max(0, Math.min(255, Math.round(v * f))).toString(16).padStart(2, '0')).join(''); };
+    const poly = (pts, o) => path(svg, 'M' + pts.map((p) => p.join(' ')).join(' L') + ' Z', o);
+    const arcPts = (r, a0, a1, z, n = 24) => { const pts = []; for (let i = 0; i <= n; i++) pts.push(Q(r, a0 + (a1 - a0) * i / n, z)); return pts; };
+    const plane = (z, col, name, sub) => {
+      const c = Pc(0, 0, z);
+      el('ellipse', { cx: c[0], cy: c[1], rx: R, ry: R * k, fill: col, opacity: 0.2 }, svg);
+      el('ellipse', { cx: c[0], cy: c[1], rx: R, ry: R * k, fill: 'none', stroke: shade(col, 1.5), 'stroke-width': 1 }, svg);
+      el('ellipse', { cx: c[0], cy: c[1], rx: R * 0.12, ry: R * 0.12 * k, fill: 'none', stroke: shade(col, 1.5), 'stroke-width': 0.6, opacity: 0.6 }, svg);
+      text(svg, 14, c[1] - 4, name, { size: 9.5, mono: true, fill: shade(col, 1.6), ls: '0.12em' });
+      text(svg, 14, c[1] + 8, sub, { size: 7.5, mono: true, fill: label });
+    };
+    const box = (x, y, s, h, z, col) => {
+      const t = (a, b) => Pc(a, b, z + h), b0 = (a, b) => Pc(a, b, z);
+      const i = x - s, j = y - s, w = 2 * s, d = 2 * s;
+      poly([t(i, j + d), t(i + w, j + d), b0(i + w, j + d), b0(i, j + d)], { fill: shade(col, 0.8), stroke: 'none' });
+      poly([t(i + w, j + d), t(i + w, j), b0(i + w, j), b0(i + w, j + d)], { fill: shade(col, 0.6), stroke: 'none' });
+      poly([t(i, j), t(i + w, j), t(i + w, j + d), t(i, j + d)], { fill: shade(col, 1.15), stroke: shade(col, 0.7), sw: 0.4 });
+    };
+    const polar = (r, deg) => [r * Math.cos(rad(deg)), r * Math.sin(rad(deg))];
+
+    // ---- floor: code, packages as wedges of a wheel, files as blocks inside them
+    plane(Z[0], codeC, 'CODE', 'packages · files');
+    const pk = [['src', 200, 335], ['viz', -20, 110], ['hosts', 115, 150], ['docs', 155, 195]];
+    pk.forEach(([n, a0, a1]) => {
+      poly([...arcPts(R * 0.93, a0, a1, 0), ...arcPts(R * 0.2, a1, a0, 0)], { fill: codeC, stroke: shade(codeC, 1.4), sw: 0.6, op: 0.32 });
+      const p = Q(R * 1.06, (a0 + a1) / 2, 0); text(svg, p[0], p[1] + 3, n, { anchor: 'middle', size: 7.5, mono: true, fill: label });
+    });
+    const FILES = { src: [[215, 0.45, 9], [240, 0.75, 14], [262, 0.45, 6], [290, 0.75, 11], [315, 0.5, 8], [325, 0.8, 5]], viz: [[0, 0.5, 8], [25, 0.8, 16], [50, 0.5, 7], [75, 0.8, 10], [95, 0.5, 5]], hosts: [[132, 0.6, 5]], docs: [[165, 0.5, 3], [185, 0.75, 3]] };
+    const fpos = {};
+    const allFiles = [];
+    Object.entries(FILES).forEach(([n, fs]) => fs.forEach(([deg, rf, h], i) => { const [x, y] = polar(R * rf, deg); allFiles.push([x, y, h]); fpos[n + i] = [x, y, h]; }));
+    allFiles.sort((a, b) => (a[0] + a[1]) - (b[0] + b[1])).forEach(([x, y, h]) => box(x, y, 6, h, 0, codeC));
+
+    // ---- middle: sessions on an inner ring over the wedge they work in most, agents orbiting outside
+    const S1 = polar(R * 0.38, 265), S2 = polar(R * 0.38, 40);
+    const A1 = polar(R * 0.78, 230), A2 = polar(R * 0.78, 300), A3 = polar(R * 0.78, 60);
+    const at = (p, z) => Pc(p[0], p[1], z);
+    const fileTop = (key) => { const f = fpos[key]; return Pc(f[0], f[1], f[2]); };
+    // plans: epics as concentric arcs, items in dependency order around them
+    const epicA = [[200, done], [235, done], [265, prog], [295, prog], [330, open], [5, open], [40, open]].map(([d, c]) => [...polar(R * 0.78, d), c]);
+    const epicB = [[100, done], [130, done], [160, open]].map(([d, c]) => [...polar(R * 0.45, d), c]);
+    const routes = [
+      { a: at(S1, Z[1]), b: fileTop('src1'), col: down, dur: 3.2, at: 0 },
+      { a: at(A1, Z[1]), b: fileTop('src0'), col: down, dur: 2.8, at: 0.9 },
+      { a: at(A2, Z[1]), b: fileTop('src4'), col: down, dur: 3.0, at: 1.7 },
+      { a: at(S2, Z[1]), b: fileTop('viz1'), col: down, dur: 3.4, at: 0.4 },
+      { a: at(A3, Z[1]), b: fileTop('viz3'), col: down, dur: 2.6, at: 2.1 },
+      { a: at(S1, Z[1]), b: at(epicA[2], Z[2]), col: up, dur: 3.0, at: 1.2 },
+      { a: at(S2, Z[1]), b: at(epicA[6], Z[2]), col: up, dur: 3.3, at: 2.4 },
+      { a: at(A2, Z[1]), b: at(epicA[3], Z[2]), col: up, dur: 2.9, at: 0.2 },
+    ];
+    routes.filter((r) => r.col === down).forEach((r) => line(svg, r.a[0], r.a[1], r.b[0], r.b[1], { stroke: r.col, sw: 0.8, op: 0.28, dash: '2 3' }));
+    plane(Z[1], sessC, 'SESSIONS', 'sessions · agents');
+    const orbit = Pc(0, 0, Z[1]);
+    el('ellipse', { cx: orbit[0], cy: orbit[1], rx: R * 0.78, ry: R * 0.78 * k, fill: 'none', stroke: shade(sessC, 1.5), 'stroke-width': 0.6, 'stroke-dasharray': '2 3', opacity: 0.7 }, svg);
+    el('ellipse', { cx: orbit[0], cy: orbit[1], rx: R * 0.38, ry: R * 0.38 * k, fill: 'none', stroke: shade(sessC, 1.5), 'stroke-width': 0.6, 'stroke-dasharray': '2 3', opacity: 0.7 }, svg);
+    [[S1, A1], [S1, A2], [S2, A3]].forEach(([a, b]) => { const p = at(a, Z[1]), q = at(b, Z[1]); line(svg, p[0], p[1], q[0], q[1], { stroke: shade(sessC, 1.5), sw: 1, op: 0.8 }); });
+    const disc = (c, r, name) => { const p = at(c, Z[1]); el('ellipse', { cx: p[0], cy: p[1], rx: r * 1.6, ry: r * 0.75, fill: shade(sessC, 0.7), opacity: 0.6 }, svg); circ(svg, p[0], p[1] - r, r, { fill: sessC, stroke: shade(sessC, 1.6), sw: 1 }); if (name) text(svg, p[0], p[1] - r * 2 - 4, name, { anchor: 'middle', size: 7.5, mono: true, fill: '#e3dcff' }); };
+    disc(A1, 3.5); disc(A2, 3.5); disc(A3, 3.5); disc(S1, 6, 'session 7f3a'); disc(S2, 6, 'session 1e8d');
+
+    // ---- roof: plans
+    routes.filter((r) => r.col === up).forEach((r) => line(svg, r.a[0], r.a[1], r.b[0], r.b[1], { stroke: r.col, sw: 0.8, op: 0.35, dash: '2 3' }));
+    plane(Z[2], planC, 'PLANS', 'epics · items');
+    path(svg, 'M' + arcPts(R * 0.78, 200, 400, Z[2], 40).map((p) => p.join(' ')).join(' L'), { stroke: shade(planC, 1.3), sw: 1.6, op: 0.85 });
+    path(svg, 'M' + arcPts(R * 0.45, 100, 160, Z[2], 16).map((p) => p.join(' ')).join(' L'), { stroke: shade(planC, 1.3), sw: 1.6, op: 0.85 });
+    const item = ([x, y, c]) => poly([Pc(x - 6, y - 6, Z[2]), Pc(x + 6, y - 6, Z[2]), Pc(x + 6, y + 6, Z[2]), Pc(x - 6, y + 6, Z[2])], { fill: c, stroke: shade(c, 1.3), sw: 0.6, op: 0.95 });
+    [...epicA, ...epicB].forEach(item);
+    const ea = Q(R * 1.02, 320, Z[2]); text(svg, ea[0] + 30, ea[1] - 6, 'workspace explorer', { anchor: 'middle', size: 7.5, mono: true, fill: '#f3dc8e' });
+    const eb = Q(R * 0.45, 130, Z[2]); text(svg, eb[0], eb[1] + 12, 'dev container', { anchor: 'middle', size: 7.5, mono: true, fill: '#f3dc8e' });
+
+    // ---- moving messages
+    const mover = (a, b, col, dur, at0, r = 2.4) => {
+      const d = `M${a[0]} ${a[1]} L${b[0]} ${b[1]}`;
+      if (still) { circ(svg, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, r, { fill: col, stroke: 'none' }); return; }
+      const c = circ(svg, 0, 0, r, { fill: col, stroke: 'none' });
+      const halo = circ(svg, 0, 0, r * 2.4, { fill: col, stroke: 'none', op: 0.18 });
+      [c, halo].forEach((n) => el('animateMotion', { dur: dur + 's', begin: -at0 + 's', repeatCount: 'indefinite', path: d }, n));
+    };
+    routes.forEach((r) => mover(r.a, r.b, r.col, r.dur, r.at));
+    [[A1, S1, 2.2, 0.5], [S2, A3, 2.0, 1.4]].forEach(([a, b, dur, a0]) => mover(at(a, Z[1]), at(b, Z[1]), lateral, dur, a0, 1.8));
+
+    // legend
+    text(svg, 468, 16, '▼ reads · edits', { anchor: 'end', size: 7.5, mono: true, fill: down });
+    text(svg, 468, 27, '▲ claims · closes', { anchor: 'end', size: 7.5, mono: true, fill: up });
+    text(svg, 468, 38, '◆ agent chatter', { anchor: 'end', size: 7.5, mono: true, fill: lateral });
+    text(svg, 468, 292, 'replay ×60 · 14:05', { anchor: 'end', size: 7.5, mono: true, fill: label });
+    const c1 = Pc(0, 0, 0), c2 = Pc(0, 0, Z[1]), c3 = Pc(0, 0, Z[2]), c4 = [(routes[3].a[0] + routes[3].b[0]) / 2, (routes[3].a[1] + routes[3].b[1]) / 2], c5 = at(A1, Z[1]);
+    callout(svg, c1[0] + R + 12, c1[1], 1); callout(svg, c2[0] + R + 12, c2[1], 2); callout(svg, c3[0] - R - 12, c3[1], 3); callout(svg, c4[0] + 16, c4[1], 4); callout(svg, c5[0] - 16, c5[1] - 4, 5);
+  }
+  const SKETCHES = {
+    shell: sketchShell, cards: sketchCards, gallery: sketchGallery, compare: sketchCompare, tour: sketchTour,
+    'puck-collapsed': sketchPuckCollapsed, 'puck-here': sketchPuckHere, 'puck-ask': sketchPuckAsk, 'puck-map': sketchPuckMap,
+    picker: sketchPicker, loader: sketchLoader, atlas: sketchAtlas, skyline: sketchSkyline, transit: sketchTransit, strata: sketchStrata,
+  };
+  function drawAll() {
+    readTokens();
+    document.querySelectorAll('svg[data-sketch]').forEach((svg) => {
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      const fn = SKETCHES[svg.dataset.sketch];
+      if (fn) fn(svg);
+    });
+  }
+  drawAll();
+  // Redraw when the theme flips, so the wireframes pick up the dark tokens.
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  mq.addEventListener('change', drawAll);
+  new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+})();
+</script>
+
+</body></html>

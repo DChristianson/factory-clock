@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" width="960" height="620" role="img">
+<!-- Drawn from docs/images/workspace-explorer-sketches.html (sketch "shell"), light theme, motion off. -->
+<rect x="0" y="0" width="960" height="620" rx="2" fill="#ffffff" stroke="none" stroke-width="1"></rect>
+<text x="24" y="30" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="18" font-weight="600" text-anchor="start">Factory Clock</text>
+<text x="150" y="30" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" text-anchor="start">Visualizations of a software project: its sessions, code, and plans</text>
+<text x="936" y="30" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="400" text-anchor="end">github.com/DChristianson/factory-clock</text>
+<line x1="24" y1="44" x2="936" y2="44" stroke="#c8c8c8" stroke-width="1"></line>
+<rect x="24" y="58" width="912" height="330" rx="4" fill="#ffffff" stroke="#005fb8" stroke-width="1" stroke-dasharray="4 3" opacity="0.9"></rect>
+<text x="40" y="84" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="15" font-weight="600" text-anchor="start">Session strips</text>
+<text x="40" y="100" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" text-anchor="start">One row per session, x is clock time; each turn a block, compactions as ticks.</text>
+<text x="40" y="140" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="start">Explorer carousel</text>
+<rect x="150" y="130" width="73" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="229" y="130" width="50" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="298" y="130" width="27" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="337" y="130" width="64" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="426" y="130" width="41" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="485" y="130" width="18" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="514" y="130" width="55" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="593" y="130" width="32" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="642" y="130" width="69" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="721" y="130" width="46" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="790" y="130" width="23" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<text x="40" y="192.5" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="start">Fix hook routing</text>
+<rect x="150" y="182.5" width="51" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="207" y="182.5" width="28" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="254" y="182.5" width="65" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="331" y="182.5" width="42" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="398" y="182.5" width="19" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="435" y="182.5" width="56" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="502" y="182.5" width="33" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="559" y="182.5" width="70" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="646" y="182.5" width="47" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<text x="40" y="245" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="start">README pass</text>
+<rect x="150" y="235" width="62" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="218" y="235" width="39" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="276" y="235" width="76" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="364" y="235" width="53" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="442" y="235" width="30" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="490" y="235" width="67" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="568" y="235" width="44" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="636" y="235" width="21" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="674" y="235" width="58" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="742" y="235" width="35" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<text x="40" y="297.5" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="start">session 1e8d</text>
+<rect x="150" y="287.5" width="24" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="180" y="287.5" width="61" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="260" y="287.5" width="38" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="310" y="287.5" width="75" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="410" y="287.5" width="52" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="480" y="287.5" width="29" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="520" y="287.5" width="66" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="610" y="287.5" width="43" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="670" y="287.5" width="20" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="700" y="287.5" width="57" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<rect x="780" y="287.5" width="34" height="14" rx="1" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.5"></rect>
+<rect x="830" y="287.5" width="71" height="14" rx="1" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.55"></rect>
+<line x1="150" y1="348" x2="920" y2="348" stroke="#c8c8c8" stroke-width="1"></line>
+<text x="150" y="360" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9.5" font-weight="400" text-anchor="middle">9:00</text>
+<text x="278.33333333333337" y="360" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9.5" font-weight="400" text-anchor="middle">10:00</text>
+<text x="406.6666666666667" y="360" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9.5" font-weight="400" text-anchor="middle">11:00</text>
+<text x="535" y="360" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9.5" font-weight="400" text-anchor="middle">12:00</text>
+<text x="663.3333333333334" y="360" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9.5" font-weight="400" text-anchor="middle">13:00</text>
+<text x="791.6666666666666" y="360" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9.5" font-weight="400" text-anchor="middle">14:00</text>
+<text x="920" y="360" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9.5" font-weight="400" text-anchor="middle">15:00</text>
+<rect x="40" y="358" width="78" height="22" rx="3" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<text x="79" y="373" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" text-anchor="middle">‹ Previous</text>
+<rect x="842" y="358" width="78" height="22" rx="3" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<text x="881" y="373" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" text-anchor="middle">Next ›</text>
+<rect x="24" y="406" width="60" height="22" rx="3" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<text x="54" y="421" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" text-anchor="middle">▦ Gallery</text>
+<rect x="24" y="434" width="60" height="22" rx="3" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<text x="54" y="449" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" text-anchor="middle">▶ Tour</text>
+<text x="54" y="476" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="400" text-anchor="middle">44 views</text>
+<rect x="104" y="402" width="120" height="84" rx="4" fill="#ffffff" stroke="#c8c8c8" stroke-width="1"></rect>
+<g><rect x="112" y="410" width="104" height="35.28" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect><rect x="117" y="415" width="52" height="25.28" rx="2" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></rect><rect x="171.07999999999998" y="415" width="41.6" height="12.64" rx="2" fill="#717171" stroke="none" stroke-width="1" opacity="0.5"></rect><rect x="171.07999999999998" y="428.904" width="41.6" height="11.376000000000001" rx="2" fill="#717171" stroke="none" stroke-width="1" opacity="0.25"></rect></g>
+<circle cx="119" cy="458.28" r="6" fill="none" stroke="#717171" stroke-width="1.4"></circle>
+<line x1="119" y1="458.28" x2="119" y2="454.78" stroke="#717171" stroke-width="1.4"></line>
+<line x1="119" y1="458.28" x2="122" y2="459.78" stroke="#717171" stroke-width="1.4"></line>
+<text x="130" y="462.28" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="500" text-anchor="start">Turn tree</text>
+<circle cx="117" cy="474" r="3.5" fill="#eb6834" stroke="none" stroke-width="1"></circle>
+<circle cx="128" cy="474" r="3.5" fill="#717171" stroke="#717171" stroke-width="1.2"></circle>
+<rect x="234" y="402" width="120" height="84" rx="4" fill="#ffffff" stroke="#c8c8c8" stroke-width="1"></rect>
+<g><rect x="242" y="410" width="104" height="35.28" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect><path d="M247 439.28 L273.2 431.168 L299.2 425.876 L341 418" fill="none" stroke="#2a78d6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></g>
+<circle cx="249" cy="458.28" r="6" fill="none" stroke="#717171" stroke-width="1.4"></circle>
+<line x1="249" y1="458.28" x2="249" y2="454.78" stroke="#717171" stroke-width="1.4"></line>
+<line x1="249" y1="458.28" x2="252" y2="459.78" stroke="#717171" stroke-width="1.4"></line>
+<text x="260" y="462.28" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="500" text-anchor="start">Context timeline</text>
+<circle cx="247" cy="474" r="3.5" fill="#2a78d6" stroke="none" stroke-width="1"></circle>
+<circle cx="258" cy="474" r="3.5" fill="#717171" stroke="#717171" stroke-width="1.2"></circle>
+<rect x="364" y="402" width="120" height="84" rx="4" fill="rgba(0, 95, 184, 0.12)" stroke="#005fb8" stroke-width="1.5"></rect>
+<g><rect x="372" y="410" width="104" height="35.28" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect><rect x="378" y="416" width="52" height="4" rx="2" fill="#717171" stroke="none" stroke-width="1" opacity="0.8"></rect><rect x="382" y="423.76" width="67.60000000000001" height="4" rx="2" fill="#2a78d6" stroke="none" stroke-width="1" opacity="0.8"></rect><rect x="386" y="431.52" width="83.2" height="4" rx="2" fill="#717171" stroke="none" stroke-width="1" opacity="0.8"></rect></g>
+<circle cx="379" cy="458.28" r="6" fill="none" stroke="#005fb8" stroke-width="1.4"></circle>
+<line x1="379" y1="458.28" x2="379" y2="454.78" stroke="#005fb8" stroke-width="1.4"></line>
+<line x1="379" y1="458.28" x2="382" y2="459.78" stroke="#005fb8" stroke-width="1.4"></line>
+<text x="390" y="462.28" fill="#005fb8" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="500" text-anchor="start">Session strips</text>
+<circle cx="377" cy="474" r="3.5" fill="#2a78d6" stroke="none" stroke-width="1"></circle>
+<circle cx="388" cy="474" r="3.5" fill="none" stroke="#717171" stroke-width="1.2"></circle>
+<line x1="372" y1="491" x2="476" y2="491" stroke="#005fb8" stroke-width="2" stroke-linecap="round"></line>
+<rect x="494" y="402" width="120" height="84" rx="4" fill="#ffffff" stroke="#c8c8c8" stroke-width="1"></rect>
+<g><rect x="502" y="410" width="104" height="35.28" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect><path d="M507 418 C554 418 554 435.28 601 435.28" fill="none" stroke="#717171" stroke-width="5" stroke-linecap="butt" stroke-linejoin="round" opacity="0.4"></path><path d="M507 437.28 C554 437.28 554 422 601 422" fill="none" stroke="#2a78d6" stroke-width="4" stroke-linecap="butt" stroke-linejoin="round" opacity="0.5"></path></g>
+<circle cx="509" cy="458.28" r="6" fill="none" stroke="#717171" stroke-width="1.4"></circle>
+<line x1="509" y1="458.28" x2="509" y2="454.78" stroke="#717171" stroke-width="1.4"></line>
+<line x1="509" y1="458.28" x2="512" y2="459.78" stroke="#717171" stroke-width="1.4"></line>
+<text x="520" y="462.28" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="500" text-anchor="start">Sankey</text>
+<circle cx="507" cy="474" r="3.5" fill="#1baf7a" stroke="none" stroke-width="1"></circle>
+<circle cx="518" cy="474" r="3.5" fill="none" stroke="#717171" stroke-width="1.2"></circle>
+<rect x="624" y="402" width="120" height="84" rx="4" fill="#ffffff" stroke="#c8c8c8" stroke-width="1"></rect>
+<g><rect x="632" y="410" width="104" height="35.28" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect><rect x="637" y="415" width="52" height="25.28" rx="2" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></rect><rect x="691.08" y="415" width="41.6" height="12.64" rx="2" fill="#717171" stroke="none" stroke-width="1" opacity="0.5"></rect><rect x="691.08" y="428.904" width="41.6" height="11.376000000000001" rx="2" fill="#717171" stroke="none" stroke-width="1" opacity="0.25"></rect></g>
+<path d="M637 453.28 q-3 0 -3 3 v2 q0 2 -2 2 q2 0 2 2 v2 q0 3 3 3 M641 453.28 q3 0 3 3 v2 q0 2 2 2 q-2 0 -2 2 v2 q0 3 -3 3" fill="none" stroke="#717171" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path>
+<text x="650" y="462.28" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="500" text-anchor="start">Treemap</text>
+<circle cx="637" cy="474" r="3.5" fill="#eb6834" stroke="none" stroke-width="1"></circle>
+<circle cx="648" cy="474" r="3.5" fill="#717171" stroke="#717171" stroke-width="1.2"></circle>
+<rect x="754" y="402" width="20" height="84" rx="2" fill="#ffffff" stroke="none" stroke-width="1"></rect>
+<text x="760" y="448" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="16" font-weight="400" text-anchor="start">›</text>
+<text x="936" y="476" fill="#005fb8" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="end">Data ↓</text>
+<line x1="24" y1="512" x2="936" y2="512" stroke="#c8c8c8" stroke-width="1" stroke-dasharray="2 4"></line>
+<text x="24" y="530" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">Pick</text>
+<rect x="72" y="518" width="88.4" height="18" rx="9" fill="#005fb8" stroke="#005fb8" stroke-width="1" opacity="1"></rect>
+<text x="116.2" y="530.5" fill="#fff" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="middle">Sessions · 6</text>
+<rect x="202" y="518" width="119.4" height="18" rx="9" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1" opacity="1"></rect>
+<text x="261.7" y="530.5" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="middle">Code · 3 packages</text>
+<rect x="332" y="518" width="181.4" height="18" rx="9" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1" opacity="1"></rect>
+<text x="422.7" y="530.5" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="middle">Plans · 2 epics, 1 document</text>
+<rect x="24" y="548" width="912" height="36" rx="3" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1" stroke-dasharray="4 3"></rect>
+<text x="480" y="570" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Drop event files, code graphs, or plan graphs here, or choose files. Read in this browser; nothing is sent.</text>
+<circle cx="910" cy="560" r="22" fill="#ffffff" stroke="#c8c8c8" stroke-width="1.5"></circle>
+<circle cx="910" cy="560" r="6" fill="none" stroke="#005fb8" stroke-width="1.4"></circle>
+<line x1="910" y1="560" x2="910" y2="556.5" stroke="#005fb8" stroke-width="1.4"></line>
+<line x1="910" y1="560" x2="913" y2="561.5" stroke="#005fb8" stroke-width="1.4"></line>
+<g><circle cx="912" cy="82" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="912" y="85.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">1</text></g>
+<g><circle cx="128" cy="369" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="128" y="372.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">2</text></g>
+<g><circle cx="478" cy="400" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="478" y="403.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">3</text></g>
+<g><circle cx="94" cy="406" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="94" y="409.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">4</text></g>
+<g><circle cx="910" cy="522" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="910" y="525.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">5</text></g>
+<g><circle cx="54" cy="502" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="54" y="505.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">6</text></g>
+</svg>
