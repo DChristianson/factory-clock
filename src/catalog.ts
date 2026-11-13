@@ -31,6 +31,7 @@ export const TAXONOMY = {
       sessions: 'What the coding agents did: sessions, turns, calls, and tools',
       code: 'What the project is made of: packages, modules, files, and their imports',
       plans: 'What the project means to do: epics, items, their status, and what blocks what',
+      workspace: 'The whole project: code, plans, and sessions, joined',
     },
   },
   category: {
@@ -82,6 +83,7 @@ export const TAXONOMY = {
       edgeless: 'Paper-white space, one saturated hue per actor, words instead of lines (Conversation Landscape)',
       'split-flap': 'A station board of fixed character cells; change arrives as falling flaps (Terminal Board)',
       horology: 'An enamel dial read like a watch: serif numerals, ink arcs, one orange sweep hand (Factory Clock)',
+      cartographic: 'Paper, contour lines, roads and pins; uncertain coasts dashed (Atlas)',
     },
   },
 } satisfies Taxonomy;
@@ -420,6 +422,20 @@ export const CATALOG: VisualizerEntry[] = [
     hero: true,
     credits: [{ ...NIGHTINGALE, relation: 'technique', note: 'Time as angle around a circle, a wedge per period' }, STASKO_RINGS],
     tags: { subject: ['sessions'], category: ['temporal'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['time', 'actor', 'hierarchy'], language: ['horology'] },
+  },
+  {
+    id: 'atlas',
+    title: 'Atlas',
+    description: 'The whole project as a map: packages are islands placed by their dependencies, files are contoured hills, imports are roads, plan items are pins by status, and sessions leave trails as they replay.',
+    why: 'To give the project a geography: where the code is, where the work is, and where the agents went.',
+    hero: true,
+    credits: [
+      { work: 'Towards Improving the Mental Model of Software Developers through Cartographic Visualization', by: 'Adrian Kuhn, David Erni and Oscar Nierstrasz', year: 2010, url: 'https://arxiv.org/abs/1001.2386', relation: 'metaphor', note: 'Software Cartography: a codebase as a stable map of islands and contours that thematic overlays reuse' },
+      { work: 'Visualization of large hierarchical data by circle packing', by: 'Weixin Wang, Hui Wang, Guozhong Dai and Hongan Wang', year: 2006, relation: 'technique', note: 'Front-chain circle packing, which shapes each island from its modules and files' },
+      { work: 'Circle Packing (Protovis)', by: 'Michael Bostock', url: 'https://mbostock.github.io/protovis/ex/pack.html', relation: 'form', note: 'The enclosure diagram of a codebase: containment drawn as circles inside circles' },
+      { ...FORCE_LAYOUT, note: 'Islands placed by the imports between packages, so closeness is dependency' },
+    ],
+    tags: { subject: ['workspace', 'code'], category: ['dependency', 'quantitative', 'state'], purpose: ['expressive'], level: ['project'], dimension: ['structure', 'dependency', 'status'], language: ['cartographic'] },
   },
 ];
 

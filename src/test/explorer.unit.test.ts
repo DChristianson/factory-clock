@@ -18,11 +18,11 @@ async function main() {
     assert.deepStrictEqual(validateCatalog(CATALOG, TAXONOMY), []);
     assert.deepStrictEqual(Object.keys(TAXONOMY), ['subject', 'category', 'purpose', 'level', 'dimension', 'language']);
     assert.deepStrictEqual(Object.keys(TAXONOMY.category.values), ['temporal', 'actor', 'conversational', 'dependency', 'quantitative', 'state', 'semantic']);
-    assert.deepStrictEqual(CATALOG.map((v) => v.id), ['turn-tree', 'context-timeline', 'session-strips', 'cost-per-prompt', 'context-fill', 'sequence-diagram', 'event-graph', 'actor-graph', 'prompt-terms', 'gantt', 'treemap', 'heatmap', 'tool-ribbon', 'week-picture', 'histogram', 'box-violin', 'ridgeline', 'scatter', 'bubble', 'sunburst', 'calendar-heatmap', 'radar', 'parallel-coords', 'streamgraph', 'sankey', 'adjacency-matrix', 'swimlane', 'living-network', 'session-fingerprint', 'conversation-landscape', 'terminal-board', 'factory-clock']);
+    assert.deepStrictEqual(CATALOG.map((v) => v.id), ['turn-tree', 'context-timeline', 'session-strips', 'cost-per-prompt', 'context-fill', 'sequence-diagram', 'event-graph', 'actor-graph', 'prompt-terms', 'gantt', 'treemap', 'heatmap', 'tool-ribbon', 'week-picture', 'histogram', 'box-violin', 'ridgeline', 'scatter', 'bubble', 'sunburst', 'calendar-heatmap', 'radar', 'parallel-coords', 'streamgraph', 'sankey', 'adjacency-matrix', 'swimlane', 'living-network', 'session-fingerprint', 'conversation-landscape', 'terminal-board', 'factory-clock', 'atlas']);
   });
 
   test('only hero views leave the standard design language, each with a language of its own, and they come last', () => {
-    const heroes: Record<string, string> = { 'living-network': 'cinematic', 'session-fingerprint': 'risograph', 'conversation-landscape': 'edgeless', 'terminal-board': 'split-flap', 'factory-clock': 'horology' };
+    const heroes: Record<string, string> = { 'living-network': 'cinematic', 'session-fingerprint': 'risograph', 'conversation-landscape': 'edgeless', 'terminal-board': 'split-flap', 'factory-clock': 'horology', atlas: 'cartographic' };
     assert.deepStrictEqual(Object.keys(TAXONOMY.language.values), ['standard', ...Object.values(heroes)]);
     for (const v of CATALOG) assert.deepStrictEqual(v.tags.language, [heroes[v.id] ?? 'standard'], v.id);
     const firstHero = CATALOG.findIndex((v) => v.id in heroes);
@@ -30,7 +30,7 @@ async function main() {
   });
 
   test('hero is set on exactly the hero views, and the five session heroes stay heroes', () => {
-    assert.deepStrictEqual(CATALOG.filter((v) => v.hero).map((v) => v.id), ['living-network', 'session-fingerprint', 'conversation-landscape', 'terminal-board', 'factory-clock']);
+    assert.deepStrictEqual(CATALOG.filter((v) => v.hero).map((v) => v.id), ['living-network', 'session-fingerprint', 'conversation-landscape', 'terminal-board', 'factory-clock', 'atlas']);
     assert.ok(CATALOG.every((v) => v.hero === true || v.hero === undefined));
   });
 

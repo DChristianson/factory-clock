@@ -1190,3 +1190,147 @@ select, input[type="search"] {
 .hero-clock .fc-playback { font-style: italic; font-size: 13px; fill: var(--clock-ink); }
 .hero-clock .fc-caption { font-size: 7px; }
 .hero-clock .fc-empty { color: var(--clock-muted); }
+
+/* Atlas, design language `cartographic`: uncoated paper, one ink for land and hachures, a flat second ink for water,
+   small-caps serif place names, pins by status. The sheet's colors are variables, so the dark theme swaps the sheet
+   (a chart read under a lamp: dark paper, pale ink) and the marks and type read them unchanged. */
+.hero-atlas {
+  --at-paper: #f3eee2;
+  --at-ink: #2b2a26;
+  --at-muted: #5d5a50; /* 6:1 on the paper */
+  --at-water: #9fbccf;
+  --at-shoal: #c4d7e3;
+  --at-land: #f3eee2;
+  --at-open: #c8552f;
+  --at-moss: #5f8a4a;
+  --at-ochre: #d9a441;
+  --at-slate: #6b7280;
+  --at-blocked: #8e2a1c;
+  --at-trail: #c8552f;
+  background: var(--at-paper);
+  color: var(--at-ink);
+  border-radius: 4px;
+  padding: 10px 12px 12px;
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  .hero-atlas {
+    --at-paper: #23221e;
+    --at-ink: #e9e3d3;
+    --at-muted: #b3ad9d;
+    --at-water: #2c4352;
+    --at-shoal: #375466;
+    --at-land: #2f2d27;
+    --at-open: #e07a52;
+    --at-moss: #87b46e;
+    --at-ochre: #e6b85a;
+    --at-slate: #9aa1ad;
+    --at-blocked: #f09a8a;
+    --at-trail: #f08a5d;
+  }
+}
+.hero-atlas .at-svg { display: block; max-width: 100%; }
+.hero-atlas .at-empty { color: var(--at-muted); font-style: italic; margin: 24px 8px; }
+/* Sheet */
+.hero-atlas .at-paper { fill: var(--at-paper); }
+.hero-atlas .at-sea { fill: var(--at-water); }
+.hero-atlas .at-hatch { stroke: var(--at-paper); stroke-width: 0.6; opacity: 0.5; }
+.hero-atlas .at-neat { fill: none; stroke: var(--at-ink); stroke-width: 1.2; }
+.hero-atlas .at-neat-outer { fill: none; stroke: var(--at-ink); stroke-width: 0.5; }
+/* Type: place names in letterspaced capitals; the system serifs, no font files */
+.hero-atlas .at-cartouche { fill: var(--at-ink); font-size: 10px; letter-spacing: 0.2em; }
+.hero-atlas .at-island-name { fill: var(--at-ink); font-size: 10px; letter-spacing: 0.14em; cursor: pointer; paint-order: stroke; stroke: var(--at-water); stroke-width: 3px; stroke-linejoin: round; }
+.hero-atlas .at-island-name:hover, .hero-atlas .at-island-name:focus, .hero-atlas .at-island-name.at-zoomed { fill: var(--at-open); outline: none; text-decoration: underline; }
+.hero-atlas .at-epic { fill: var(--at-open); font-size: 9.5px; letter-spacing: 0.2em; cursor: pointer; paint-order: stroke; stroke: var(--at-land); stroke-width: 3px; stroke-linejoin: round; stroke-opacity: 0.85; }
+.hero-atlas .at-epic.at-on, .hero-atlas .at-epic:focus { text-decoration: underline; outline: none; }
+.hero-atlas .at-region-name, .hero-atlas .at-file-name { fill: var(--at-muted); font-size: 8px; letter-spacing: 0.08em; font-style: italic; pointer-events: none; }
+.hero-atlas .at-port-name, .hero-atlas .at-scale-text { fill: var(--at-ink); font: 9px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.hero-atlas .at-port-name { font-style: italic; }
+/* Marks: land */
+.hero-atlas .at-shoal { fill: none; stroke: var(--at-shoal); stroke-width: 7; stroke-linejoin: round; }
+.hero-atlas .at-land { fill: var(--at-land); cursor: pointer; }
+.hero-atlas .at-coast { fill: none; stroke: var(--at-ink); stroke-width: 1.2; stroke-linejoin: round; pointer-events: none; }
+.hero-atlas .at-island.at-unsurveyed .at-coast { stroke-dasharray: 4 3; }
+.hero-atlas .at-island.at-on .at-coast { stroke-width: 2.4; }
+.hero-atlas .at-region { fill: none; stroke: var(--at-ink); stroke-width: 0.5; stroke-dasharray: 1 2.5; opacity: 0.5; pointer-events: none; }
+.hero-atlas .at-region.at-on { stroke: var(--at-open); opacity: 1; stroke-dasharray: none; stroke-width: 1.2; }
+.hero-atlas .at-file { cursor: pointer; }
+.hero-atlas .at-file:focus { outline: none; }
+.hero-atlas .at-file-ground { fill: transparent; }
+.hero-atlas .at-contour { fill: none; stroke: var(--at-ink); stroke-width: 0.5; opacity: 0.55; pointer-events: none; }
+.hero-atlas .at-contour-0 { opacity: 0.8; }
+.hero-atlas .at-file.at-folded .at-contour { stroke-dasharray: 2 1.5; }
+.hero-atlas .at-file:hover .at-contour, .hero-atlas .at-file:focus .at-contour { stroke: var(--at-open); opacity: 1; }
+.hero-atlas .at-file.at-on .at-file-ground { fill: var(--at-ochre); fill-opacity: 0.45; }
+.hero-atlas .at-file.at-on .at-contour { stroke: var(--at-open); opacity: 1; stroke-width: 1; }
+/* Marks: roads, sea lanes, blocking routes */
+.hero-atlas .at-road { fill: none; stroke: var(--at-ink); stroke-linecap: round; opacity: 0.85; }
+.hero-atlas .at-road-core { fill: none; stroke: var(--at-land); stroke-linecap: round; pointer-events: none; }
+.hero-atlas .at-road-g.at-unsurveyed .at-road { stroke-dasharray: 5 4; }
+.hero-atlas .at-road-g:hover .at-road { stroke: var(--at-open); }
+.hero-atlas .at-hit { fill: none; stroke: transparent; cursor: pointer; }
+.hero-atlas .at-lane { stroke: var(--at-ink); stroke-width: 1; stroke-dasharray: 1.5 4; stroke-linecap: round; opacity: 0.6; }
+.hero-atlas .at-port { cursor: pointer; }
+.hero-atlas .at-port-mark { fill: var(--at-paper); stroke: var(--at-ink); stroke-width: 1; }
+.hero-atlas .at-port.at-on .at-port-mark, .hero-atlas .at-port:hover .at-port-mark { fill: var(--at-open); }
+.hero-atlas .at-route { fill: none; stroke: var(--at-open); stroke-width: 1.1; stroke-dasharray: 3 3; stroke-linecap: round; }
+.hero-atlas .at-route-g.at-unsurveyed .at-route { stroke-dasharray: 1 3; }
+.hero-atlas .at-route-g { cursor: pointer; }
+/* Marks: pins and clusters, by status */
+.hero-atlas .at-pin, .hero-atlas .at-cluster { cursor: pointer; }
+.hero-atlas .at-pin:focus, .hero-atlas .at-cluster:focus { outline: none; }
+.hero-atlas .at-pin-head { stroke: var(--at-ink); stroke-width: 0.7; stroke-linejoin: round; }
+.hero-atlas .at-pin.at-unsurveyed .at-pin-head { stroke-dasharray: 2 1.5; }
+.hero-atlas .at-pin.at-on .at-pin-head, .hero-atlas .at-pin:focus .at-pin-head { stroke-width: 2; }
+.hero-atlas .at-pin.at-ghost { opacity: 0.18; }
+.hero-atlas .at-st-open { fill: var(--at-open); }
+.hero-atlas .at-st-in_progress { fill: var(--at-ochre); }
+.hero-atlas .at-st-blocked { fill: var(--at-blocked); }
+.hero-atlas .at-st-done { fill: var(--at-moss); }
+.hero-atlas .at-st-deferred { fill: var(--at-slate); }
+.hero-atlas .at-st-dropped { fill: var(--at-paper); }
+.hero-atlas .at-cluster-disc { fill: var(--at-open); stroke: var(--at-ink); stroke-width: 0.7; }
+.hero-atlas .at-cluster:focus .at-cluster-disc { stroke-width: 2; }
+.hero-atlas .at-cluster-n { fill: var(--at-paper); font: 600 10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; pointer-events: none; }
+/* Marks: trails */
+.hero-atlas .at-trail { fill: none; stroke: var(--at-trail); stroke-width: 1.6; stroke-linecap: round; cursor: pointer; }
+.hero-atlas .at-trail.at-unsurveyed { stroke-dasharray: 0.1 4; }
+.hero-atlas .at-trail.at-on { stroke-width: 2.8; }
+.hero-atlas .at-trail-head { fill: var(--at-trail); stroke: var(--at-paper); stroke-width: 1; cursor: pointer; }
+/* Furniture */
+.hero-atlas .at-scale line { stroke: var(--at-ink); stroke-width: 1.2; }
+.hero-atlas .at-rose-ring { fill: var(--at-paper); stroke: var(--at-ink); stroke-width: 0.8; }
+.hero-atlas .at-rose-n { fill: var(--at-ink); }
+.hero-atlas .at-rose-s { fill: var(--at-paper); stroke: var(--at-ink); stroke-width: 0.6; }
+.hero-atlas .at-rose-text { fill: var(--at-ink); font-size: 8px; }
+/* Controls and legend */
+.hero-atlas .at-foot { display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap; border-top: 1px solid var(--at-ink); border-bottom: 1px solid var(--at-ink); padding: 6px 0; margin-top: 6px; }
+.hero-atlas .at-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.hero-atlas .at-caps { font: 10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.14em; text-transform: uppercase; color: var(--at-muted); margin-left: 6px; }
+.hero-atlas button, .hero-atlas select { font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--at-ink); background: var(--at-paper); border: 1px solid var(--at-muted); border-radius: 2px; padding: 2px 8px; }
+.hero-atlas button[aria-pressed="true"] { background: var(--at-ink); color: var(--at-paper); border-color: var(--at-ink); }
+.hero-atlas button[aria-pressed="false"] { border-style: dashed; }
+.hero-atlas button:disabled { opacity: 0.45; cursor: default; }
+.hero-atlas button:focus-visible, .hero-atlas select:focus-visible { outline: 2px solid var(--at-open); outline-offset: 1px; }
+.hero-atlas .at-foot .replay-bar { flex: 1 1 360px; margin: 0; }
+.hero-atlas .replay-scrub { accent-color: var(--at-open); }
+.hero-atlas .replay-badge { color: var(--at-open); border-color: var(--at-open); }
+.hero-atlas .replay-badge.live { color: var(--at-moss); border-color: var(--at-moss); }
+.hero-atlas .replay-where { color: var(--at-muted); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; }
+.hero-atlas .at-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.hero-atlas .at-key { display: inline-flex; align-items: center; gap: 6px; }
+.hero-atlas .at-sw { display: inline-block; width: 22px; height: 10px; box-sizing: border-box; }
+.hero-atlas .at-sw-land { background: var(--at-land); border: 1.2px solid var(--at-ink); border-radius: 5px; }
+.hero-atlas .at-sw-contour { width: 12px; height: 12px; border: 1px solid var(--at-ink); border-radius: 50%; box-shadow: inset 0 0 0 2px var(--at-paper), inset 0 0 0 3px var(--at-ink); }
+.hero-atlas .at-sw-road { height: 4px; background: var(--at-ink); border-radius: 2px; }
+.hero-atlas .at-sw-lane { height: 0; border-top: 1.5px dotted var(--at-ink); }
+.hero-atlas .at-sw-pin { width: 10px; height: 10px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 0.7px solid var(--at-ink); }
+.hero-atlas .at-sw-pin.at-st-open { background: var(--at-open); }
+.hero-atlas .at-sw-pin.at-st-in_progress { background: var(--at-ochre); }
+.hero-atlas .at-sw-pin.at-st-blocked { background: var(--at-blocked); }
+.hero-atlas .at-sw-pin.at-st-done { background: var(--at-moss); }
+.hero-atlas .at-sw-pin.at-st-deferred { background: var(--at-slate); }
+.hero-atlas .at-sw-pin.at-st-dropped { background: var(--at-paper); }
+.hero-atlas .at-sw-route { height: 0; border-top: 1.5px dashed var(--at-open); }
+.hero-atlas .at-sw-trail { height: 3px; background: var(--at-trail); border-radius: 2px; }
+.hero-atlas .at-sw-unsurveyed { height: 9px; border: 1.2px dashed var(--at-ink); border-radius: 4px; }
