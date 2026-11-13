@@ -806,5 +806,206 @@
     return { dx: Math.sin((2 * Math.PI * t) / px + (h & 7)) * amplitude, dy: Math.cos((2 * Math.PI * t) / py + ((h >>> 3) & 7)) * amplitude };
   }
 
-  window.factoryClockKit = { el, svg, compact, fmt, niceMax, clip, formatTime, tipFor, ms, short, duration, agentName, modelShort, fit, findNode, pathTo, callTokens, sessionName, secondsText, turnStats, METRICS, metricValues, quantile, density, niceAxis, heatScale, arcPath, modeButtons, vizPanel, interact, legendKey, sessionClass, svgText, REPLAY_SPEEDS, REPLAY_CHOICES, getReplayPrefs, setReplayPrefs, onReplayPrefs, speedText, replayEvents, countUpTo, createReplay, replayBar, hashId, forceLayout, drift, termsOf, foldPlural, fitHeight, fitter };
+  // ---------- Shapes (docs/workspace-explorer.md, "Shapes: one view, several subjects") ----------
+  // A view that draws a Shape gets options.shape and options.subject ('code' or 'plans') from the
+  // explorer. These keep the five Shape views' colors, legends, and selections the same.
+  const SHAPE_KIND_TEXT = { in_progress: 'in progress', container: 'package or module', source: 'source', test: 'test', doc: 'doc', config: 'config', asset: 'asset', generated: 'generated', external: 'external' };
+  /** A kind as the legend and tooltips say it. */
+  const shapeKindText = (kind) => SHAPE_KIND_TEXT[kind] || kind;
+  /** A node's color class: a plan item by its status, anything else by its kind's place in the legend. */
+  const shapeClass = (node) => (node.status ? `shape-st-${node.status}` : `shape-k-${node.colorGroup}`);
+  /** Legend keys for the kinds the Shape's nodes use, in legend order, and one for inferred when any node or link is. */
+  function shapeLegend(shape) {
+    const used = new Set(shape.nodes.map((n) => n.kind));
+    const keys = shape.kinds
+      .map((kind, i) => [kind, i])
+      .filter(([kind]) => used.has(kind))
+      .map(([kind, i]) => legendKey(shape.valueLabel === 'items' ? `shape-st-${kind}` : `shape-k-${i}`, shapeKindText(kind)));
+    if (shape.nodes.some((n) => n.inferred) || shape.links.some((l) => l.inferred)) keys.push(legendKey('swatch-shape-inferred', 'inferred'));
+    return keys;
+  }
+  /** The selection a node announces: an artifact for code, an item for plans. */
+  const shapeSelection = (subject, id) => (subject === 'plans' ? { itemId: id } : { artifactId: id });
+  /** Whether the selection names this node. */
+  const shapeSelected = (sel, id) => !!sel && (sel.artifactId === id || sel.itemId === id);
+  /** Children by parent id, roots under '' ; each list largest first. */
+  function shapeChildren(shape) {
+    const ids = new Set(shape.nodes.map((n) => n.id));
+    const kids = new Map([['', []]]);
+    for (const n of shape.nodes) {
+      const p = n.parent && ids.has(n.parent) ? n.parent : '';
+      if (!kids.has(p)) kids.set(p, []);
+      kids.get(p).push(n);
+    }
+    for (const list of kids.values()) list.sort((a, b) => b.value - a.value);
+    return kids;
+  }
+  /** A node's own value: its inclusive value less its children's. */
+  const shapeOwn = (kids, n) => Math.max(0, n.value - (kids.get(n.id) || []).reduce((a, c) => a + c.value, 0));
+  /** The tooltip rows for a node. */
+  function shapeTip(shape, n, extra) {
+    return [n.label, [n.status ? 'Status' : 'Kind', shapeKindText(n.kind) + (n.inferred ? ' (inferred)' : '')], [shape.valueLabel[0].toUpperCase() + shape.valueLabel.slice(1), fmt(n.value)], ...(extra || [])];
+  }
+  /** What the Shape counts and how code was folded, for a view's note. */
+  const shapeNote = (shape) => `Sized by ${shape.valueLabel}${shape.fold && shape.fold !== 'file' ? `, files folded to ${shape.fold}s to keep it readable` : ''}.`;
+
+  // ---------- the code grid (viz/fileGrid.js, viz/planOverCode.js) ----------
+  // Files as cells in package rows along a Hilbert curve (docs/workspace-explorer.md, "File grid").
+  // The curve keeps neighbors in path order neighbors on the grid, so a module's files sit together
+  // and a new file moves only the cells after it, a step along the curve.
+
+  /** The d-th point of a Hilbert curve over an n × n grid (n a power of two): { x, y }, from (0, 0) to (n - 1, 0). */
+  function hilbertPoint(n, d) {
+    let x = 0;
+    let y = 0;
+    let t = d;
+    for (let s = 1; s < n; s *= 2) {
+      const rx = 1 & (t / 2);
+      const ry = 1 & (t ^ rx);
+      if (ry === 0) {
+        if (rx === 1) {
+          x = s - 1 - x;
+          y = s - 1 - y;
+        }
+        const tmp = x;
+        x = y;
+        y = tmp;
+      }
+      x += s * rx;
+      y += s * ry;
+      t = Math.floor(t / 4);
+    }
+    return { x, y };
+  }
+
+  /**
+   * Bands of Hilbert squares, one band per group, stacked top to bottom.
+   *   groups: [{ items: [...] }], items in curve order
+   *   opts:   { width, maxHeight, labelHeight = 14, gap = 8, maxCell = 22, minCell = 3 }
+   *   returns { cell, width, height, bands: [{ group, y, top, rows, cells: [{ item, x, y }] }] }
+   * A band is `rows` cells high (a power of two, at most the shared height H, at least enough for a
+   * small group's square) and holds as many rows × rows squares as its items need, left to right;
+   * the curve runs on from one square into the next. H is the one that gives the biggest cells that
+   * fit width and maxHeight; past minCell, the drawing grows taller than maxHeight instead.
+   */
+  function hilbertBands(groups, opts) {
+    const labelH = opts.labelHeight !== undefined ? opts.labelHeight : 14;
+    const gap = opts.gap !== undefined ? opts.gap : 8;
+    const maxCell = opts.maxCell || 22;
+    const minCell = opts.minCell || 3;
+    const width = Math.max(1, opts.width);
+    const list = groups.filter((g) => g.items.length);
+    const rowsFor = (n, H) => {
+      let h = 1;
+      while (h < H && h * h < n) h *= 2;
+      return h;
+    };
+    let best = null;
+    for (let H = 1; H <= 128; H *= 2) {
+      const rows = list.map((g) => rowsFor(g.items.length, H));
+      const cols = Math.max(1, ...list.map((g, i) => Math.ceil(g.items.length / (rows[i] * rows[i])) * rows[i]));
+      const sumRows = rows.reduce((a, b) => a + b, 0) || 1;
+      const cell = Math.min(maxCell, width / cols, (opts.maxHeight - list.length * (labelH + gap)) / sumRows);
+      if (!best || cell > best.cell + 1e-9) best = { cell, rows, cols };
+    }
+    const cell = Math.max(minCell, Math.min(maxCell, best.cell));
+    let y = 0;
+    const bands = list.map((group, i) => {
+      const h = best.rows[i];
+      const top = y + labelH;
+      const cells = group.items.map((item, k) => {
+        const sq = Math.floor(k / (h * h));
+        const p = hilbertPoint(h, k % (h * h));
+        return { item, x: (sq * h + p.x) * cell, y: top + p.y * cell };
+      });
+      const band = { group, y, top, rows: h, cells };
+      y = top + h * cell + gap;
+      return band;
+    });
+    return { cell, width: best.cols * cell, height: Math.max(0, y - gap), bands };
+  }
+
+  /**
+   * The cells the code grid draws, from the loaded code graphs: files grouped by package, ids
+   * qualified `root::id` as the joins are. Past fileLimit files, cells are modules (a file with no
+   * module stays a file). Returns
+   *   { groups: [{ id, label, items }], cells: Map(id -> item), under: Map(artifact id -> cell ids), fold: 'file' | 'module', files }
+   * where an item is { id, label, path, lines, role, fanIn, fanOut, inferredIn, module, package, count }:
+   * fanIn and fanOut are the weighted dependencies that cross into or out of the cell, and `under`
+   * lists, for every artifact, the cells it is or holds.
+   */
+  function codeGrid(graphs, opts) {
+    const fileLimit = (opts && opts.fileLimit) || Infinity;
+    const files = graphs.reduce((n, g) => n + g.artifacts.filter((a) => a.kind === 'file').length, 0);
+    const fold = files > fileLimit ? 'module' : 'file';
+    const groups = new Map();
+    const cells = new Map();
+    const under = new Map();
+    const many = graphs.length > 1;
+    for (const g of graphs) {
+      const root = g.source.root;
+      const q = (id) => `${root}::${id}`;
+      const byId = new Map(g.artifacts.map((a) => [a.id, a]));
+      const ancestors = (a) => {
+        const out = [];
+        const seen = new Set([a.id]);
+        let p = a.parent ? byId.get(a.parent) : undefined;
+        while (p && !seen.has(p.id)) {
+          out.push(p);
+          seen.add(p.id);
+          p = p.parent ? byId.get(p.parent) : undefined;
+        }
+        return out;
+      };
+      const cellOf = new Map(); // artifact id (unqualified) -> cell id (qualified)
+      for (const a of g.artifacts) {
+        if (a.kind !== 'file') continue;
+        const ups = ancestors(a);
+        const pkg = ups.find((x) => x.kind === 'package');
+        const mod = ups.find((x) => x.kind === 'module');
+        const holder = fold === 'module' && mod ? mod : a;
+        const id = q(holder.id);
+        cellOf.set(a.id, id);
+        let item = cells.get(id);
+        if (!item) {
+          const gid = pkg ? q(pkg.id) : `${root}::`;
+          if (!groups.has(gid)) groups.set(gid, { id: gid, artifactId: pkg ? gid : null, label: `${many ? root + ' · ' : ''}${pkg ? pkg.name : '(no package)'}`, items: [] });
+          item = { id, label: holder.name, path: holder.path || holder.id, lines: 0, role: 'source', fanIn: 0, fanOut: 0, inferredIn: 0, module: mod ? q(mod.id) : null, package: pkg ? q(pkg.id) : null, count: 0, roleLines: new Map() };
+          cells.set(id, item);
+          groups.get(gid).items.push(item);
+          for (const up of [holder, ...ancestors(holder)]) {
+            const k = q(up.id);
+            if (!under.has(k)) under.set(k, []);
+            under.get(k).push(id);
+          }
+        }
+        if (holder !== a) under.set(q(a.id), [id]);
+        const lines = (a.size && a.size.lines) || 1;
+        item.lines += lines;
+        item.count += 1;
+        const role = a.role || 'source';
+        item.roleLines.set(role, (item.roleLines.get(role) || 0) + lines);
+      }
+      for (const d of g.dependencies) {
+        const from = cellOf.get(d.from);
+        const to = cellOf.get(d.to);
+        const w = d.weight || 1;
+        if (from && from === to) continue;
+        if (to) {
+          cells.get(to).fanIn += w;
+          if (d.inferred) cells.get(to).inferredIn += w;
+        }
+        if (from) cells.get(from).fanOut += w;
+      }
+    }
+    for (const item of cells.values()) {
+      item.role = [...item.roleLines].sort((a, b) => b[1] - a[1])[0][0];
+      delete item.roleLines;
+    }
+    const sorted = [...groups.values()].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    for (const gr of sorted) gr.items.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+    return { groups: sorted, cells, under, fold, files };
+  }
+
+  window.factoryClockKit = { hilbertPoint, hilbertBands, codeGrid, shapeKindText, shapeClass, shapeLegend, shapeSelection, shapeSelected, shapeChildren, shapeOwn, shapeTip, shapeNote, el, svg, compact, fmt, niceMax, clip, formatTime, tipFor, ms, short, duration, agentName, modelShort, fit, findNode, pathTo, callTokens, sessionName, secondsText, turnStats, METRICS, metricValues, quantile, density, niceAxis, heatScale, arcPath, modeButtons, vizPanel, interact, legendKey, sessionClass, svgText, REPLAY_SPEEDS, REPLAY_CHOICES, getReplayPrefs, setReplayPrefs, onReplayPrefs, speedText, replayEvents, countUpTo, createReplay, replayBar, hashId, forceLayout, drift, termsOf, foldPlural, fitHeight, fitter };
 })();

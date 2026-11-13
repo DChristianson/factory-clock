@@ -4,8 +4,12 @@
 // squarified (Bruls, Huizing, van Wijk), so blocks stay near square and easy to
 // compare. The category split is the tree's approximation, marked ≈. See
 // docs/visualization-explorer.md for the contract. Clicking a block
-// announces { sessionId, turnId? }. The mode lives in the instance. Sees only
-// its host and ctx: no VS Code.
+// announces { sessionId, turnId? }. The mode lives in the instance. Given
+// options.shape (code or plans, see docs/workspace-explorer.md, "Shapes"), it
+// draws that hierarchy instead, boxes inside boxes by value: packages, modules,
+// and files by lines, or epics and items by count, colored by kind or status;
+// the grouping buttons hide, and a block or a group's header announces
+// { artifactId } or { itemId }. Sees only its host and ctx: no VS Code.
 (function () {
   const HEIGHT = 440;
   const HEADER = 18; // px kept for a group's label when it's big enough for one
@@ -62,12 +66,14 @@
   window.factoryClock.register({
     id: 'treemap',
     title: 'Treemap',
-    tags: { category: ['quantitative'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy'], language: ['standard'] },
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['quantitative'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'structure', 'status'], language: ['standard'] },
     mount(host, ctx) {
-      const { el, svg, compact, fmt, clip, fit, short, showTip, hideTip } = ctx;
+      const { el, svg, compact, fmt, clip, fit, short, showTip, hideTip, interact, shapeChildren, shapeClass, shapeLegend, shapeSelection, shapeSelected, shapeTip, shapeNote, shapeOwn } = ctx;
       let mode = 'turn'; // 'turn' | 'category'
       let views = [];
       let selection = null;
+      let shape = null; // with a subject: the Shape to draw instead of the sessions
+      let subject = null;
 
       const byTurnBtn = el('button', { text: 'By turn', 'aria-pressed': 'true' });
       const byCategoryBtn = el('button', { text: 'By tool category', 'aria-pressed': 'false' });
@@ -166,13 +172,49 @@
         }));
       }
 
+      /** Nested groups from a Shape: a node with children is a group, and its own value, if any, a block beside them. */
+      function shapeHierarchy() {
+        const kids = shapeChildren(shape);
+        const make = (n) => {
+          const cls = `${shapeClass(n)}${n.inferred ? ' shape-inferred' : ''}`;
+          const children = (kids.get(n.id) || []).map(make);
+          if (!children.length) return { label: n.label, value: n.value, cls, node: n };
+          const own = shapeOwn(kids, n);
+          if (own > 0) children.push({ label: n.label, value: own, cls, node: n, own: true });
+          return { label: n.label, value: n.value, node: n, children };
+        };
+        // An external dependency has no lines of its own here, only the imports that reach it: area can't compare it with files.
+        const roots = kids.get('').filter((n) => n.kind !== 'external').map(make);
+        // One root says nothing a frame can't: start from its children.
+        return roots.length === 1 && roots[0].children ? roots[0].children : roots;
+      }
+
       const isSelected = (node) => {
+        if (node.node) return !node.own && shapeSelected(selection, node.node.id);
         const s = selection;
         if (!s || !node.turnId || node.turnId !== s.turnId) return false;
         return !s.sessionId || s.sessionId === node.sessionId;
       };
 
+      function drawShapeLeaf(root, node, r) {
+        const n = node.node;
+        const g = svg('g', { class: 'treemap-leaf' });
+        g.append(svg('rect', { class: `treemap-block ${node.cls}`, x: r.x, y: r.y, width: Math.max(0.5, r.w - 1), height: Math.max(0.5, r.h - 1) }));
+        const text = r.h >= 16 && r.w >= 28 ? fit(node.own ? `${node.label} (own)` : node.label, r.w - 6) : '';
+        if (text) {
+          g.append(ctx.svgText({ class: 'treemap-label', x: r.x + 4, y: r.y + 13 }, text));
+          if (r.h >= 30 && r.w >= 44 && shape.valueLabel !== 'items') g.append(ctx.svgText({ class: 'treemap-label treemap-value', x: r.x + 4, y: r.y + 26 }, compact(node.value)));
+        }
+        interact(ctx, g, {
+          label: `${n.label}${node.own ? ' (own)' : ''}: ${compact(node.value)} ${shape.valueLabel}`,
+          tip: () => shapeTip(shape, n, node.own ? [['Its own', fmt(node.value)]] : []),
+          pick: () => ctx.select(shapeSelection(subject, n.id)),
+        });
+        root.append(g);
+      }
+
       function drawLeaf(root, node, r) {
+        if (node.node) return drawShapeLeaf(root, node, r);
         const g = svg('g', { class: 'treemap-leaf', tabindex: 0, role: 'button', 'aria-label': `${node.tip[0]}, about ${compact(Math.round(node.value))} tokens` });
         g.append(svg('rect', { class: `treemap-block ${node.cls}`, x: r.x, y: r.y, width: Math.max(0.5, r.w - 1), height: Math.max(0.5, r.h - 1) }));
         const text = r.h >= 16 ? fit(node.label, r.w) : '';
@@ -203,7 +245,7 @@
           if (!node.children) {
             drawLeaf(root, node, r);
             // By tool category, a turn has no frame of its own, so its leaf takes the outline.
-            if (mode === 'category' && isSelected(node)) outlines.push(r);
+            if ((mode === 'category' || node.node) && isSelected(node)) outlines.push(r);
             continue;
           }
           const roomy = r.h > HEADER + 14 && r.w > 34;
@@ -213,14 +255,44 @@
             const t = svg('text', { class: 'treemap-group', x: r.x + 4, y: r.y + 13 });
             const value = ` ${compact(Math.round(node.value))}`;
             t.textContent = fit(`${node.label}${value}`, r.w);
-            root.append(t);
+            if (node.node) {
+              // A Shape's group is a thing too (a package, an epic): its header selects it.
+              const n = node.node;
+              const head = svg('g', { class: 'treemap-head' });
+              head.append(svg('rect', { class: 'treemap-head-hit', x: r.x, y: r.y, width: Math.max(0, r.w), height: HEADER }));
+              head.append(t);
+              interact(ctx, head, { label: `${n.label}: ${compact(n.value)} ${shape.valueLabel}`, tip: () => shapeTip(shape, n), pick: () => ctx.select(shapeSelection(subject, n.id)) });
+              root.append(head);
+            } else root.append(t);
           }
           drawLevel(root, node.children, inner, outlines);
           if (isSelected(node)) outlines.push(r);
         }
       }
 
+      function drawShape() {
+        controls.hidden = true;
+        const nodes = shapeHierarchy();
+        const total = nodes.reduce((a, n) => a + n.value, 0);
+        if (total <= 0) {
+          chartHost.replaceChildren(el('p', { class: 'muted', text: `Nothing to size: no ${shape.valueLabel} in the loaded ${subject}.` }));
+          legend.replaceChildren();
+          note.textContent = '';
+          return;
+        }
+        const width = Math.max(320, host.clientWidth || 800);
+        const root = svg('svg', { class: 'viz-chart treemap-chart', viewBox: `0 0 ${width} ${HEIGHT}`, role: 'img', 'aria-label': `Treemap of ${compact(total)} ${shape.valueLabel} in the loaded ${subject}` });
+        const outlines = [];
+        drawLevel(root, nodes, { x: 0, y: 0, w: width, h: HEIGHT }, outlines);
+        for (const r of outlines) root.append(svg('rect', { class: 'treemap-selected', x: r.x + 1, y: r.y + 1, width: Math.max(0, r.w - 2), height: Math.max(0, r.h - 2) }));
+        chartHost.replaceChildren(root);
+        legend.replaceChildren(...shapeLegend(shape));
+        note.textContent = `Area is ${shape.valueLabel}: ${subject === 'plans' ? 'epics hold their items, each item counting one, colored by status' : 'packages hold modules, modules hold files, colored by kind; external dependencies have no lines here, so they’re left out'}. ${shapeNote(shape)} Click a block, or a group’s header, to select it.`;
+      }
+
       function draw() {
+        if (shape) return drawShape();
+        controls.hidden = false;
         if (!views.length) {
           chartHost.replaceChildren();
           legend.replaceChildren();
@@ -248,9 +320,11 @@
       }
 
       return {
-        update(sessions, sel) {
+        update(sessions, sel, options) {
           views = sessions;
           selection = sel || null;
+          shape = (options && options.shape) || null;
+          subject = (options && options.subject) || null;
           draw();
         },
         resize: draw,

@@ -29,6 +29,9 @@ export const TAXONOMY = {
     label: 'Subject',
     values: {
       sessions: 'What the coding agents did: sessions, turns, calls, and tools',
+      code: 'What the project is made of: packages, modules, files, and their imports',
+      plans: 'What the project means to do: epics, items, their status, and what blocks what',
+      workspace: 'The whole project: code, plans, and sessions, joined',
     },
   },
   category: {
@@ -67,6 +70,9 @@ export const TAXONOMY = {
       communication: 'Communication',
       quantity: 'Quantity (cost)',
       content: 'Content (what was said)',
+      structure: 'Structure (containment: package, module, file; epic, item)',
+      status: 'Status (open, in progress, blocked, done)',
+      place: 'Place (where in the code)',
     },
   },
   language: {
@@ -78,6 +84,8 @@ export const TAXONOMY = {
       edgeless: 'Paper-white space, one saturated hue per actor, words instead of lines (Conversation Landscape)',
       'split-flap': 'A station board of fixed character cells; change arrives as falling flaps (Terminal Board)',
       horology: 'An enamel dial read like a watch: serif numerals, ink arcs, one orange sweep hand (Factory Clock)',
+      cartographic: 'Paper, contour lines, roads and pins; uncertain coasts dashed (Atlas)',
+      strata: 'Three translucent planes stacked in a deep void, one hue each, bright messages rising and falling between them (Strata)',
     },
   },
 } satisfies Taxonomy;
@@ -152,6 +160,8 @@ const HERSCHEL: Credit = { work: 'A scatterplot of double-star observations', by
 const STASKO_RINGS: Credit = { work: 'Focus+Context Display and Navigation Techniques for Enhancing Radial, Space-Filling Hierarchy Visualizations', by: 'John Stasko and Eugene Zhang', year: 2000, url: 'https://doi.org/10.1109/INFVIS.2000.885091', relation: 'technique', note: 'Rings outward for depth, as in the sunburst' };
 const NIGHTINGALE: Credit = { work: 'Diagram of the causes of mortality in the army in the East', by: 'Florence Nightingale', year: 1858, url: 'https://en.wikipedia.org/wiki/Pie_chart#Polar_area_diagram', relation: 'form', note: 'The polar area diagram: a wedge per period around a circle' };
 const FORCE_LAYOUT: Credit = { work: 'Graph drawing by force-directed placement', by: 'Thomas M. J. Fruchterman and Edward M. Reingold', year: 1991, url: 'https://doi.org/10.1002/spe.4380211102', relation: 'technique', note: 'Force-directed layout: pairs repel, links pull; the kit’s is a small variant' };
+const HILBERT_TREEMAP: Credit = { work: 'Algorithmic Improvements on Hilbert and Moore Treemaps for Visualization of Large Tree-structured Datasets', by: 'Willy Scheibel, Christopher Weyand, Joseph Bethge, and Jürgen Döllner', year: 2021, url: 'https://github.com/varg-dev/hilbert-moore-treemap-layouts-prototype', relation: 'technique', note: 'A hierarchy laid along a space-filling curve, so siblings stay together and the layout holds still as it changes (the prototype linked)' };
+const HILBERT_CURVE: Credit = { work: 'Über die stetige Abbildung einer Linie auf ein Flächenstück', by: 'David Hilbert', year: 1891, url: 'https://en.wikipedia.org/wiki/Hilbert_curve', relation: 'technique', note: 'The Hilbert curve, which keeps neighbors in order neighbors in the plane' };
 
 /** One entry per visualizer, in carousel order. */
 export const CATALOG: VisualizerEntry[] = [
@@ -214,10 +224,10 @@ export const CATALOG: VisualizerEntry[] = [
   {
     id: 'actor-graph',
     title: 'Actor graph',
-    description: 'Who worked with whom: you, agents, subagents, models, and tool categories, joined by typed edges sized by how often they interacted.',
-    why: 'To see who did the work, and who handed work to whom.',
-    credits: [{ work: 'Who Shall Survive?', by: 'Jacob L. Moreno', year: 1934, url: 'https://en.wikipedia.org/wiki/Sociogram', relation: 'form', note: 'The sociogram: who chose whom, as points and lines' }],
-    tags: { subject: ['sessions'], category: ['actor'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['actor', 'communication', 'quantity'], language: ['standard'] },
+    description: 'Who worked with whom: you, agents, subagents, models, and tool categories, joined by typed edges sized by how often they interacted. Also draws code and plans as a force-laid graph: what imports or blocks what, nodes sized by lines or items.',
+    why: 'To see who did the work and who handed work to whom, or how code and plans connect.',
+    credits: [{ work: 'Who Shall Survive?', by: 'Jacob L. Moreno', year: 1934, url: 'https://en.wikipedia.org/wiki/Sociogram', relation: 'form', note: 'The sociogram: who chose whom, as points and lines' }, FORCE_LAYOUT],
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['actor', 'dependency'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['actor', 'communication', 'quantity', 'structure', 'dependency', 'status'], language: ['standard'] },
   },
   {
     id: 'prompt-terms',
@@ -238,10 +248,10 @@ export const CATALOG: VisualizerEntry[] = [
   {
     id: 'treemap',
     title: 'Treemap',
-    description: 'Tokens as area: by session, turn, and tool category, or by tool category across sessions.',
-    why: 'To compare spending at a glance, with area for tokens.',
+    description: 'Tokens as area: by session, turn, and tool category, or by tool category across sessions. Also draws code (packages, modules, and files by lines) and plans (epics and items by count, colored by status).',
+    why: 'To compare sizes at a glance, with area for tokens, lines, or items.',
     credits: [{ work: 'Tree visualization with tree-maps: 2-d space-filling approach', by: 'Ben Shneiderman', year: 1992, url: 'https://doi.org/10.1145/102377.115768', relation: 'form', note: 'The treemap' }, { work: 'Squarified Treemaps', by: 'Mark Bruls, Kees Huizing, and Jarke J. van Wijk', year: 2000, url: 'https://doi.org/10.1007/978-3-7091-6783-0_4', relation: 'technique', note: 'The squarified layout, which keeps blocks near square' }],
-    tags: { subject: ['sessions'], category: ['quantitative'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy'], language: ['standard'] },
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['quantitative'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'structure', 'status'], language: ['standard'] },
   },
   {
     id: 'heatmap',
@@ -310,10 +320,10 @@ export const CATALOG: VisualizerEntry[] = [
   {
     id: 'sunburst',
     title: 'Sunburst',
-    description: 'The turn tree as rings: sessions, prompts, agents, then tool categories, with angle for tokens.',
-    why: 'To follow the tokens from session to tool in one round picture.',
+    description: 'The turn tree as rings: sessions, prompts, agents, then tool categories, with angle for tokens. Also draws code (packages, modules, and files by lines) and plans (epics and items by count, colored by status).',
+    why: 'To follow a hierarchy from root to leaf in one round picture: tokens, code, or plans.',
     credits: [{ work: 'Focus+Context Display and Navigation Techniques for Enhancing Radial, Space-Filling Hierarchy Visualizations', by: 'John Stasko and Eugene Zhang', year: 2000, url: 'https://doi.org/10.1109/INFVIS.2000.885091', relation: 'form', note: 'The sunburst' }],
-    tags: { subject: ['sessions'], category: ['quantitative'], purpose: ['expressive'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'actor'], language: ['standard'] },
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['quantitative'], purpose: ['expressive'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'actor', 'structure', 'status'], language: ['standard'] },
   },
   {
     id: 'calendar-heatmap',
@@ -350,18 +360,18 @@ export const CATALOG: VisualizerEntry[] = [
   {
     id: 'sankey',
     title: 'Sankey',
-    description: 'Where tokens went: from sessions, through the main agent or subagents, to models.',
-    why: 'To follow tokens from each session, through its agents, to the models that spent them.',
+    description: 'Where tokens went: from sessions, through the main agent or subagents, to models. Also draws code (what imports what, by weight, in columns by dependency depth) and plans (blocker to blocked).',
+    why: 'To follow what flows where: tokens to the models that spent them, imports between modules, blockers to what they block.',
     credits: [SANKEY],
-    tags: { subject: ['sessions'], category: ['actor', 'quantitative'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['quantity', 'actor'], language: ['standard'] },
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['actor', 'quantitative', 'dependency'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['quantity', 'actor', 'structure', 'dependency', 'status'], language: ['standard'] },
   },
   {
     id: 'adjacency-matrix',
     title: 'Adjacency matrix',
-    description: 'Who acted on whom, as a grid: messages, delegation, model calls, and tool calls, by count.',
-    why: 'To read exact counts of who acted on whom, without a tangle of lines.',
+    description: 'Who acted on whom, as a grid: messages, delegation, model calls, and tool calls, by count. Also draws code and plans as a coupling matrix: what imports or blocks what, by summed weight, grouped by parent and ordered so clusters show.',
+    why: 'To read exact counts of who acted on whom, or what depends on what, without a tangle of lines.',
     credits: [{ work: 'A Comparison of the Readability of Graphs Using Node-Link and Matrix-Based Representations', by: 'Mohammad Ghoniem, Jean-Daniel Fekete, and Philippe Castagliola', year: 2004, url: 'https://doi.org/10.1109/INFVIS.2004.1', relation: 'technique', note: 'Why a matrix reads better than lines once a graph is dense' }],
-    tags: { subject: ['sessions'], category: ['actor'], purpose: ['informative'], level: ['session', 'project'], dimension: ['actor', 'communication', 'quantity'], language: ['standard'] },
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['actor', 'dependency'], purpose: ['informative'], level: ['session', 'project'], dimension: ['actor', 'communication', 'quantity', 'structure', 'dependency'], language: ['standard'] },
   },
   {
     id: 'swimlane',
@@ -370,6 +380,95 @@ export const CATALOG: VisualizerEntry[] = [
     why: 'To follow the hand-offs: who had the work at each moment.',
     credits: [{ work: 'Improving Performance', by: 'Geary A. Rummler and Alan P. Brache', year: 1990, url: 'https://en.wikipedia.org/wiki/Swimlane', relation: 'form', note: 'Named the swim lane diagram; multi-column process charts date from the 1940s' }],
     tags: { subject: ['sessions'], category: ['conversational', 'actor'], purpose: ['informative', 'expressive'], level: ['session'], dimension: ['communication', 'actor'], language: ['standard'] },
+  },
+  {
+    id: 'dependency-layers',
+    title: 'Dependency layers',
+    description: 'Files or modules in columns by the longest chain of dependencies beneath them, cycles ringed, edges bundled between layers.',
+    why: 'To see what the code is built on, in what order, and where the cycles are.',
+    credits: [
+      { work: 'Methods for Visual Understanding of Hierarchical System Structures', by: 'Kozo Sugiyama, Shojiro Tagawa, and Mitsuhiko Toda', year: 1981, url: 'https://en.wikipedia.org/wiki/Layered_graph_drawing', relation: 'form', note: 'The layered drawing of a directed graph; layers here by longest path, as that article describes' },
+      { work: 'Depth-first search and linear graph algorithms', by: 'Robert Tarjan', year: 1972, url: 'https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm', relation: 'technique', note: 'Strongly connected components: the cycles, which share a layer' },
+      { work: 'Hierarchical Edge Bundles: Visualization of Adjacency Relations in Hierarchical Data', by: 'Danny Holten', year: 2006, url: 'https://www.cs.jhu.edu/~misha/ReadingSeminar/Papers/Holten06.pdf', relation: 'technique', note: 'Edges pulled together into bundles; here simply per pair of layers' },
+    ],
+    tags: { subject: ['code'], category: ['dependency'], purpose: ['informative'], level: ['project'], dimension: ['dependency', 'structure'], language: ['standard'] },
+  },
+  {
+    id: 'package-wheel',
+    title: 'Package wheel',
+    description: 'Packages around a circle, an inner ring by module, ribbons as wide as the imports between them; externals on an arc of their own.',
+    why: 'To see which packages lean on which, and how heavily, at a glance.',
+    credits: [{ work: 'DependencyWheel', by: 'François Zaninotto', url: 'https://github.com/fzaninotto/DependencyWheel', relation: 'form', note: 'Package dependencies as a chord diagram, a disc section per package' }],
+    tags: { subject: ['code'], category: ['dependency', 'quantitative'], purpose: ['expressive', 'informative'], level: ['project'], dimension: ['dependency', 'quantity'], language: ['standard'] },
+  },
+  {
+    id: 'file-grid',
+    title: 'File grid',
+    description: 'Every file as a cell in its package’s row, along a Hilbert curve: area by lines, shade by fan-in, tests and docs in their own hues.',
+    why: 'To see how big and how depended-on every file is, each in a place that stays put.',
+    credits: [HILBERT_TREEMAP, HILBERT_CURVE],
+    tags: { subject: ['code'], category: ['quantitative'], purpose: ['informative'], level: ['project'], dimension: ['quantity', 'structure', 'place'], language: ['standard'] },
+  },
+  {
+    id: 'plan-over-code',
+    title: 'Plan over code',
+    description: 'The file grid with each plan item as a pin on the files it names, hue by status; items that name no code wait in a margin.',
+    why: 'To see which parts of the code each plan item names, and which items name none.',
+    credits: [
+      { work: 'Towards Improving the Mental Model of Software Developers through Cartographic Visualization', by: 'Adrian Kuhn, David Erni, and Oscar Nierstrasz', year: 2010, url: 'https://arxiv.org/abs/1001.2386', relation: 'metaphor', note: 'A stable map of the code that other things are pinned over as layers' },
+      { work: 'Synchronised Visualisation of Software Process and Product Artefacts: Concept, Design and Prototype Implementation', by: 'Mujtaba Alshakhouri, Jim Buchan, and Stephen G. MacDonell', year: 2018, url: 'https://arxiv.org/abs/2105.00705', relation: 'technique', note: 'ScrumCity: the code drawn with the planned work that names it' },
+      HILBERT_TREEMAP,
+    ],
+    tags: { subject: ['workspace'], category: ['dependency', 'state'], purpose: ['informative'], level: ['project'], dimension: ['place', 'status', 'structure'], language: ['standard'] },
+  },
+  {
+    id: 'blocking-graph',
+    title: 'Blocking graph',
+    description: 'What blocks what: plan items in columns by how many blockers deep they sit, the longest chain of unfinished work lit, inferred links dashed.',
+    why: 'To find what the open work is waiting on, and which item to finish to unblock the most.',
+    credits: [
+      { work: 'Methods for Visual Understanding of Hierarchical System Structures', by: 'Kozo Sugiyama, Shojiro Tagawa, and Mitsuhiko Toda', year: 1981, url: 'https://en.wikipedia.org/wiki/Layered_graph_drawing', relation: 'technique', note: 'Layered drawing of a directed graph: layers by longest path, then ordering to cut crossings' },
+      { work: 'Critical path method', by: 'James E. Kelley Jr. and Morgan R. Walker (Kelley & Walker)', year: 1959, url: 'https://en.wikipedia.org/wiki/Critical_path_method', relation: 'technique', note: 'The longest chain of dependent work, which sets how long the rest must wait' },
+    ],
+    tags: { subject: ['plans'], category: ['dependency', 'state'], purpose: ['informative'], level: ['project'], dimension: ['dependency', 'status'], language: ['standard'] },
+  },
+  {
+    id: 'roadmap',
+    title: 'Roadmap',
+    description: 'Plan items as bars from opened to closed, grouped under their epics and colored by status; a markdown plan’s step order as a chain.',
+    why: 'To see when each piece of the plan was opened and closed, and what is still running.',
+    credits: [{ work: 'Gantt chart', by: 'Henry L. Gantt', url: 'https://en.wikipedia.org/wiki/Gantt_chart', relation: 'form', note: 'Bars of work over time, a row per task, designed around 1910–1915' }],
+    tags: { subject: ['plans'], category: ['temporal', 'state'], purpose: ['informative'], level: ['project'], dimension: ['time', 'status', 'structure'], language: ['standard'] },
+  },
+  {
+    id: 'status-strips',
+    title: 'Status strips',
+    description: 'A strip per epic, its items as blocks colored by status, done first, the strip filled to the share of its work that is done.',
+    why: 'To see at a glance where each epic’s work stands and which are nearly finished.',
+    credits: [{ work: 'LifeLines: visualizing personal histories', by: 'Catherine Plaisant, Brett Milash, Anne Rose, Seth Widoff, and Ben Shneiderman', year: 1996, url: 'https://doi.org/10.1145/238386.238493', relation: 'form', note: 'One horizontal strip per record, its parts as marks along it' }],
+    tags: { subject: ['plans'], category: ['state', 'quantitative'], purpose: ['expressive', 'informative'], level: ['project'], dimension: ['status', 'quantity'], language: ['standard'] },
+  },
+  {
+    id: 'burn-up',
+    title: 'Burn-up',
+    description: 'Plan items opened and closed over time as two rising lines, the gap between them the work still open.',
+    why: 'To see whether work is closing as fast as it is being opened.',
+    credits: [
+      { work: 'Burnup chart', by: 'Agile project management practice (agile practice)', url: 'https://en.wikipedia.org/wiki/Burndown_chart', relation: 'form', note: 'Completed work rising toward a line of total scope; no single originator is recorded' },
+      PLAYFAIR_LINE,
+    ],
+    tags: { subject: ['plans'], category: ['quantitative', 'temporal'], purpose: ['informative'], level: ['project'], dimension: ['quantity', 'time'], language: ['standard'] },
+  },
+  {
+    id: 'confidence-map',
+    title: 'Confidence map',
+    description: 'Plan items by source document and epic, one square each, split between what the adapter read and what it guessed.',
+    why: 'To see how much of a plan was read from its source and how much was guessed.',
+    credits: [
+      { work: 'Isotype', by: 'Otto Neurath and Gerd Arntz', year: 1925, url: 'https://en.wikipedia.org/wiki/Isotype_(picture_language)', relation: 'form', note: 'Counts as rows of same-sized marks, one per unit, not a bigger mark' },
+      { work: 'Visualizing Uncertain Information', by: 'Alan M. MacEachren', year: 1992, url: 'https://cartographicperspectives.org/index.php/journal/article/view/cp13-maceachren', relation: 'technique', note: 'Showing how certain each datum is as a visual variable of its own' },
+    ],
+    tags: { subject: ['plans'], category: ['state'], purpose: ['informative'], level: ['project'], dimension: ['status'], language: ['standard'] },
   },
   // Hero views: each carries a design language of its own, and they go last.
   {
@@ -416,6 +515,34 @@ export const CATALOG: VisualizerEntry[] = [
     hero: true,
     credits: [{ ...NIGHTINGALE, relation: 'technique', note: 'Time as angle around a circle, a wedge per period' }, STASKO_RINGS],
     tags: { subject: ['sessions'], category: ['temporal'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['time', 'actor', 'hierarchy'], language: ['horology'] },
+  },
+  {
+    id: 'atlas',
+    title: 'Atlas',
+    description: 'The whole project as a map: packages are islands placed by their dependencies, files are contoured hills, imports are roads, plan items are pins by status, and sessions leave trails as they replay.',
+    why: 'To give the project a geography: where the code is, where the work is, and where the agents went.',
+    hero: true,
+    credits: [
+      { work: 'Towards Improving the Mental Model of Software Developers through Cartographic Visualization', by: 'Adrian Kuhn, David Erni and Oscar Nierstrasz', year: 2010, url: 'https://arxiv.org/abs/1001.2386', relation: 'metaphor', note: 'Software Cartography: a codebase as a stable map of islands and contours that thematic overlays reuse' },
+      { work: 'Visualization of large hierarchical data by circle packing', by: 'Weixin Wang, Hui Wang, Guozhong Dai and Hongan Wang', year: 2006, relation: 'technique', note: 'Front-chain circle packing, which shapes each island from its modules and files' },
+      { work: 'Circle Packing (Protovis)', by: 'Michael Bostock', url: 'https://mbostock.github.io/protovis/ex/pack.html', relation: 'form', note: 'The enclosure diagram of a codebase: containment drawn as circles inside circles' },
+      { ...FORCE_LAYOUT, note: 'Islands placed by the imports between packages, so closeness is dependency' },
+    ],
+    tags: { subject: ['workspace', 'code'], category: ['dependency', 'quantitative', 'state'], purpose: ['expressive'], level: ['project'], dimension: ['structure', 'dependency', 'place', 'status'], language: ['cartographic'] },
+  },
+  {
+    id: 'strata',
+    title: 'Strata',
+    description: 'The project as three stacked tilted planes: code as a wheel of packages and files on the floor, sessions and their agents in the middle, the plan’s epics as rings of items on the roof, with reads and edits dropping and mentions and closes rising between them as the sessions replay.',
+    why: 'To see what the sessions did to the code and to the plan, as traffic between three layers.',
+    hero: true,
+    credits: [
+      { work: 'Towards Improving the Mental Model of Software Developers through Cartographic Visualization', by: 'Adrian Kuhn, David Erni, and Oscar Nierstrasz', year: 2010, url: 'https://arxiv.org/html/1001.2386', relation: 'technique', note: 'Software Cartography: one stable layout that thematic layers reuse, as the three planes share one angular layout' },
+      { work: 'Synchronised Visualisation of Software Process and Product Artefacts: Concept, Design and Prototype Implementation', by: 'Mujtaba Alshakhouri, Jim Buchan, and Stephen G. MacDonell', year: 2018, url: 'https://arxiv.org/abs/2105.00705', relation: 'metaphor', note: 'ScrumCity: a code city linked to the sprints and stories of planned work' },
+      { ...NIGHTINGALE, relation: 'technique', note: 'The polar layout: a wedge per package around a circle, sized by its files' },
+      STASKO_RINGS,
+    ],
+    tags: { subject: ['workspace'], category: ['actor', 'dependency', 'state'], purpose: ['expressive'], level: ['project'], dimension: ['structure', 'actor', 'communication', 'status'], language: ['strata'] },
   },
 ];
 

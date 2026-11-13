@@ -48,9 +48,19 @@ mount(host, ctx) -> { update(sessions, selection, options), resize(), destroy(),
 
 The arguments to `update`:
 
-- `sessions`: `SessionView[]`, never empty from the explorer. See [The data](#the-data).
-- `selection`: `{ sessionId?, turnId?, range?: [fromMs, toMs], focusId? }` or `null`. Shared across every slide. Use the fields you can show; ignore the rest. `focusId` is a turn tree node id; only the tree sets it.
-- `options`: `{}` from the explorer.
+- `sessions`: `SessionView[]`, never empty from the explorer when the view draws sessions. See [The data](#the-data). When it draws another subject, it's whatever sessions are loaded, possibly none.
+- `selection`: `{ sessionId?, turnId?, range?: [fromMs, toMs], focusId?, artifactId?, itemId? }` or `null`. Shared across every slide. Use the fields you can show; ignore the rest. `focusId` is a turn tree node id; only the tree sets it. `artifactId` names a code artifact and `itemId` a plan item, each qualified by its graph's root as `root::id`, the way the workspace's joins name them.
+- `options`: `{}` when the view draws sessions. When it draws another subject (below), `{ subject, workspace, shape? }`.
+
+### Drawing code, plans, and the workspace
+
+A view says which subjects it draws in its catalog entry's `tags.subject` (`sessions`, `code`, `plans`, `workspace`; see [the workspace explorer](workspace-explorer.md#subjects-and-schemas)). When it lists more than one, the explorer puts a **Draw** switch on its slide, among the subjects that are loaded. For a subject other than sessions, the view is mounted once (never stacked) and `update` gets:
+
+- `options.subject`: `'code'`, `'plans'`, or `'workspace'`.
+- `options.workspace`: the `Workspace` (`src/model/workspace.ts`): `{ sessions, code: CodeGraph[], plans: PlanGraph[], touches, joins: { planToCode, planToSession, sessionToCode } }`. Join ids are qualified, `root::id`.
+- `options.shape`, for `code` and `plans`: the [Shape](workspace-explorer.md#shapes-one-view-several-subjects) of every loaded graph of that subject, ids qualified as above, code folded to modules or packages past `SHAPE_NODE_LIMIT` nodes (`shape.fold` says which). A view that draws a Shape draws it whenever it's given, and `SessionView[]` otherwise, so the session path is unchanged.
+
+The kit's Shape helpers keep the views alike: `shapeClass(node)` (`shape-k-N` by kind, `shape-st-<status>` for plan items, both in `viz.css` for fills and swatches), `shapeLegend(shape)`, `shapeChildren(shape)` (children by parent id, roots under `''`, largest first), `shapeOwn(kids, node)`, `shapeTip(shape, node, extraRows)`, `shapeNote(shape)`, `shapeSelection(subject, id)` (`{ artifactId }` or `{ itemId }`), and `shapeSelected(selection, id)`. Draw an inferred node or link with `shape-inferred` (dashed), and a selected one with `shape-on`. A view that draws something isn't loaded says so in its note, as Conversation Landscape says why it has no words.
 
 How the explorer mounts you:
 
@@ -75,7 +85,7 @@ Read the comments in `vizkit.js` for details; this is the list, in the groups be
 
 | Field | Type |
 | --- | --- |
-| `select(selection)` | Announce a selection: `{ sessionId?, turnId?, range?, focusId? }`, or `null` to clear. The host saves it and calls `update` on every mounted instance. |
+| `select(selection)` | Announce a selection: `{ sessionId?, turnId?, range?, focusId?, artifactId?, itemId? }`, or `null` to clear. The host saves it and calls `update` on every mounted instance. |
 | `tooltip` | The page's tooltip element. Use `showTip` and `hideTip` rather than touching it. |
 | `showTip(evt, rows)` | Shows the tooltip near the pointer. `rows` is an array of strings (one line each) or `[label, value]` pairs. |
 | `hideTip()` | Hides it. |
@@ -117,6 +127,12 @@ Read the comments in `vizkit.js` for details; this is the list, in the groups be
 - `REPLAY_SPEEDS`, `REPLAY_CHOICES`, `getReplayPrefs()`, `setReplayPrefs(partial)`, `onReplayPrefs(cb)`: page-wide speed and loop, shared by every clock. A view doesn't usually touch these.
 
 The clock respects `prefers-reduced-motion`: it opens on the final state and doesn't autoplay. See [Shared replay](visualization-explorer.md#shared-replay) and `viz/factoryClock.js` for a full use.
+
+**The code grid** (the File grid and Plan over code)
+
+- `codeGrid(codeGraphs, { fileLimit })` → `{ groups, cells, under, fold, files }`: the loaded code's files (or modules, past `fileLimit` files) grouped by package, ids qualified `root::id`, each cell `{ id, label, path, lines, role, fanIn, fanOut, inferredIn, module, package, count }`; `under` maps every artifact id to the cells it is or holds.
+- `hilbertBands(groups, { width, maxHeight, labelHeight?, gap?, maxCell?, minCell? })` → `{ cell, width, height, bands: [{ group, y, top, rows, cells: [{ item, x, y }] }] }`: a band per group, its items along a Hilbert curve.
+- `hilbertPoint(n, d)` → `{ x, y }`: the d-th point of the Hilbert curve on an n × n grid.
 
 **Force layout**
 
@@ -285,7 +301,7 @@ const tab = window.factoryClockExplore.mount(root, source, ctx);   // -> { shown
 | `onExplorer(cb)` | Register `cb(state)`, called on each load with an `ExplorerState` or `null`. `ExplorerState` is in `src/explorerModel.ts`. |
 | `openSessionId()` | The session open elsewhere on the page, or `null`. Pre-checked the first time. |
 
-The saved state is `{ picked, current, filters, replay, collapsed, corner, selection }`; the host stores it however it likes. The one source today is `src/web/`, which holds the web page's sessions in memory.
+The saved state is `{ picked, current, compare, filters, subjects, replay, collapsed, corner, selection }`; the host stores it however it likes. The one source today is `src/web/`, which holds the web page's sessions in memory.
 
 ## Gaps before outside authors
 

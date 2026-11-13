@@ -329,6 +329,18 @@ select, input[type="search"] {
 .actor-chart .dim { opacity: 0.18; }
 .actor-legend { margin-top: 6px; }
 .actor-key { display: inline-block; }
+.ag-shape-chart .ag-node { cursor: pointer; }
+.ag-shape-chart .ag-node:focus { outline: none; }
+.ag-shape-chart .ag-dot { stroke: var(--fc-surface); stroke-width: 1.5; }
+.ag-shape-chart .ag-dot.shape-inferred { stroke: var(--fc-ink); stroke-dasharray: 3 2; }
+.ag-shape-chart .ag-dot.shape-on, .ag-shape-chart .ag-node:focus .ag-dot, .ag-shape-chart .ag-node:hover .ag-dot { stroke: var(--fc-ink); stroke-width: 2.5; stroke-dasharray: none; }
+.ag-shape-chart .ag-arrow { fill: var(--fc-ink-muted); }
+.ag-shape-chart .ag-link-group:hover .shape-link { stroke-opacity: 1; }
+.ag-shape-chart .dim { opacity: 0.18; }
+.shape-link.ag-link-0 { stroke: var(--fc-ink-muted); }
+.shape-link.ag-link-1 { stroke: var(--fc-series-1); }
+.shape-link.ag-link-2 { stroke: var(--fc-series-2); }
+.shape-link.ag-link-3 { stroke: var(--fc-series-3); }
 
 /* Prompt terms: word circles in the first series color, joined by lines whose width is set per edge. */
 .terms-chart .term-line { stroke: var(--fc-ink-muted); opacity: 0.35; }
@@ -400,6 +412,11 @@ select, input[type="search"] {
 .treemap-chart .treemap-label { fill: var(--fc-ink); font-size: 11px; pointer-events: none; paint-order: stroke; stroke: var(--fc-surface); stroke-width: 3px; stroke-linejoin: round; }
 .treemap-chart .treemap-selected { fill: none; stroke: var(--fc-accent, var(--fc-series-1)); stroke-width: 2.5; pointer-events: none; }
 .treemap-legend { margin-top: 6px; }
+.treemap-chart .treemap-head { cursor: pointer; }
+.treemap-chart .treemap-head:focus { outline: none; }
+.treemap-chart .treemap-head-hit { fill: transparent; }
+.treemap-chart .treemap-head:hover .treemap-head-hit, .treemap-chart .treemap-head:focus .treemap-head-hit { fill: var(--fc-hover); }
+.treemap-chart .treemap-block.shape-inferred { stroke-dasharray: 3 2; }
 
 /* Heatmap: a five-step ramp of the first series color, by opacity so it holds on either theme. */
 .heat-1 { --heat-opacity: 0.18; }
@@ -576,6 +593,18 @@ select, input[type="search"] {
 .sankey-chart .sankey-node { stroke: none; }
 .sankey-model { fill: var(--fc-ink-muted); background: var(--fc-ink-muted); }
 .sankey-chart .sankey-label { paint-order: stroke; stroke: var(--fc-surface); stroke-width: 3px; stroke-linejoin: round; }
+.sankey-chart .ribbon-shape.shape-inferred { stroke: var(--fc-ink); stroke-width: 1; stroke-dasharray: 4 3; }
+.sankey-chart .sankey-node.shape-inferred { stroke: var(--fc-ink); stroke-dasharray: 3 2; }
+.sankey-chart .sankey-node.shape-on { stroke: var(--fc-ink); stroke-width: 2; }
+.sankey-chart .sankey-shape-node { cursor: pointer; }
+.sankey-chart .sankey-shape-node:focus { outline: none; }
+.sankey-chart .sankey-shape-node:hover .sankey-node, .sankey-chart .sankey-shape-node:focus .sankey-node { stroke: var(--fc-accent); stroke-width: 2; }
+.sankey-chart .sankey-back { fill: none; stroke: var(--fc-error); stroke-width: 1.5; stroke-dasharray: 5 3; stroke-opacity: 0.8; }
+.sankey-chart .sankey-back.shape-inferred { stroke-dasharray: 2 3; }
+.sankey-chart .sankey-back-hit { fill: none; stroke: transparent; stroke-width: 8; }
+.sankey-chart .ribbon-dim .sankey-back { stroke-opacity: 0.15; }
+.sankey-chart .sankey-back-group:hover .sankey-back, .sankey-chart .sankey-back-group:focus .sankey-back { stroke-opacity: 1; stroke-width: 2.5; }
+.swatch-sankey-back { background: none; border-top: 2px dashed var(--fc-error); }
 
 /* Adjacency matrix */
 .viz-chart.adj-chart { width: auto; max-width: none; }
@@ -587,6 +616,13 @@ select, input[type="search"] {
 .adj-chart .adj-on { stroke: var(--fc-ink); stroke-width: 2; stroke-dasharray: none; }
 .adj-chart .adj-count { fill: var(--fc-ink); font-size: 10px; pointer-events: none; paint-order: stroke; stroke: var(--fc-surface); stroke-width: 2.5px; stroke-linejoin: round; }
 .swatch.swatch-adj-inferred { background: none; outline: 1px dashed var(--fc-ink); outline-offset: -1px; }
+.adj-chart .adj-group { fill: none; stroke: var(--fc-ink-muted); stroke-width: 1; stroke-opacity: 0.6; pointer-events: none; }
+.adj-chart .adj-lit { fill: var(--fc-selection); fill-opacity: 0.35; }
+.adj-chart .adj-label-on { font-weight: 700; fill: var(--fc-ink); }
+.adj-chart .adj-row { cursor: pointer; }
+.adj-chart .adj-row:focus { outline: none; }
+.adj-chart .adj-row:hover .row-label, .adj-chart .adj-row:focus .row-label { text-decoration: underline; }
+.adj-chart .adj-swatch.shape-inferred { stroke-width: 1; }
 
 /* Swimlane */
 .swim-wrap { display: flex; align-items: flex-start; }
@@ -617,6 +653,152 @@ select, input[type="search"] {
 .swim-call { fill: var(--fc-ink-muted); background: var(--fc-ink-muted); }
 .swim-compaction { fill: var(--fc-warn); }
 
+/* Shapes: code by kind (vizkit.js shapeClass), plans by status. Code's kinds are source, test, doc, config, asset, generated, external, container. */
+.shape-k-0 { fill: var(--fc-cat-1); background: var(--fc-cat-1); }
+.shape-k-1 { fill: var(--fc-cat-2); background: var(--fc-cat-2); }
+.shape-k-2 { fill: var(--fc-cat-3); background: var(--fc-cat-3); }
+.shape-k-3 { fill: var(--fc-cat-4); background: var(--fc-cat-4); }
+.shape-k-4 { fill: var(--fc-cat-5); background: var(--fc-cat-5); }
+.shape-k-5 { fill: var(--fc-info); background: var(--fc-info); }
+.shape-k-6 { fill: var(--fc-ink-muted); background: var(--fc-ink-muted); }
+.shape-k-7 { fill: var(--fc-rule); background: var(--fc-rule); }
+.shape-st-open { fill: var(--fc-info); background: var(--fc-info); }
+.shape-st-in_progress { fill: var(--fc-warn); background: var(--fc-warn); }
+.shape-st-blocked { fill: var(--fc-error); background: var(--fc-error); }
+.shape-st-done { fill: var(--fc-ok); background: var(--fc-ok); }
+.shape-st-deferred { fill: var(--fc-ink-muted); background: var(--fc-ink-muted); }
+.shape-st-dropped { fill: var(--fc-rule); background: var(--fc-rule); }
+.shape-inferred { stroke: var(--fc-ink); stroke-dasharray: 3 2; stroke-width: 1; }
+.swatch-shape-inferred { background: none; border: 1px dashed var(--fc-ink); }
+.shape-on { stroke: var(--fc-ink); stroke-width: 2; }
+.shape-link { fill: none; stroke: var(--fc-ink-muted); stroke-opacity: 0.55; }
+.shape-link.shape-inferred { stroke-dasharray: 4 3; stroke-width: inherit; }
+.slide-subject { margin-left: auto; }
+.slide-subject button { font-size: 0.85em; padding: 1px 8px; }
+
+/* Dependency layers (viz/dependencyLayers.js) */
+.deplayers-chart { display: block; }
+.deplayers-edge { stroke-opacity: 0.35; }
+.deplayers-edge-dim { stroke-opacity: 0.12; }
+.deplayers-edge-on { stroke: var(--fc-accent); stroke-opacity: 0.9; }
+.deplayers-cycle-edge { stroke: var(--fc-warn); stroke-opacity: 0.8; stroke-width: 1; }
+.deplayers-cycle { fill: none; stroke: var(--fc-warn); stroke-width: 1.5; }
+.swatch.deplayers-swatch-cycle { background: none; border: 1.5px solid var(--fc-warn); }
+.deplayers-hit { fill: transparent; }
+.deplayers-node { cursor: pointer; }
+.deplayers-node:hover .deplayers-hit, .deplayers-node:focus .deplayers-hit, .deplayers-node-on .deplayers-hit { fill: var(--fc-selection-soft); }
+.deplayers-node:focus { outline: none; }
+.deplayers-label { fill: var(--fc-ink); font-size: 10px; }
+.deplayers-label-small { font-size: 8.5px; }
+.deplayers-node-on .deplayers-label { font-weight: 600; }
+
+/* Package wheel (viz/packageWheel.js) */
+.wheel-chart { display: block; margin: 0 auto; }
+.wheel-ext { fill: var(--fc-ink-muted); stroke: var(--fc-ink-muted); background: var(--fc-ink-muted); }
+.wheel-arc, .wheel-part { cursor: pointer; stroke: none; }
+.wheel-part { fill-opacity: 0.55; }
+.wheel-arc:hover, .wheel-part:hover, .wheel-arc:focus, .wheel-part:focus { fill-opacity: 0.8; outline: none; }
+.wheel-arc.shape-on, .wheel-part.shape-on { stroke: var(--fc-ink); stroke-width: 2; }
+.wheel-ribbon { fill-opacity: 0.42; stroke-opacity: 0.6; stroke-width: 0.5; cursor: pointer; }
+.wheel-ribbon.shape-inferred { stroke: var(--fc-ink); stroke-dasharray: 3 2; }
+.wheel-ribbon:hover, .wheel-ribbon:focus { fill-opacity: 0.75; outline: none; }
+.wheel-ribbon-dim { fill-opacity: 0.1; }
+.wheel-ribbon-on { fill-opacity: 0.7; }
+.wheel-label { fill: var(--fc-ink); font-size: 11px; }
+.wheel-label-on { font-weight: 600; }
+.swatch.wheel-swatch-ribbon { background: var(--fc-cat-1); opacity: 0.5; }
+.swatch.wheel-swatch-ring { background: var(--fc-cat-1); opacity: 0.55; height: 4px; }
+
+/* File grid and Plan over code (viz/fileGrid.js, viz/planOverCode.js) */
+.filegrid-scroll { overflow-x: auto; }
+.filegrid-chart, .pog-chart { display: block; }
+.filegrid-pkg, .pog-pkg { fill: var(--fc-ink-muted); font-size: 10px; }
+.filegrid-pkg[role="button"], .pog-pkg[role="button"] { cursor: pointer; }
+.filegrid-pkg[role="button"]:hover, .pog-pkg[role="button"]:hover { fill: var(--fc-ink); }
+.filegrid-pkg-on { fill: var(--fc-ink); font-weight: 600; }
+.filegrid-cell, .pog-cell { cursor: pointer; }
+.filegrid-cell:focus, .pog-cell:focus { outline: none; }
+.filegrid-bg, .pog-bg { fill: var(--fc-ink-muted); stroke: none; }
+.filegrid-mod-0, .pog-bg { fill-opacity: 0.05; }
+.filegrid-mod-1 { fill-opacity: 0.12; }
+.filegrid-cell:hover .filegrid-bg, .filegrid-cell:focus .filegrid-bg, .pog-cell:hover .pog-bg, .pog-cell:focus .pog-bg { fill: var(--fc-accent); fill-opacity: 0.25; }
+.filegrid-zero { fill: var(--fc-ink-muted); fill-opacity: 0.3; background: var(--fc-ink-muted); opacity: 0.6; }
+.filegrid-file.filegrid-zero { opacity: 1; }
+.filegrid-other { fill: var(--fc-rule); background: var(--fc-rule); }
+.filegrid-on, .pog-on { fill: none; stroke: var(--fc-ink); stroke-width: 1.5; pointer-events: none; }
+.pog-file { fill: var(--fc-ink-muted); fill-opacity: 0.28; background: var(--fc-ink-muted); opacity: 0.6; }
+.pog-file.pog-file-named { fill-opacity: 0.6; }
+.swatch.pog-file { opacity: 0.35; }
+.swatch.pog-file.pog-file-named { opacity: 0.75; }
+rect.pog-file { opacity: 1; }
+.pog-pin { stroke: var(--fc-surface); stroke-width: 1; cursor: pointer; }
+.pog-pin:focus { outline: none; }
+.pog-pin:hover, .pog-pin:focus { stroke: var(--fc-ink); }
+.pog-pin-region { stroke: var(--fc-ink); stroke-width: 1.25; }
+.pog-pin-inferred { stroke: var(--fc-ink); stroke-dasharray: 2 1.5; }
+.pog-pin-on { stroke: var(--fc-ink); stroke-width: 2; }
+.pog-more { cursor: pointer; }
+.pog-more-dot { fill: var(--fc-panel); stroke: var(--fc-ink-muted); }
+.pog-more-text { fill: var(--fc-ink); font-size: 8px; }
+.pog-rule { stroke: var(--fc-rule); }
+.pog-margin-head { fill: var(--fc-ink-muted); font-size: 10px; }
+.pog-row { cursor: pointer; }
+.pog-row:focus { outline: none; }
+.pog-row-hit { fill: transparent; }
+.pog-row:hover .pog-row-hit, .pog-row:focus .pog-row-hit, .pog-row-on .pog-row-hit { fill: var(--fc-selection-soft); }
+.pog-row-text { fill: var(--fc-ink); font-size: 11px; }
+.pog-row-on .pog-row-text { font-weight: 600; }
+.swatch.pog-swatch-pin { border-radius: 50%; }
+.swatch.pog-swatch-inferred { background: none; border: 1px dashed var(--fc-ink); }
+
+/* Plan views (blocking graph, roadmap, status strips, burn-up, confidence map): status fills come from shape-st-<status>, inferred from shape-inferred. */
+.blk-chart .blk-node { cursor: pointer; }
+.blk-chart .blk-node:focus { outline: none; }
+.blk-chart .blk-box { fill: var(--fc-panel); stroke: var(--fc-rule); stroke-width: 1; }
+.blk-chart .blk-node:hover .blk-box, .blk-chart .blk-node:focus .blk-box { stroke: var(--fc-ink-muted); }
+.blk-chart .blk-settled { opacity: 0.6; }
+.blk-chart .blk-node.blk-crit .blk-box { stroke: var(--fc-accent); stroke-width: 2; }
+.blk-chart .blk-box.shape-on { stroke: var(--fc-ink); stroke-width: 2; }
+.blk-chart .blk-label { fill: var(--fc-ink); font-size: 11px; pointer-events: none; }
+.blk-chart .blk-edge { fill: none; stroke: var(--fc-ink-muted); stroke-opacity: 0.6; stroke-width: 1.2; }
+.blk-chart .blk-edge.blk-crit { stroke: var(--fc-accent); stroke-opacity: 1; stroke-width: 2.5; }
+.blk-chart .blk-square { cursor: pointer; }
+.swatch.blk-crit-key { height: 3px; background: var(--fc-accent); }
+.rmap-chart .rmap-band { fill: var(--fc-panel); }
+.rmap-chart .rmap-head { font-weight: 600; }
+.rmap-chart .rmap-row { cursor: pointer; }
+.rmap-chart .rmap-row:focus { outline: none; }
+.rmap-chart .rmap-row:hover .hit, .rmap-chart .rmap-row:focus .hit { fill: var(--fc-hover, rgba(128, 128, 128, 0.15)); }
+.rmap-chart .rmap-asof { stroke: var(--fc-accent); stroke-width: 1; stroke-dasharray: 4 3; }
+.rmap-chart .rmap-follows { fill: none; stroke: var(--fc-ink-muted); stroke-width: 1.2; }
+.rmap-chart .rmap-step { fill: var(--fc-ink-muted); }
+.swatch.rmap-asof-key { width: 0; border-left: 1px dashed var(--fc-accent); background: none; }
+.swatch.rmap-follows-key { width: 4px; border-radius: 50%; background: var(--fc-ink-muted); }
+.pstrip-chart .pstrip-track { fill: var(--fc-panel); stroke: var(--fc-rule); stroke-width: 1; }
+.pstrip-chart .pstrip-fill { fill: var(--fc-ok); fill-opacity: 0.22; }
+.pstrip-chart .pstrip-block { stroke: none; cursor: pointer; }
+.pstrip-chart .pstrip-block.shape-inferred { stroke: var(--fc-ink); }
+.pstrip-chart .pstrip-block.shape-on { stroke: var(--fc-ink); stroke-width: 2; }
+.pstrip-chart .row-label[role="button"] { cursor: pointer; }
+.pstrip-chart .pstrip-on, .conf-chart .conf-on { font-weight: 600; text-decoration: underline; }
+.swatch.pstrip-fill-key { background: var(--fc-ok); opacity: 0.35; outline: 1px solid var(--fc-rule); }
+.burn-chart .burn-gap { fill: var(--fc-info); fill-opacity: 0.14; stroke: none; }
+.burn-chart .burn-line { fill: none; stroke-width: 2; }
+.burn-chart .burn-line.burn-opened { stroke: var(--fc-info); }
+.burn-chart .burn-line.burn-closed { stroke: var(--fc-ok); }
+.burn-chart .burn-dot { stroke: var(--fc-surface); stroke-width: 1; cursor: pointer; }
+.burn-chart .burn-dot.burn-opened { fill: var(--fc-info); }
+.burn-chart .burn-dot.burn-closed { fill: var(--fc-ok); }
+.burn-chart .burn-dot.shape-inferred { stroke: var(--fc-ink); }
+.burn-chart .burn-dot.shape-on { stroke: var(--fc-ink); stroke-width: 2; }
+.swatch.burn-opened-key { height: 3px; background: var(--fc-info); }
+.swatch.burn-closed-key { height: 3px; background: var(--fc-ok); }
+.swatch.burn-gap-key { background: var(--fc-info); opacity: 0.3; }
+.conf-chart .conf-band { fill: var(--fc-panel); }
+.conf-chart .conf-doc { font-weight: 600; }
+.conf-chart .conf-square { cursor: pointer; }
+.conf-chart .row-label[role="button"] { cursor: pointer; }
+
 /* The hidden attribute always hides: a class that sets display (.slide, .card) would otherwise beat the browser's own [hidden] rule. */
 [hidden] { display: none !important; }
 
@@ -645,6 +827,8 @@ select, input[type="search"] {
   flex-direction: column;
 }
 .slide.offstage { position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
+/* Everything in it too: a view that animates sets visibility="visible" on its marks, which would beat an inherited hidden. */
+.slide.offstage * { visibility: hidden; }
 .slide.pinned { order: -1; }
 .stage.comparing .slide:not(.offstage) { border-color: var(--fc-ink-muted); }
 .slide-head { flex: none; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
@@ -680,18 +864,21 @@ select, input[type="search"] {
 .stacked:first-child { border-top: none; margin-top: 0; padding-top: 0; }
 .stack-head { display: flex; align-items: baseline; gap: 4px; margin-bottom: 6px; }
 .viz-host { width: 100%; }
-/* The dock: the shelf and the nav under the stage. Sticky for windows too short to fit the stage, and over the puck (20) so nothing covers it;
-   it leaves room on the side the puck sits when the puck is at the bottom. */
+/* The dock: the shelf and the nav under the stage. Sticky for windows too short to fit the stage, under the puck (20) and over the
+   tooltip (10). With the puck at the bottom, the nav leaves room on the puck's side, and the shelf runs the full width with a spacer
+   at that end, so its last card can scroll out from under the puck. */
 .dock {
   position: sticky;
   bottom: 0;
-  z-index: 21;
+  z-index: 19;
   padding: 6px 0;
   background: var(--fc-surface);
 }
-.explorer[data-puck="bottom-right"] .dock { padding-right: 112px; }
-.explorer[data-puck="bottom-left"] .dock { padding-left: 112px; }
+.explorer[data-puck="bottom-right"] .nav { padding-right: 112px; }
+.explorer[data-puck="bottom-left"] .nav { padding-left: 112px; }
 .shelf { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; padding: 2px 2px 6px; }
+.explorer[data-puck="bottom-right"] .shelf::after { content: ''; flex: none; width: 112px; }
+.explorer[data-puck="bottom-left"] .shelf::before { content: ''; flex: none; width: 112px; }
 .card {
   flex: none;
   display: grid;
@@ -1167,3 +1354,287 @@ select, input[type="search"] {
 .hero-clock .fc-playback { font-style: italic; font-size: 13px; fill: var(--clock-ink); }
 .hero-clock .fc-caption { font-size: 7px; }
 .hero-clock .fc-empty { color: var(--clock-muted); }
+
+/* Atlas, design language `cartographic`: uncoated paper, one ink for land and hachures, a flat second ink for water,
+   small-caps serif place names, pins by status. The sheet's colors are variables, so the dark theme swaps the sheet
+   (a chart read under a lamp: dark paper, pale ink) and the marks and type read them unchanged. */
+.hero-atlas {
+  --at-paper: #f3eee2;
+  --at-ink: #2b2a26;
+  --at-muted: #5d5a50; /* 6:1 on the paper */
+  --at-water: #9fbccf;
+  --at-shoal: #c4d7e3;
+  --at-land: #f3eee2;
+  --at-open: #c8552f;
+  --at-moss: #5f8a4a;
+  --at-ochre: #d9a441;
+  --at-slate: #6b7280;
+  --at-blocked: #8e2a1c;
+  --at-trail: #c8552f;
+  background: var(--at-paper);
+  color: var(--at-ink);
+  border-radius: 4px;
+  padding: 10px 12px 12px;
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  .hero-atlas {
+    --at-paper: #23221e;
+    --at-ink: #e9e3d3;
+    --at-muted: #b3ad9d;
+    --at-water: #2c4352;
+    --at-shoal: #375466;
+    --at-land: #2f2d27;
+    --at-open: #e07a52;
+    --at-moss: #87b46e;
+    --at-ochre: #e6b85a;
+    --at-slate: #9aa1ad;
+    --at-blocked: #f09a8a;
+    --at-trail: #f08a5d;
+  }
+}
+.hero-atlas .at-svg { display: block; max-width: 100%; }
+.hero-atlas .at-empty { color: var(--at-muted); font-style: italic; margin: 24px 8px; }
+/* Sheet */
+.hero-atlas .at-paper { fill: var(--at-paper); }
+.hero-atlas .at-sea { fill: var(--at-water); }
+.hero-atlas .at-hatch { stroke: var(--at-paper); stroke-width: 0.6; opacity: 0.5; }
+.hero-atlas .at-neat { fill: none; stroke: var(--at-ink); stroke-width: 1.2; }
+.hero-atlas .at-neat-outer { fill: none; stroke: var(--at-ink); stroke-width: 0.5; }
+/* Type: place names in letterspaced capitals; the system serifs, no font files */
+.hero-atlas .at-cartouche { fill: var(--at-ink); font-size: 10px; letter-spacing: 0.2em; }
+.hero-atlas .at-island-name { fill: var(--at-ink); font-size: 10px; letter-spacing: 0.14em; cursor: pointer; paint-order: stroke; stroke: var(--at-water); stroke-width: 3px; stroke-linejoin: round; }
+.hero-atlas .at-island-name:hover, .hero-atlas .at-island-name:focus, .hero-atlas .at-island-name.at-zoomed { fill: var(--at-open); outline: none; text-decoration: underline; }
+.hero-atlas .at-epic { fill: var(--at-open); font-size: 9.5px; letter-spacing: 0.2em; cursor: pointer; paint-order: stroke; stroke: var(--at-land); stroke-width: 3px; stroke-linejoin: round; stroke-opacity: 0.85; }
+.hero-atlas .at-epic.at-on, .hero-atlas .at-epic:focus { text-decoration: underline; outline: none; }
+.hero-atlas .at-region-name, .hero-atlas .at-file-name { fill: var(--at-muted); font-size: 8px; letter-spacing: 0.08em; font-style: italic; pointer-events: none; }
+.hero-atlas .at-port-name, .hero-atlas .at-scale-text { fill: var(--at-ink); font: 9px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.hero-atlas .at-port-name { font-style: italic; }
+/* Marks: land */
+.hero-atlas .at-shoal { fill: none; stroke: var(--at-shoal); stroke-width: 7; stroke-linejoin: round; }
+.hero-atlas .at-land { fill: var(--at-land); cursor: pointer; }
+.hero-atlas .at-coast { fill: none; stroke: var(--at-ink); stroke-width: 1.2; stroke-linejoin: round; pointer-events: none; }
+.hero-atlas .at-island.at-unsurveyed .at-coast { stroke-dasharray: 4 3; }
+.hero-atlas .at-island.at-on .at-coast { stroke-width: 2.4; }
+.hero-atlas .at-region { fill: none; stroke: var(--at-ink); stroke-width: 0.5; stroke-dasharray: 1 2.5; opacity: 0.5; pointer-events: none; }
+.hero-atlas .at-region.at-on { stroke: var(--at-open); opacity: 1; stroke-dasharray: none; stroke-width: 1.2; }
+.hero-atlas .at-file { cursor: pointer; }
+.hero-atlas .at-file:focus { outline: none; }
+.hero-atlas .at-file-ground { fill: transparent; }
+.hero-atlas .at-contour { fill: none; stroke: var(--at-ink); stroke-width: 0.5; opacity: 0.55; pointer-events: none; }
+.hero-atlas .at-contour-0 { opacity: 0.8; }
+.hero-atlas .at-file.at-folded .at-contour { stroke-dasharray: 2 1.5; }
+.hero-atlas .at-file:hover .at-contour, .hero-atlas .at-file:focus .at-contour { stroke: var(--at-open); opacity: 1; }
+.hero-atlas .at-file.at-on .at-file-ground { fill: var(--at-ochre); fill-opacity: 0.45; }
+.hero-atlas .at-file.at-on .at-contour { stroke: var(--at-open); opacity: 1; stroke-width: 1; }
+/* Marks: roads, sea lanes, blocking routes */
+.hero-atlas .at-road { fill: none; stroke: var(--at-ink); stroke-linecap: round; opacity: 0.85; }
+.hero-atlas .at-road-core { fill: none; stroke: var(--at-land); stroke-linecap: round; pointer-events: none; }
+.hero-atlas .at-road-g.at-unsurveyed .at-road { stroke-dasharray: 5 4; }
+.hero-atlas .at-road-g:hover .at-road { stroke: var(--at-open); }
+.hero-atlas .at-hit { fill: none; stroke: transparent; cursor: pointer; }
+.hero-atlas .at-lane { stroke: var(--at-ink); stroke-width: 1; stroke-dasharray: 1.5 4; stroke-linecap: round; opacity: 0.6; }
+.hero-atlas .at-port { cursor: pointer; }
+.hero-atlas .at-port-mark { fill: var(--at-paper); stroke: var(--at-ink); stroke-width: 1; }
+.hero-atlas .at-port.at-on .at-port-mark, .hero-atlas .at-port:hover .at-port-mark { fill: var(--at-open); }
+.hero-atlas .at-route { fill: none; stroke: var(--at-open); stroke-width: 1.1; stroke-dasharray: 3 3; stroke-linecap: round; }
+.hero-atlas .at-route-g.at-unsurveyed .at-route { stroke-dasharray: 1 3; }
+.hero-atlas .at-route-g { cursor: pointer; }
+/* Marks: pins and clusters, by status */
+.hero-atlas .at-pin, .hero-atlas .at-cluster { cursor: pointer; }
+.hero-atlas .at-pin:focus, .hero-atlas .at-cluster:focus { outline: none; }
+.hero-atlas .at-pin-head { stroke: var(--at-ink); stroke-width: 0.7; stroke-linejoin: round; }
+.hero-atlas .at-pin.at-unsurveyed .at-pin-head { stroke-dasharray: 2 1.5; }
+.hero-atlas .at-pin.at-on .at-pin-head, .hero-atlas .at-pin:focus .at-pin-head { stroke-width: 2; }
+.hero-atlas .at-pin.at-ghost { opacity: 0.18; }
+.hero-atlas .at-st-open { fill: var(--at-open); }
+.hero-atlas .at-st-in_progress { fill: var(--at-ochre); }
+.hero-atlas .at-st-blocked { fill: var(--at-blocked); }
+.hero-atlas .at-st-done { fill: var(--at-moss); }
+.hero-atlas .at-st-deferred { fill: var(--at-slate); }
+.hero-atlas .at-st-dropped { fill: var(--at-paper); }
+.hero-atlas .at-cluster-disc { fill: var(--at-open); stroke: var(--at-ink); stroke-width: 0.7; }
+.hero-atlas .at-cluster:focus .at-cluster-disc { stroke-width: 2; }
+.hero-atlas .at-cluster-n { fill: var(--at-paper); font: 600 10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; pointer-events: none; }
+/* Marks: trails */
+.hero-atlas .at-trail { fill: none; stroke: var(--at-trail); stroke-width: 1.6; stroke-linecap: round; cursor: pointer; }
+.hero-atlas .at-trail.at-unsurveyed { stroke-dasharray: 0.1 4; }
+.hero-atlas .at-trail.at-on { stroke-width: 2.8; }
+.hero-atlas .at-trail-head { fill: var(--at-trail); stroke: var(--at-paper); stroke-width: 1; cursor: pointer; }
+/* Furniture */
+.hero-atlas .at-scale line { stroke: var(--at-ink); stroke-width: 1.2; }
+.hero-atlas .at-rose-ring { fill: var(--at-paper); stroke: var(--at-ink); stroke-width: 0.8; }
+.hero-atlas .at-rose-n { fill: var(--at-ink); }
+.hero-atlas .at-rose-s { fill: var(--at-paper); stroke: var(--at-ink); stroke-width: 0.6; }
+.hero-atlas .at-rose-text { fill: var(--at-ink); font-size: 8px; }
+/* Controls and legend */
+.hero-atlas .at-foot { display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap; border-top: 1px solid var(--at-ink); border-bottom: 1px solid var(--at-ink); padding: 6px 0; margin-top: 6px; }
+.hero-atlas .at-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.hero-atlas .at-caps { font: 10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.14em; text-transform: uppercase; color: var(--at-muted); margin-left: 6px; }
+.hero-atlas button, .hero-atlas select { font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--at-ink); background: var(--at-paper); border: 1px solid var(--at-muted); border-radius: 2px; padding: 2px 8px; }
+.hero-atlas button[aria-pressed="true"] { background: var(--at-ink); color: var(--at-paper); border-color: var(--at-ink); }
+.hero-atlas button[aria-pressed="false"] { border-style: dashed; }
+.hero-atlas button:disabled { opacity: 0.45; cursor: default; }
+.hero-atlas button:focus-visible, .hero-atlas select:focus-visible { outline: 2px solid var(--at-open); outline-offset: 1px; }
+.hero-atlas .at-foot .replay-bar { flex: 1 1 360px; margin: 0; }
+.hero-atlas .replay-scrub { accent-color: var(--at-open); }
+.hero-atlas .replay-badge { color: var(--at-open); border-color: var(--at-open); }
+.hero-atlas .replay-badge.live { color: var(--at-moss); border-color: var(--at-moss); }
+.hero-atlas .replay-where { color: var(--at-muted); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; }
+.hero-atlas .at-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.hero-atlas .at-key { display: inline-flex; align-items: center; gap: 6px; }
+.hero-atlas .at-sw { display: inline-block; width: 22px; height: 10px; box-sizing: border-box; }
+.hero-atlas .at-sw-land { background: var(--at-land); border: 1.2px solid var(--at-ink); border-radius: 5px; }
+.hero-atlas .at-sw-contour { width: 12px; height: 12px; border: 1px solid var(--at-ink); border-radius: 50%; box-shadow: inset 0 0 0 2px var(--at-paper), inset 0 0 0 3px var(--at-ink); }
+.hero-atlas .at-sw-road { height: 4px; background: var(--at-ink); border-radius: 2px; }
+.hero-atlas .at-sw-lane { height: 0; border-top: 1.5px dotted var(--at-ink); }
+.hero-atlas .at-sw-pin { width: 10px; height: 10px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 0.7px solid var(--at-ink); }
+.hero-atlas .at-sw-pin.at-st-open { background: var(--at-open); }
+.hero-atlas .at-sw-pin.at-st-in_progress { background: var(--at-ochre); }
+.hero-atlas .at-sw-pin.at-st-blocked { background: var(--at-blocked); }
+.hero-atlas .at-sw-pin.at-st-done { background: var(--at-moss); }
+.hero-atlas .at-sw-pin.at-st-deferred { background: var(--at-slate); }
+.hero-atlas .at-sw-pin.at-st-dropped { background: var(--at-paper); }
+.hero-atlas .at-sw-route { height: 0; border-top: 1.5px dashed var(--at-open); }
+.hero-atlas .at-sw-trail { height: 3px; background: var(--at-trail); border-radius: 2px; }
+.hero-atlas .at-sw-unsurveyed { height: 9px; border: 1.2px dashed var(--at-ink); border-radius: 4px; }
+
+/* Strata, design language `strata`: three translucent planes in a deep void, one hue each, bright messages between them. */
+.hero-strata {
+  --strata-void: #141a2b;
+  --strata-ink: #e3dcff;
+  --strata-muted: #aab4cc; /* 8:1 on the void */
+  --strata-code: #3a7ca5;
+  --strata-code-rim: #57baf8;
+  --strata-code-top: #438fbe;
+  --strata-code-left: #2e6384;
+  --strata-code-right: #234a63;
+  --strata-code-label: #5dc6ff;
+  --strata-sessions: #8a6fd1;
+  --strata-sessions-rim: #cfa7ff;
+  --strata-sessions-shadow: #614e92;
+  --strata-sessions-label: #ddb2ff;
+  --strata-plans: #d4a72c;
+  --strata-plans-rim: #ffd939;
+  --strata-plans-label: #f3dc8e;
+  --strata-down: #ffb347;
+  --strata-up: #5fe0c0;
+  --strata-lateral: #f4f1ff;
+  --strata-done: #6fbf73;
+  --strata-in-progress: #d4a72c;
+  --strata-open: #e36b4f;
+  --strata-blocked: #b8392b;
+  --strata-deferred: #7d8597;
+  --strata-dropped: #4a5163;
+  --strata-mono: ui-monospace, "IBM Plex Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--strata-void);
+  color: var(--strata-ink);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.hero-strata .st-svg { display: block; cursor: ns-resize; touch-action: none; }
+.hero-strata .st-svg:focus { outline: 1px solid var(--strata-muted); outline-offset: -1px; }
+.hero-strata .st-void { fill: var(--strata-void); }
+.hero-strata .st-empty { color: var(--strata-muted); font: 12px var(--strata-mono); padding: 24px; margin: 0; }
+
+/* Sheet: each plane a translucent disc with a thin bright rim. */
+.hero-strata .st-plane { transition: opacity 0.2s, transform 0.25s; }
+.hero-strata .st-plane.st-dim, .hero-strata .st-traffic.st-dim { opacity: 0.22; }
+.hero-strata .st-traffic { transition: opacity 0.2s; pointer-events: none; }
+.hero-strata .st-disc { fill-opacity: 0.2; }
+.hero-strata .st-rim { fill: none; stroke-width: 1; }
+.hero-strata .st-hub { fill: none; stroke-width: 0.6; opacity: 0.6; }
+.hero-strata .st-plane-code .st-disc { fill: var(--strata-code); }
+.hero-strata .st-plane-code .st-rim, .hero-strata .st-plane-code .st-hub { stroke: var(--strata-code-rim); }
+.hero-strata .st-plane-sessions .st-disc { fill: var(--strata-sessions); }
+.hero-strata .st-plane-sessions .st-rim, .hero-strata .st-plane-sessions .st-hub { stroke: var(--strata-sessions-rim); }
+.hero-strata .st-plane-plans .st-disc { fill: var(--strata-plans); }
+.hero-strata .st-plane-plans .st-rim, .hero-strata .st-plane-plans .st-hub { stroke: var(--strata-plans-rim); }
+
+/* Type: monospace, one label per plane at the left edge. */
+.hero-strata .st-plane-name { font: 11px var(--strata-mono); letter-spacing: 0.12em; }
+.hero-strata .st-plane-code .st-plane-name { fill: var(--strata-code-label); }
+.hero-strata .st-plane-sessions .st-plane-name { fill: var(--strata-sessions-label); }
+.hero-strata .st-plane-plans .st-plane-name { fill: var(--strata-plans-label); }
+.hero-strata .st-plane-sub, .hero-strata .st-wedge-label, .hero-strata .st-stamp { fill: var(--strata-muted); font: 9px var(--strata-mono); }
+.hero-strata .st-plane-sub.st-missing { font-style: italic; }
+.hero-strata .st-wedge-label { pointer-events: none; }
+.hero-strata .st-node-label { fill: var(--strata-ink); font: 9px var(--strata-mono); pointer-events: none; paint-order: stroke; stroke: var(--strata-void); stroke-width: 3px; }
+.hero-strata .st-epic-label { fill: var(--strata-plans-label); font: 9px var(--strata-mono); pointer-events: none; paint-order: stroke; stroke: var(--strata-void); stroke-width: 3px; }
+.hero-strata .st-key { font: 9px var(--strata-mono); }
+.hero-strata .st-key.st-down { fill: var(--strata-down); }
+.hero-strata .st-key.st-up { fill: var(--strata-up); }
+.hero-strata .st-key.st-lateral { fill: var(--strata-lateral); }
+
+/* Marks: wedges and blocks on the floor, flat-shaded. */
+.hero-strata .st-wedge { fill: var(--strata-code); fill-opacity: 0.32; stroke: var(--strata-code-rim); stroke-width: 0.6; stroke-linejoin: round; cursor: pointer; }
+.hero-strata .st-wedge:hover, .hero-strata .st-wedge:focus { fill-opacity: 0.5; outline: none; }
+.hero-strata .st-wedge.st-folded { fill-opacity: 0.16; stroke-dasharray: 3 3; }
+.hero-strata .st-block { cursor: pointer; }
+.hero-strata .st-face-top { fill: var(--strata-code-top); stroke: var(--strata-code-left); stroke-width: 0.4; stroke-linejoin: round; }
+.hero-strata .st-face-l { fill: var(--strata-code-left); }
+.hero-strata .st-face-r { fill: var(--strata-code-right); }
+.hero-strata .st-block.st-folded .st-face-top { stroke-dasharray: 2 2; fill-opacity: 0.6; }
+.hero-strata .st-block:hover .st-face-top, .hero-strata .st-block:focus .st-face-top { fill: var(--strata-code-label); }
+.hero-strata .st-block:focus { outline: none; }
+.hero-strata .st-block.st-on .st-face-top, .hero-strata .st-wedge.st-on { stroke: var(--strata-lateral); stroke-width: 1.4; }
+
+/* Marks: sessions and agents in the middle. */
+.hero-strata .st-orbit { fill: none; stroke: var(--strata-sessions-rim); stroke-width: 0.6; stroke-dasharray: 2 3; opacity: 0.7; }
+.hero-strata .st-spawn { stroke: var(--strata-sessions-rim); stroke-width: 1; opacity: 0.8; }
+.hero-strata .st-shadow { fill: var(--strata-sessions-shadow); opacity: 0.6; }
+.hero-strata .st-node { fill: var(--strata-sessions); stroke: var(--strata-sessions-label); stroke-width: 1; }
+.hero-strata .st-session, .hero-strata .st-agent { cursor: pointer; }
+.hero-strata .st-session:focus, .hero-strata .st-agent:focus { outline: none; }
+.hero-strata .st-session:hover .st-node, .hero-strata .st-session:focus .st-node, .hero-strata .st-agent:hover .st-node, .hero-strata .st-agent:focus .st-node { fill: var(--strata-sessions-label); }
+.hero-strata .st-session.st-on .st-node { stroke: var(--strata-lateral); stroke-width: 2; }
+
+/* Marks: epic rings and items on the roof, hue by status. */
+.hero-strata .st-epic { fill: none; stroke: var(--strata-plans-rim); stroke-width: 0.8; stroke-opacity: 0.55; cursor: pointer; }
+.hero-strata .st-epic:hover, .hero-strata .st-epic:focus { stroke-opacity: 1; outline: none; }
+.hero-strata .st-epic.st-on { stroke: var(--strata-lateral); stroke-opacity: 1; stroke-width: 1.4; }
+.hero-strata .st-item { stroke-width: 0.6; stroke-linejoin: round; cursor: pointer; transition: fill 0.3s, opacity 0.3s; }
+.hero-strata .st-item:focus { outline: none; }
+.hero-strata .st-item:hover, .hero-strata .st-item:focus { stroke: var(--strata-lateral); stroke-width: 1.2; }
+.hero-strata .st-item.st-on { stroke: var(--strata-lateral); stroke-width: 1.8; }
+.hero-strata .st-item.st-inferred { stroke-dasharray: 2 1.5; }
+.hero-strata .st-item.st-folded { stroke-dasharray: 2 2; }
+.hero-strata .st-st-done { fill: var(--strata-done); stroke: #90f896; }
+.hero-strata .st-st-in_progress { fill: var(--strata-in-progress); stroke: var(--strata-plans-rim); }
+.hero-strata .st-st-open { fill: var(--strata-open); stroke: #ff8b67; }
+.hero-strata .st-st-blocked { fill: var(--strata-blocked); stroke: #ff8b67; }
+.hero-strata .st-st-deferred { fill: var(--strata-deferred); stroke: var(--strata-muted); }
+.hero-strata .st-st-dropped { fill: var(--strata-dropped); stroke: var(--strata-deferred); }
+.hero-strata .st-st-unborn { fill: none; stroke: var(--strata-plans-rim); opacity: 0.3; }
+
+/* Motion: messages as small bright dots with a halo, amber down, teal up; a faint shaft where each passed. */
+.hero-strata .st-shaft { stroke-width: 0.8; stroke-dasharray: 2 3; }
+.hero-strata .st-shaft.st-inferred { stroke-dasharray: 1 4; }
+.hero-strata .st-shaft.st-down, .hero-strata .st-dot.st-down, .hero-strata .st-glow.st-down { stroke: var(--strata-down); fill: var(--strata-down); }
+.hero-strata .st-shaft.st-up, .hero-strata .st-dot.st-up, .hero-strata .st-glow.st-up { stroke: var(--strata-up); fill: var(--strata-up); }
+.hero-strata .st-shaft.st-lateral, .hero-strata .st-dot.st-lateral, .hero-strata .st-glow.st-lateral { stroke: var(--strata-lateral); fill: var(--strata-lateral); }
+.hero-strata .st-dot { stroke: none; }
+.hero-strata .st-glow { stroke: none; fill-opacity: 0.22; }
+
+/* The foot: replay controls and the status key. */
+.hero-strata .st-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 6px 12px 8px; border-top: 1px solid #263049; }
+.hero-strata .replay-bar { flex: 1 1 360px; margin: 0; color: var(--strata-ink); }
+.hero-strata .replay-bar button, .hero-strata .replay-bar select {
+  font: 11px var(--strata-mono);
+  color: var(--strata-ink);
+  background: #1c2338;
+  border: 1px solid #323c58;
+  border-radius: 3px;
+  padding: 2px 8px;
+}
+.hero-strata .replay-bar button:hover { background: #262f4a; }
+.hero-strata .st-legend { display: flex; flex-wrap: wrap; gap: 10px; font: 10px var(--strata-mono); color: var(--strata-muted); }
+.hero-strata .st-key-item { display: inline-flex; align-items: center; gap: 5px; }
+.hero-strata .st-swatch { width: 10px; height: 7px; display: inline-block; transform: skewX(-30deg); }
+.hero-strata .st-sw-done { background: var(--strata-done); }
+.hero-strata .st-sw-in_progress { background: var(--strata-in-progress); }
+.hero-strata .st-sw-open { background: var(--strata-open); }
+.hero-strata .st-sw-blocked { background: var(--strata-blocked); }
+.hero-strata .st-sw-deferred { background: var(--strata-deferred); }
+.hero-strata .st-sw-dropped { background: var(--strata-dropped); }
+.hero-strata .st-sw-inferred { border: 1px dashed var(--strata-muted); background: none; transform: none; }

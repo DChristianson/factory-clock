@@ -10,6 +10,7 @@
 import { SessionView, TreeNode } from '../schema';
 import { ARTIFACT_ROLES, Artifact, CodeGraph } from './code';
 import { PLAN_STATUSES, PlanGraph } from './plan';
+import type { Workspace } from './workspace';
 
 export interface ShapeNode {
   id: string;
@@ -38,6 +39,8 @@ export interface Shape {
   valueLabel: string;
   /** The legend, in color order. */
   kinds: string[];
+  /** For code: how far files were folded, so a view can say so. */
+  fold?: CodeFold;
 }
 
 // ---------- sessions ----------
@@ -145,7 +148,7 @@ export function shapeOfCode(graph: CodeGraph, by: CodeFold = 'file'): Shape {
       if (!d.inferred) delete prev.inferred;
     } else merged.set(k, { from, to, weight: d.weight ?? 1, kind: d.kind, ...(d.inferred ? { inferred: true } : {}) });
   }
-  return { nodes, links: [...merged.values()], valueLabel: 'lines', kinds: CODE_KINDS };
+  return { nodes, links: [...merged.values()], valueLabel: 'lines', kinds: CODE_KINDS, fold: by };
 }
 
 // ---------- plans ----------
@@ -175,4 +178,52 @@ export function shapeOfPlan(graph: PlanGraph): Shape {
   });
   const links: ShapeLink[] = graph.links.filter((l) => l.kind !== 'parent').map((l) => ({ from: l.from, to: l.to, weight: 1, kind: l.kind, ...(l.inferred ? { inferred: true } : {}) }));
   return { nodes, links, valueLabel: 'items', kinds };
+}
+
+// ---------- several graphs, as the explorer loads them ----------
+
+/** What the explorer asks for: a subject other than sessions, and for code, how far to fold. */
+export interface ShapeOptions {
+  by?: CodeFold;
+}
+
+/**
+ * A Shape over every loaded graph of one subject. Ids are qualified by each
+ * graph's root (`root::id`), as the workspace's joins are, so a node, a
+ * selection, and a join all name the same thing. Each graph's roots stay
+ * roots, so several graphs draw as a forest.
+ */
+export function shapeOfGraphs<G extends { source: { root: string } }>(graphs: G[], one: (g: G) => Shape): Shape | null {
+  if (!graphs.length) return null;
+  const parts = graphs.map((g) => {
+    const q = (id: string) => `${g.source.root}::${id}`;
+    const s = one(g);
+    return {
+      ...s,
+      nodes: s.nodes.map((n) => ({ ...n, id: q(n.id), ...(n.parent ? { parent: q(n.parent) } : {}) })),
+      links: s.links.map((l) => ({ ...l, from: q(l.from), to: q(l.to) })),
+    };
+  });
+  return { nodes: parts.flatMap((p) => p.nodes), links: parts.flatMap((p) => p.links), valueLabel: parts[0].valueLabel, kinds: parts[0].kinds, ...(parts[0].fold ? { fold: parts[0].fold } : {}) };
+}
+
+/** The most nodes a Shape view is handed before code folds a level: files to modules, then modules to packages. */
+export const SHAPE_NODE_LIMIT = 400;
+
+/** The finest fold that keeps every loaded code graph's nodes under SHAPE_NODE_LIMIT, together. */
+export function codeFoldFor(graphs: CodeGraph[]): CodeFold {
+  const count = (kinds: ReadonlySet<string>) => graphs.reduce((n, g) => n + g.artifacts.filter((a) => kinds.has(a.kind)).length, 0);
+  if (count(FOLD_KEEPS.file) <= SHAPE_NODE_LIMIT) return 'file';
+  if (count(FOLD_KEEPS.module) <= SHAPE_NODE_LIMIT) return 'module';
+  return 'package';
+}
+
+/** The Shape of one subject of a workspace, or null when that subject isn't loaded. Code folds by `options.by`, or by codeFoldFor. */
+export function shapeOfWorkspace(ws: Workspace, subject: 'sessions' | 'code' | 'plans', options: ShapeOptions = {}): Shape | null {
+  if (subject === 'sessions') return ws.sessions.length ? shapeOfSessions(ws.sessions) : null;
+  if (subject === 'code') {
+    const by = options.by ?? codeFoldFor(ws.code);
+    return shapeOfGraphs(ws.code, (g) => shapeOfCode(g, by));
+  }
+  return shapeOfGraphs(ws.plans, shapeOfPlan);
 }

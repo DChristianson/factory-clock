@@ -4,18 +4,23 @@
 // same value, so it shows structure, and the treemap compares sizes better. The
 // tool category ring is the tree's approximate split, marked ≈. See
 // docs/visualization-explorer.md for the contract. Clicking an arc
-// announces { sessionId, turnId? }. Sees only its host and ctx: no VS Code.
+// announces { sessionId, turnId? }. Given options.shape (code or plans, see
+// docs/workspace-explorer.md, "Shapes"), it draws that hierarchy instead:
+// packages, modules, and files by lines, or epics and items by count, and an
+// arc announces { artifactId } or { itemId }. Sees only its host and ctx: no VS Code.
 (function () {
   const MAX_SIZE = 560;
   const MIN_ANGLE = 0.004; // radians; thinner arcs can't be seen or hovered
   window.factoryClock.register({
     id: 'sunburst',
     title: 'Sunburst',
-    tags: { category: ['quantitative'], purpose: ['expressive'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'actor'], language: ['standard'] },
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['quantitative'], purpose: ['expressive'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'actor', 'structure', 'status'], language: ['standard'] },
     mount(host, ctx) {
-      const { svg, svgText, fmt, compact, clip, arcPath, sessionName, sessionClass, legendKey, vizPanel, interact } = ctx;
+      const { svg, svgText, fmt, compact, clip, arcPath, sessionName, sessionClass, legendKey, vizPanel, interact, shapeChildren, shapeClass, shapeLegend, shapeSelection, shapeSelected, shapeTip, shapeNote } = ctx;
       let views = [];
       let selection = null;
+      let shape = null; // with a subject: the Shape to draw instead of the sessions
+      let subject = null;
       const panel = vizPanel(host, []);
 
       /** The rings: nested { label, tokens, cls, sessionId, turnId, approx, children }. */
@@ -51,10 +56,23 @@
         return sessions.length === 1 ? sessions[0].children : sessions;
       }
 
+      /** The rings from a Shape: the same nested form, each node keeping its Shape node for color, tip, and pick. */
+      function shapeForest() {
+        const kids = shapeChildren(shape);
+        const make = (n) => ({ label: n.label, tokens: n.value, cls: `${shapeClass(n)}${n.inferred ? ' shape-inferred' : ''}`, node: n, children: (kids.get(n.id) || []).map(make) });
+        const roots = kids.get('').map(make);
+        // One root says nothing a ring can't: start from its children.
+        return roots.length === 1 && roots[0].children.length ? roots[0].children : roots;
+      }
+
       function draw() {
-        const nodes = forest();
+        const nodes = shape ? shapeForest() : forest();
         const total = nodes.reduce((a, n) => a + n.tokens, 0);
-        if (!views.length || total <= 0) {
+        if (shape && total <= 0) {
+          panel.empty(`Nothing to size: no ${shape.valueLabel} in the loaded ${subject}.`);
+          return;
+        }
+        if (!shape && (!views.length || total <= 0)) {
           panel.empty(views.length ? `No model calls with token usage in ${views.length === 1 ? 'this session' : 'these sessions'}.` : '');
           return;
         }
@@ -65,7 +83,7 @@
         const outer = size / 2 - 4;
         const inner = outer * 0.2;
         const ring = (outer - inner) / depth;
-        const root = svg('svg', { class: 'viz-chart sun-chart', width: size, height: size, viewBox: `0 0 ${size} ${size}`, role: 'img', 'aria-label': `Sunburst of ${compact(total)} tokens over ${depth} rings` });
+        const root = svg('svg', { class: 'viz-chart sun-chart', width: size, height: size, viewBox: `0 0 ${size} ${size}`, role: 'img', 'aria-label': `Sunburst of ${compact(total)} ${shape ? shape.valueLabel : 'tokens'} over ${depth} rings` });
         const sel = selection;
         const place = (list, parentTokens, a0, a1, d) => {
           let at = a0;
@@ -75,11 +93,17 @@
             if (n.tokens > 0 && sweep >= MIN_ANGLE) {
               // A whole ring can't be one arc: stop just short of closing the circle.
               const close = Math.min(end, at + 2 * Math.PI - 0.001);
-              const on = !!sel && !!n.turnId && sel.turnId === n.turnId && (!sel.sessionId || sel.sessionId === n.sessionId);
+              const on = n.node ? shapeSelected(sel, n.node.id) : !!sel && !!n.turnId && sel.turnId === n.turnId && (!sel.sessionId || sel.sessionId === n.sessionId);
               const p = svg('path', { class: `sun-arc ${n.cls}${on ? ' sun-on' : ''}`, d: arcPath(cx, cx, inner + d * ring, inner + (d + 1) * ring, at, close) });
               const share = Math.round((n.tokens / total) * 100);
               const mark = n.approx ? '≈ ' : '';
-              interact(ctx, p, {
+              if (n.node) {
+                interact(ctx, p, {
+                  label: `${n.label}: ${compact(n.tokens)} ${shape.valueLabel}`,
+                  tip: () => shapeTip(shape, n.node, [['Of everything', `${share}%`]]),
+                  pick: () => ctx.select(shapeSelection(subject, n.node.id)),
+                });
+              } else interact(ctx, p, {
                 label: `${n.label}: ${mark}${compact(Math.round(n.tokens))} tokens`,
                 tip: () => [n.label, ...(n.text ? [clip(n.text, 200)] : []), ['Tokens', `${mark}${fmt(Math.round(n.tokens))}`], ['Of everything', `${mark}${share}%`]],
                 pick: n.sessionId ? () => ctx.select(n.turnId ? { sessionId: n.sessionId, turnId: n.turnId } : { sessionId: n.sessionId }) : undefined,
@@ -92,15 +116,22 @@
         };
         place(nodes, total, 0, 2 * Math.PI, 0);
         root.append(svgText({ class: 'week-total', x: cx, y: cx + 2, 'text-anchor': 'middle' }, compact(total)));
-        root.append(svgText({ class: 'axis-label', x: cx, y: cx + 17, 'text-anchor': 'middle' }, 'tokens'));
+        root.append(svgText({ class: 'axis-label', x: cx, y: cx + 17, 'text-anchor': 'middle' }, shape ? shape.valueLabel : 'tokens'));
         panel.chart.replaceChildren(root);
+        if (shape) {
+          panel.legend.replaceChildren(...shapeLegend(shape));
+          panel.note.textContent = `From the center out: ${subject === 'plans' ? 'epics, then the items under them, colored by status' : 'packages, modules, then files, colored by kind'}. ${shapeNote(shape)} Outer arcs look bigger than inner ones of the same value, so use the treemap to compare sizes. Click an arc to select it.`;
+          return;
+        }
         panel.legend.replaceChildren(...views[0].categoryGroups.map((label, i) => legendKey(`cat-${i + 1}`, label)), legendKey('cat-0', 'Other and replies only'));
         panel.note.textContent = `From the center out: ${views.length > 1 ? 'sessions, ' : ''}prompts, agents, then tool categories, whose sizes are approximate (≈). Outer arcs look bigger than inner ones of the same value, so use the treemap to compare sizes. Click an arc to select its turn.`;
       }
       return {
-        update(sessions, sel) {
+        update(sessions, sel, options) {
           views = sessions;
           selection = sel || null;
+          shape = (options && options.shape) || null;
+          subject = (options && options.subject) || null;
           draw();
         },
         resize: draw,
