@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 320" width="240" height="320" role="img">
+<!-- Drawn from docs/images/workspace-explorer-sketches.html (sketch "puck-map"), light theme, motion off. -->
+<rect x="0" y="0" width="240" height="320" rx="2" fill="#ffffff" stroke="none" stroke-width="1"></rect>
+<rect x="5" y="10" width="230" height="300" rx="10" fill="#ffffff" stroke="#c8c8c8" stroke-width="1.2"></rect>
+<circle cx="23" cy="28" r="9" fill="rgba(0, 95, 184, 0.12)" stroke="#005fb8" stroke-width="1"></circle>
+<text x="39" y="32" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="start">Explore</text>
+<text x="221" y="32" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="400" text-anchor="end">–</text>
+<text x="19" y="56" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="start">Here</text>
+<text x="71" y="56" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="start">Ask</text>
+<text x="123" y="56" fill="#005fb8" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="start">Map</text>
+<line x1="123" y1="60" x2="142.5" y2="60" stroke="#005fb8" stroke-width="2"></line>
+<line x1="15" y1="66" x2="225" y2="66" stroke="#c8c8c8" stroke-width="1"></line>
+<text x="85" y="88" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8.5" font-weight="400" text-anchor="middle" transform="rotate(-45 85 88)">temp</text>
+<text x="106" y="88" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8.5" font-weight="400" text-anchor="middle" transform="rotate(-45 106 88)">acto</text>
+<text x="127" y="88" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8.5" font-weight="400" text-anchor="middle" transform="rotate(-45 127 88)">conv</text>
+<text x="148" y="88" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8.5" font-weight="400" text-anchor="middle" transform="rotate(-45 148 88)">depe</text>
+<text x="169" y="88" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8.5" font-weight="400" text-anchor="middle" transform="rotate(-45 169 88)">quan</text>
+<text x="190" y="88" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8.5" font-weight="400" text-anchor="middle" transform="rotate(-45 190 88)">stat</text>
+<text x="211" y="88" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="8.5" font-weight="400" text-anchor="middle" transform="rotate(-45 211 88)">sema</text>
+<text x="69" y="114" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9.5" font-weight="400" text-anchor="end">sessions</text>
+<rect x="75" y="100" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="96" y="100" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="117" y="100" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="138" y="100" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="159" y="100" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="180" y="100" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="201" y="100" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<text x="69" y="148" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9.5" font-weight="400" text-anchor="end">code</text>
+<rect x="75" y="134" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="96" y="134" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="117" y="134" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="138" y="134" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="159" y="134" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="180" y="134" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="201" y="134" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<text x="69" y="182" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9.5" font-weight="400" text-anchor="end">plans</text>
+<rect x="75" y="168" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="96" y="168" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="117" y="168" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="138" y="168" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="159" y="168" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="180" y="168" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="201" y="168" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<text x="69" y="216" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9.5" font-weight="400" text-anchor="end">workspace</text>
+<rect x="75" y="202" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="96" y="202" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="117" y="202" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="138" y="202" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="159" y="202" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="180" y="202" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<rect x="201" y="202" width="19" height="32" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<circle cx="80" cy="108" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="89" cy="108" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="80" cy="118" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="89" cy="118" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="101" cy="108" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="110" cy="108" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="101" cy="118" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="122" cy="108" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="131" cy="108" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="164" cy="108" r="3" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="173" cy="108" r="3" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="164" cy="118" r="3" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="173" cy="118" r="3" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="185" cy="108" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="194" cy="108" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="206" cy="108" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="215" cy="108" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="143" cy="142" r="3" fill="#005fb8" stroke="none" stroke-width="1" opacity="1"></circle>
+<circle cx="152" cy="142" r="3" fill="#005fb8" stroke="none" stroke-width="1" opacity="1"></circle>
+<circle cx="143" cy="152" r="3" fill="#005fb8" stroke="none" stroke-width="1" opacity="1"></circle>
+<circle cx="152" cy="152" r="3" fill="#005fb8" stroke="none" stroke-width="1" opacity="1"></circle>
+<circle cx="143" cy="142" r="5.5" fill="none" stroke="#005fb8" stroke-width="1.5"></circle>
+<circle cx="164" cy="142" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="173" cy="142" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="164" cy="152" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="173" cy="152" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="143" cy="176" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="152" cy="176" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="80" cy="176" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="89" cy="176" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="185" cy="176" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="194" cy="176" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="164" cy="176" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="173" cy="176" r="3" fill="#717171" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="143" cy="210" r="3" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="152" cy="210" r="3" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<circle cx="143" cy="220" r="3" fill="#eb6834" stroke="none" stroke-width="1" opacity="0.35"></circle>
+<text x="19" y="266" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9" font-weight="400" text-anchor="start">colored by language · lit = allowed</text>
+<text x="19" y="280" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9" font-weight="400" text-anchor="start">ring = on stage · click opens</text>
+<text x="19" y="298" fill="#e4572e" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="9" font-weight="400" text-anchor="start">empty cells: no view yet</text>
+<g><circle cx="224" cy="72" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="224" y="75.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">4</text></g>
+</svg>

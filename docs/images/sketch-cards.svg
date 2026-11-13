@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 330" width="960" height="330" role="img">
+<!-- Drawn from docs/images/workspace-explorer-sketches.html (sketch "cards"), light theme, motion off. -->
+<rect x="0" y="0" width="960" height="330" rx="2" fill="#ffffff" stroke="none" stroke-width="1"></rect>
+<rect x="70" y="60" width="250" height="170" rx="4" fill="#ffffff" stroke="#c8c8c8" stroke-width="1"></rect>
+<g><rect x="78" y="68" width="234" height="71.39999999999999" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect><path d="M83 76 C195 76 195 129.39999999999998 307 129.39999999999998" fill="none" stroke="#717171" stroke-width="5" stroke-linecap="butt" stroke-linejoin="round" opacity="0.4"></path><path d="M83 131.39999999999998 C195 131.39999999999998 195 80 307 80" fill="none" stroke="#2a78d6" stroke-width="4" stroke-linecap="butt" stroke-linejoin="round" opacity="0.5"></path></g>
+<circle cx="85" cy="152.39999999999998" r="6" fill="none" stroke="#717171" stroke-width="1.4"></circle>
+<line x1="85" y1="152.39999999999998" x2="85" y2="148.89999999999998" stroke="#717171" stroke-width="1.4"></line>
+<line x1="85" y1="152.39999999999998" x2="88" y2="153.89999999999998" stroke="#717171" stroke-width="1.4"></line>
+<text x="96" y="156.39999999999998" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="500" text-anchor="start">Sankey</text>
+<circle cx="83" cy="218" r="3.5" fill="#1baf7a" stroke="none" stroke-width="1"></circle>
+<circle cx="94" cy="218" r="3.5" fill="none" stroke="#717171" stroke-width="1.2"></circle>
+<rect x="355" y="60" width="250" height="170" rx="4" fill="rgba(0, 95, 184, 0.12)" stroke="#005fb8" stroke-width="1.5"></rect>
+<g><rect x="363" y="68" width="234" height="71.39999999999999" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect><circle cx="375" cy="76" r="3" fill="#717171" stroke="none" stroke-width="1"></circle><circle cx="375" cy="131.39999999999998" r="3" fill="#717171" stroke="none" stroke-width="1"></circle><circle cx="480" cy="76" r="3" fill="#717171" stroke="none" stroke-width="1"></circle><circle cx="480" cy="103.69999999999999" r="3" fill="#717171" stroke="none" stroke-width="1"></circle><circle cx="480" cy="131.39999999999998" r="3" fill="#717171" stroke="none" stroke-width="1"></circle><circle cx="585" cy="76" r="3" fill="#717171" stroke="none" stroke-width="1"></circle><circle cx="585" cy="94.46666666666667" r="3" fill="#717171" stroke="none" stroke-width="1"></circle><circle cx="585" cy="112.93333333333334" r="3" fill="#717171" stroke="none" stroke-width="1"></circle><circle cx="585" cy="131.4" r="3" fill="#717171" stroke="none" stroke-width="1"></circle><line x1="375" y1="76" x2="480" y2="103.69999999999999" stroke="#717171" stroke-width="1"></line></g>
+<path d="M368 147.39999999999998 q-3 0 -3 3 v2 q0 2 -2 2 q2 0 2 2 v2 q0 3 3 3 M372 147.39999999999998 q3 0 3 3 v2 q0 2 2 2 q-2 0 -2 2 v2 q0 3 -3 3" fill="none" stroke="#005fb8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path>
+<text x="381" y="156.39999999999998" fill="#005fb8" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="500" text-anchor="start">Dependency layers</text>
+<circle cx="368" cy="218" r="3.5" fill="#6250d6" stroke="none" stroke-width="1"></circle>
+<circle cx="379" cy="218" r="3.5" fill="#717171" stroke="#717171" stroke-width="1.2"></circle>
+<line x1="363" y1="235" x2="597" y2="235" stroke="#005fb8" stroke-width="2" stroke-linecap="round"></line>
+<rect x="640" y="60" width="250" height="170" rx="4" fill="#ffffff" stroke="#c8c8c8" stroke-width="1"></rect>
+<g><rect x="648" y="68" width="234" height="71.39999999999999" rx="2" fill="#f8f8f8" stroke="none" stroke-width="1"></rect><text x="765" y="107.69999999999999" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="9" font-weight="400" text-anchor="middle" font-style="italic">Atlas</text></g>
+<rect x="649" y="150.39999999999998" width="9" height="8" rx="1.5" fill="none" stroke="#717171" stroke-width="1.2"></rect>
+<rect x="651.5" y="148.39999999999998" width="9" height="8" rx="1.5" fill="#ffffff" stroke="#717171" stroke-width="1.2"></rect>
+<rect x="654" y="146.39999999999998" width="8" height="8" rx="1.5" fill="#ffffff" stroke="#717171" stroke-width="1.2"></rect>
+<text x="666" y="156.39999999999998" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="500" text-anchor="start">Atlas</text>
+<circle cx="653" cy="218" r="3.5" fill="#6250d6" stroke="none" stroke-width="1"></circle>
+<circle cx="664" cy="218" r="3.5" fill="none" stroke="#717171" stroke-width="1.2"></circle>
+<rect x="673" y="214.5" width="7" height="7" rx="1" fill="#c8552f" stroke="none" stroke-width="1"></rect>
+<text x="480" y="254" fill="#005fb8" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="400" text-anchor="middle">on stage</text>
+<text x="195" y="254" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="400" text-anchor="middle">mounted neighbor</text>
+<text x="765" y="254" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="400" text-anchor="middle">not mounted</text>
+<text x="96" y="173.39999999999998" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10" font-weight="400" text-anchor="start">Where the tokens flowed, actor to actor.</text>
+<text x="381" y="173.39999999999998" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10" font-weight="400" text-anchor="start">What depends on what, and where the cycles are.</text>
+<text x="666" y="173.39999999999998" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10" font-weight="400" text-anchor="start">The whole project as a map.</text>
+<line x1="70" y1="46" x2="320" y2="46" stroke="#717171" stroke-width="1"></line>
+<text x="195" y="42" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="middle">120 px on the shelf · 250 px here</text>
+<g><circle cx="74" cy="151.39999999999998" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="74" y="155.2" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">1</text></g>
+<g><circle cx="310" cy="153.39999999999998" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="310" y="157.2" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">2</text></g>
+<g><circle cx="120" cy="218" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="120" y="221.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">3</text></g>
+<g><circle cx="609" cy="68" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="609" y="71.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">4</text></g>
+<g><circle cx="349" cy="235" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="349" y="238.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">5</text></g>
+<text x="480" y="300" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="11" font-weight="400" text-anchor="middle">← →  move along the shelf   ·   Enter opens the focused card   ·   Esc returns to the stage</text>
+</svg>

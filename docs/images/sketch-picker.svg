@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" width="960" height="400" role="img">
+<!-- Drawn from docs/images/workspace-explorer-sketches.html (sketch "picker"), light theme, motion off. -->
+<rect x="0" y="0" width="960" height="400" rx="2" fill="#ffffff" stroke="none" stroke-width="1"></rect>
+<text x="24" y="34" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="600" text-anchor="start">Pick</text>
+<rect x="84" y="22" width="88.4" height="18" rx="9" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1" opacity="1"></rect>
+<text x="128.2" y="34.5" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="middle">Sessions · 6</text>
+<rect x="180.4" y="22" width="119.4" height="18" rx="9" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1" opacity="1"></rect>
+<text x="240.10000000000002" y="34.5" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="middle">Code · 3 packages</text>
+<rect x="307.8" y="22" width="181.4" height="18" rx="9" fill="#005fb8" stroke="#005fb8" stroke-width="1" opacity="1"></rect>
+<text x="398.5" y="34.5" fill="#fff" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="middle">Plans · 2 epics, 1 document</text>
+<rect x="497.20000000000005" y="22" width="69.80000000000001" height="18" rx="9" fill="none" stroke="#c8c8c8" stroke-width="1" opacity="0.5"></rect>
+<text x="532.1" y="34.5" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="middle">Workspace</text>
+<text x="579" y="34" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="start">nothing loaded</text>
+<line x1="24" y1="52" x2="936" y2="52" stroke="#c8c8c8" stroke-width="1"></line>
+<text x="24" y="74" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="start">Epics and documents, newest first</text>
+<text x="766" y="74" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="start">2 picked</text>
+<rect x="826" y="60" width="50" height="22" rx="3" fill="#005fb8" stroke="#005fb8" stroke-width="1"></rect>
+<text x="851" y="75" fill="#fff" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" text-anchor="middle">Load</text>
+<rect x="882" y="60" width="54" height="22" rx="3" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<text x="909" y="75" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" text-anchor="middle">Unload</text>
+<rect x="24" y="90" width="912" height="38" rx="3" fill="#ffffff" stroke="none" stroke-width="1"></rect>
+<text x="36" y="114" fill="#005fb8" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="400" text-anchor="start">☑</text>
+<text x="60" y="107" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="500" text-anchor="start">Workspace explorer: code, plans, and sessions</text>
+<text x="60" y="121" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="start">factory-clock-bqx</text>
+<text x="606" y="114" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="end">20 items</text>
+<rect x="626" y="105" width="180" height="8" rx="4" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<rect x="626" y="105" width="9" height="8" rx="4" fill="#5f8a4a" stroke="none" stroke-width="1"></rect>
+<text x="812" y="113" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="start">5% done</text>
+<text x="924" y="114" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="end">beads</text>
+<rect x="24" y="134" width="912" height="38" rx="3" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<text x="36" y="158" fill="#005fb8" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="400" text-anchor="start">☑</text>
+<text x="60" y="151" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="500" text-anchor="start">Design: visualization explorer</text>
+<text x="60" y="165" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="start">docs/visualization-explorer.md</text>
+<text x="606" y="158" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="end">41 items</text>
+<rect x="626" y="149" width="180" height="8" rx="4" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<rect x="626" y="149" width="162" height="8" rx="4" fill="#5f8a4a" stroke="none" stroke-width="1"></rect>
+<text x="812" y="157" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="start">90% done</text>
+<text x="924" y="158" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="end">markdown · inferred</text>
+<rect x="24" y="178" width="912" height="38" rx="3" fill="#ffffff" stroke="none" stroke-width="1"></rect>
+<text x="36" y="202" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="400" text-anchor="start">☐</text>
+<text x="60" y="195" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="500" text-anchor="start">Design: the workspace explorer</text>
+<text x="60" y="209" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="start">docs/workspace-explorer.md</text>
+<text x="606" y="202" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="end">20 items</text>
+<rect x="626" y="193" width="180" height="8" rx="4" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<text x="812" y="201" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="start">0% done</text>
+<text x="924" y="202" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="end">markdown · inferred</text>
+<rect x="24" y="222" width="912" height="38" rx="3" fill="#f8f8f8" stroke="none" stroke-width="1"></rect>
+<text x="36" y="246" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="400" text-anchor="start">☐</text>
+<text x="60" y="239" fill="#3b3b3b" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="500" text-anchor="start">Dev container with beads</text>
+<text x="60" y="253" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="start">factory-clock-7hq</text>
+<text x="606" y="246" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="end">3 items</text>
+<rect x="626" y="237" width="180" height="8" rx="4" fill="#f8f8f8" stroke="#c8c8c8" stroke-width="1"></rect>
+<rect x="626" y="237" width="180" height="8" rx="4" fill="#5f8a4a" stroke="none" stroke-width="1"></rect>
+<text x="812" y="245" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="start">100% done</text>
+<text x="924" y="246" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10" font-weight="400" text-anchor="end">beads</text>
+<text x="24" y="282" fill="#717171" font-family="'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="10.5" font-weight="400" text-anchor="start">Up to 8 units per subject. A unit-level view stacks one drawing per unit; a project view draws them all.</text>
+<text x="24" y="318" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="400" text-anchor="start">Code tab lists:</text>
+<text x="134" y="318" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="400" text-anchor="start">factory-clock (package) · 61 files      src/schema (module) · 7 files      viz (scripts) · 33 files</text>
+<text x="24" y="336" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="400" text-anchor="start">Sessions tab lists:</text>
+<text x="134" y="336" fill="#717171" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="400" text-anchor="start">as today: name, agent, start, turns, with a checkbox each</text>
+<g><circle cx="80" cy="22" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="80" y="25.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">1</text></g>
+<g><circle cx="806" cy="110" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="806" y="113.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">2</text></g>
+<g><circle cx="824" cy="56" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="824" y="59.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">3</text></g>
+<g><circle cx="934" cy="56" r="9" fill="#e4572e" stroke="none" stroke-width="1"></circle><text x="934" y="59.8" fill="#fff" font-family="'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace" font-size="10.5" font-weight="500" text-anchor="middle">4</text></g>
+</svg>
