@@ -6,10 +6,18 @@ echo "bd:     $(bd version 2>/dev/null | head -1)"
 echo "claude: $(claude --version 2>/dev/null || echo 'not found')"
 echo "git:    $(git --version)"
 echo "node:   $(node --version 2>/dev/null || echo 'not found')"
+echo "npm:    $(npm --version 2>/dev/null || echo 'not found')"
 
 # Record the metrics opt-out in bd's user config too (the env vars already
 # disable it; this keeps `bd metrics status` honest if they are ever unset).
 bd metrics off >/dev/null 2>&1 || true
+
+# Install the dev dependencies (TypeScript, esbuild, @types/node) from
+# package-lock.json, so `npm run build` and `npm test` work straight away.
+# node_modules is in the shared folder and git ignores it.
+echo
+echo "Installing dependencies (npm ci)..."
+npm ci --no-audit --no-fund
 
 # Claude Code integration comes from `bd init` (init-project.sh): it writes a
 # project-level .claude/settings.json hook that runs `bd prime` at session start.
@@ -21,4 +29,4 @@ if [ ! -d .beads ]; then
 fi
 
 echo
-echo "Ready. Build and test with:  npm ci && npm run build && npm test"
+echo "Ready. Build and test with:  npm run build && npm test"
