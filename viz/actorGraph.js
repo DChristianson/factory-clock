@@ -6,10 +6,20 @@
 // and tool call. See docs/visualization-explorer.md for the contract.
 // A project-level visualizer: draws every session it's given, one session
 // without complaint. With a turn selected, the actors and edges active in it
-// stand out; clicking an actor announces the first turn it appears in. Sees
+// stand out; clicking an actor announces the first turn it appears in. Given
+// options.shape (code or plans, see docs/workspace-explorer.md, "Shapes"), it
+// draws the Shape as a node-link graph instead: the nodes that have links,
+// sized by value and colored by kind or status, links by kind and weight with
+// inferred ones dashed, placed by the kit's force layout (seeded by id, so the
+// same input gives the same picture). Past MAX_SHAPE_NODES the deepest nodes
+// fold to their parents. A node announces { artifactId } or { itemId }. Sees
 // only its host and ctx: no VS Code.
 (function () {
   const MAX_SUBAGENTS = 12; // nodes in the column, the "+N subagents" fold included
+  const MAX_SHAPE_NODES = 60; // a Shape's linked nodes before the deepest fold to their parents
+  const SHAPE_LABELS = 24; // the largest nodes that get a label; the rest say theirs on hover
+  const SHAPE_LINK_CLASSES = 4; // link kinds with a color of their own; any more share the last
+  let arrowIds = 0;
   const KIND_LABEL = { you: 'You', agent: 'Agent', subagent: 'Subagent', model: 'Model', tool: 'Tool category' };
   const EDGE_LABEL = { message: 'Messages', delegation: 'Delegation (inferred)', model: 'Model calls', tool: 'Tool calls' };
 
@@ -28,9 +38,9 @@
   window.factoryClock.register({
     id: 'actor-graph',
     title: 'Actor graph',
-    tags: { category: ['actor'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['actor', 'communication', 'quantity'], language: ['standard'] },
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['actor', 'dependency'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['actor', 'communication', 'quantity', 'structure', 'dependency', 'status'], language: ['standard'] },
     mount(host, ctx) {
-      const { el, svg, compact, fmt, clip, fit, short, ms, agentName, modelShort, showTip, hideTip } = ctx;
+      const { el, svg, compact, fmt, clip, fit, short, ms, agentName, modelShort, showTip, hideTip, interact, svgText, forceLayout, shapeClass, shapeLegend, shapeSelection, shapeTip, shapeKindText, shapeNote } = ctx;
       const chartHost = el('div');
       const legend = el('div', { class: 'legend small actor-legend' });
       const note = el('p', { class: 'muted small' });
@@ -38,14 +48,180 @@
       let views = [];
       let selection = null;
       let draws = 0;
+      let shape = null; // with a subject: the Shape to draw instead of the sessions
+      let subject = null;
+      const arrowId = `actor-arrow-${++arrowIds}`;
 
       const callTokens = (c) => c.input + c.cacheRead + c.cacheCreation + c.output;
       const turnKey = (sessionId, turnId) => `${sessionId}\n${turnId}`;
 
-      function update(sessions, sel) {
+      function update(sessions, sel, options) {
         views = sessions;
         selection = sel || null;
+        shape = (options && options.shape) || null;
+        subject = (options && options.subject) || null;
         draw();
+      }
+
+      /** The Shape's linked nodes and merged links; past MAX_SHAPE_NODES, the deepest fold to their parents, a level at a time. */
+      function shapeGraph() {
+        const byId = new Map(shape.nodes.map((n) => [n.id, n]));
+        const raw = shape.links.filter((l) => byId.has(l.from) && byId.has(l.to));
+        const depthOf = new Map();
+        const depth = (id) => {
+          if (depthOf.has(id)) return depthOf.get(id);
+          let d = 0;
+          const seen = new Set([id]);
+          for (let p = byId.get(id).parent; p && byId.has(p) && !seen.has(p); p = byId.get(p).parent) {
+            seen.add(p);
+            d++;
+          }
+          depthOf.set(id, d);
+          return d;
+        };
+        const rep = new Map();
+        const repOf = (id) => rep.get(id) || id;
+        let links = [];
+        let ids = [];
+        let folds = 0;
+        for (;;) {
+          const merged = new Map();
+          for (const l of raw) {
+            const from = repOf(l.from);
+            const to = repOf(l.to);
+            if (from === to) continue;
+            const key = `${from}\u0000${to}\u0000${l.kind}`;
+            const m = merged.get(key);
+            if (m) {
+              m.weight += l.weight;
+              m.count++;
+              if (!l.inferred) m.inferred = false;
+            } else merged.set(key, { key, from, to, kind: l.kind, weight: l.weight, count: 1, inferred: !!l.inferred });
+          }
+          links = [...merged.values()].sort((a, b) => a.key.localeCompare(b.key));
+          ids = [...new Set(links.flatMap((l) => [l.from, l.to]))].sort();
+          if (ids.length <= MAX_SHAPE_NODES) break;
+          const liftable = ids.filter((id) => byId.get(id).parent && byId.has(byId.get(id).parent));
+          if (!liftable.length) break;
+          const deepest = Math.max(...liftable.map(depth));
+          const lift = new Set(liftable.filter((id) => depth(id) === deepest));
+          for (const n of shape.nodes) if (lift.has(repOf(n.id))) rep.set(n.id, byId.get(repOf(n.id)).parent);
+          folds++;
+        }
+        const over = ids.length > MAX_SHAPE_NODES;
+        if (over) {
+          // Still too many with nothing left to fold: keep the most connected.
+          const deg = new Map(ids.map((id) => [id, 0]));
+          for (const l of links) {
+            deg.set(l.from, deg.get(l.from) + l.weight);
+            deg.set(l.to, deg.get(l.to) + l.weight);
+          }
+          const keep = new Set([...ids].sort((a, b) => deg.get(b) - deg.get(a) || a.localeCompare(b)).slice(0, MAX_SHAPE_NODES));
+          ids = ids.filter((id) => keep.has(id));
+          links = links.filter((l) => keep.has(l.from) && keep.has(l.to));
+        }
+        return { byId, ids, links, folds, over, repOf };
+      }
+
+      function drawShape() {
+        const { byId, ids, links, folds, over, repOf } = shapeGraph();
+        if (!links.length) {
+          chartHost.replaceChildren(el('p', { class: 'muted', text: subject === 'plans' ? 'No links between the loaded plans’ items, so there’s no graph to draw.' : 'No dependencies between the loaded code’s artifacts, so there’s no graph to draw.' }));
+          legend.replaceChildren();
+          note.textContent = '';
+          return;
+        }
+        const counts = new Map();
+        for (const id of ids) counts.set(byId.get(id).label, (counts.get(byId.get(id).label) || 0) + 1);
+        const nameOf = (id) => {
+          const n = byId.get(id);
+          const p = n.parent && byId.get(n.parent);
+          return counts.get(n.label) > 1 && p ? `${p.label}/${n.label}` : n.label;
+        };
+        const width = Math.max(320, host.clientWidth || 800);
+        const height = Math.round(Math.min(560, Math.max(360, width * 0.6)));
+        const maxValue = Math.max(1, ...ids.map((id) => byId.get(id).value));
+        const room = Math.sqrt((width * height) / ids.length);
+        const rMax = Math.max(8, Math.min(22, room * 0.22));
+        const radius = (n) => 3 + (rMax - 3) * Math.sqrt(Math.max(0, n.value) / maxValue);
+        const maxW = Math.max(1, ...links.map((l) => l.weight));
+        const pos = forceLayout(
+          ids.map((id) => ({ id, r: radius(byId.get(id)) })),
+          links.map((l) => ({ source: l.from, target: l.to, weight: l.weight })),
+          { width, height, padding: 20 }
+        );
+        const kinds = [...new Set(links.map((l) => l.kind))].sort((a, b) => links.filter((l) => l.kind === b).length - links.filter((l) => l.kind === a).length || a.localeCompare(b));
+        const kindClass = (k) => `ag-link-${Math.min(kinds.indexOf(k), SHAPE_LINK_CLASSES - 1)}`;
+        const sel = selection;
+        const selectedId = sel ? [sel.artifactId, sel.itemId].find((id) => id && byId.has(id)) : null;
+        const on = selectedId && ids.includes(repOf(selectedId)) ? repOf(selectedId) : null;
+        const root = svg('svg', { class: 'viz-chart actor-chart ag-shape-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Graph of ${ids.length} ${subject === 'plans' ? 'items' : 'artifacts'} and ${links.length} links` });
+        const defs = svg('defs');
+        const marker = svg('marker', { id: arrowId, viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse', markerUnits: 'userSpaceOnUse' });
+        marker.append(svg('path', { class: 'ag-arrow', d: 'M0,0 L8,4 L0,8 z' }));
+        defs.append(marker);
+        root.append(defs);
+        const thickness = (w) => 1 + 4 * Math.sqrt(w / maxW);
+        for (const l of links) {
+          const a = pos.get(l.from);
+          const b = pos.get(l.to);
+          const rb = radius(byId.get(l.to)) + 2;
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const d = Math.hypot(dx, dy) || 1;
+          const x2 = b.x - (dx / d) * rb;
+          const y2 = b.y - (dy / d) * rb;
+          const dim = on && l.from !== on && l.to !== on;
+          const g = svg('g', { class: `ag-link-group${dim ? ' dim' : ''}` });
+          g.append(svg('line', { class: `shape-link ${kindClass(l.kind)}${l.inferred ? ' shape-inferred' : ''}`, x1: a.x, y1: a.y, x2, y2, 'stroke-width': thickness(l.weight), 'marker-end': `url(#${arrowId})` }));
+          g.append(svg('line', { class: 'actor-edge-hit', x1: a.x, y1: a.y, x2, y2, 'stroke-width': 8 }));
+          interact(ctx, g, {
+            label: `${nameOf(l.from)} to ${nameOf(l.to)}: ${shapeKindText(l.kind)}, weight ${fmt(l.weight)}`,
+            tip: () => [`${nameOf(l.from)} → ${nameOf(l.to)}`, [subject === 'plans' ? 'Link' : 'Kind', shapeKindText(l.kind) + (l.inferred ? ' (inferred)' : '')], ['Weight', fmt(l.weight)], ...(l.count > 1 ? [['Links folded in', fmt(l.count)]] : [])],
+            pick: () => ctx.select(shapeSelection(subject, l.from)),
+          });
+          root.append(g);
+        }
+        const labelled = new Set([...ids].sort((a, b) => byId.get(b).value - byId.get(a).value || a.localeCompare(b)).slice(0, SHAPE_LABELS));
+        if (on) labelled.add(on);
+        const near = on ? new Set(links.filter((l) => l.from === on || l.to === on).flatMap((l) => [l.from, l.to])) : null;
+        for (const id of ids) {
+          const n = byId.get(id);
+          const p = pos.get(id);
+          const r = radius(n);
+          const g = svg('g', { class: `ag-node${near && !near.has(id) ? ' dim' : ''}`, transform: `translate(${p.x},${p.y})` });
+          g.append(svg('circle', { class: `ag-dot ${shapeClass(n)}${n.inferred ? ' shape-inferred' : ''}${id === on ? ' shape-on' : ''}`, r }));
+          g.append(svg('circle', { class: 'hit', r: Math.max(r, 9) }));
+          if (labelled.has(id)) {
+            const text = fit(nameOf(id), 150);
+            // Labels sit beside the node, on the side with room, so they stay inside the picture.
+            const right = p.x < width - 160;
+            g.append(svgText({ class: 'node-label actor-label', x: right ? r + 4 : -r - 4, y: 4, 'text-anchor': right ? 'start' : 'end' }, text));
+          }
+          interact(ctx, g, {
+            label: `${nameOf(id)}: ${compact(n.value)} ${shape.valueLabel}`,
+            tip: () => shapeTip(shape, n, [['Links', fmt(links.filter((l) => l.from === id || l.to === id).length)]]),
+            pick: () => ctx.select(shapeSelection(subject, id)),
+          });
+          root.append(g);
+        }
+        chartHost.replaceChildren(root);
+        const lineKey = (cls, text) => {
+          const k = svg('svg', { class: 'actor-key', width: 26, height: 12, viewBox: '0 0 26 12', 'aria-hidden': 'true' });
+          k.append(svg('line', { class: `shape-link ${cls}`, x1: 1, x2: 25, y1: 6, y2: 6, 'stroke-width': 2.5 }));
+          return el('span', { class: 'key' }, [k, text]);
+        };
+        const shown = kinds.slice(0, SHAPE_LINK_CLASSES - 1);
+        const rest = kinds.slice(SHAPE_LINK_CLASSES - 1);
+        legend.replaceChildren(
+          ...shapeLegend({ ...shape, nodes: ids.map((id) => byId.get(id)), links }),
+          ...shown.map((k) => lineKey(kindClass(k), shapeKindText(k))),
+          ...(rest.length ? [lineKey(kindClass(rest[0]), rest.map(shapeKindText).join(', '))] : [])
+        );
+        const folded = folds ? ` More than ${MAX_SHAPE_NODES} had links, so the deepest were folded into their parents${folds > 1 ? ` ${folds} levels` : ''}.` : '';
+        const cut = over ? ` Still more than ${MAX_SHAPE_NODES} after folding, so only the most connected are shown.` : '';
+        const left = shape.nodes.length - ids.length;
+        note.textContent = `${subject === 'plans' ? 'Items with links, colored by status; arrows run from blocker to blocked (or along the link)' : 'Artifacts with dependencies, colored by kind; arrows run from importer to imported'}, thicker for heavier links${links.some((l) => l.inferred) ? ', inferred ones dashed' : ''}. ${shapeNote(shape)}${folded}${cut} ${left > 0 ? `${fmt(left)} ${subject === 'plans' ? 'items' : 'nodes'} without links${folds ? ', or folded,' : ''} aren’t drawn. ` : ''}${ids.length > SHAPE_LABELS ? `Only the ${SHAPE_LABELS} largest are labeled; hover for the rest. ` : ''}Click a node to select it.`;
       }
 
       /** Nodes and edges over every session, before subagents are folded. */
@@ -234,6 +410,7 @@
 
       function draw() {
         draws++;
+        if (shape) return drawShape();
         if (!views.length) {
           chartHost.replaceChildren();
           legend.replaceChildren();

@@ -218,10 +218,10 @@ export const CATALOG: VisualizerEntry[] = [
   {
     id: 'actor-graph',
     title: 'Actor graph',
-    description: 'Who worked with whom: you, agents, subagents, models, and tool categories, joined by typed edges sized by how often they interacted.',
-    why: 'To see who did the work, and who handed work to whom.',
-    credits: [{ work: 'Who Shall Survive?', by: 'Jacob L. Moreno', year: 1934, url: 'https://en.wikipedia.org/wiki/Sociogram', relation: 'form', note: 'The sociogram: who chose whom, as points and lines' }],
-    tags: { subject: ['sessions'], category: ['actor'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['actor', 'communication', 'quantity'], language: ['standard'] },
+    description: 'Who worked with whom: you, agents, subagents, models, and tool categories, joined by typed edges sized by how often they interacted. Also draws code and plans as a force-laid graph: what imports or blocks what, nodes sized by lines or items.',
+    why: 'To see who did the work and who handed work to whom, or how code and plans connect.',
+    credits: [{ work: 'Who Shall Survive?', by: 'Jacob L. Moreno', year: 1934, url: 'https://en.wikipedia.org/wiki/Sociogram', relation: 'form', note: 'The sociogram: who chose whom, as points and lines' }, FORCE_LAYOUT],
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['actor', 'dependency'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['actor', 'communication', 'quantity', 'structure', 'dependency', 'status'], language: ['standard'] },
   },
   {
     id: 'prompt-terms',

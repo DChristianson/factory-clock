@@ -329,6 +329,18 @@ select, input[type="search"] {
 .actor-chart .dim { opacity: 0.18; }
 .actor-legend { margin-top: 6px; }
 .actor-key { display: inline-block; }
+.ag-shape-chart .ag-node { cursor: pointer; }
+.ag-shape-chart .ag-node:focus { outline: none; }
+.ag-shape-chart .ag-dot { stroke: var(--fc-surface); stroke-width: 1.5; }
+.ag-shape-chart .ag-dot.shape-inferred { stroke: var(--fc-ink); stroke-dasharray: 3 2; }
+.ag-shape-chart .ag-dot.shape-on, .ag-shape-chart .ag-node:focus .ag-dot, .ag-shape-chart .ag-node:hover .ag-dot { stroke: var(--fc-ink); stroke-width: 2.5; stroke-dasharray: none; }
+.ag-shape-chart .ag-arrow { fill: var(--fc-ink-muted); }
+.ag-shape-chart .ag-link-group:hover .shape-link { stroke-opacity: 1; }
+.ag-shape-chart .dim { opacity: 0.18; }
+.shape-link.ag-link-0 { stroke: var(--fc-ink-muted); }
+.shape-link.ag-link-1 { stroke: var(--fc-series-1); }
+.shape-link.ag-link-2 { stroke: var(--fc-series-2); }
+.shape-link.ag-link-3 { stroke: var(--fc-series-3); }
 
 /* Prompt terms: word circles in the first series color, joined by lines whose width is set per edge. */
 .terms-chart .term-line { stroke: var(--fc-ink-muted); opacity: 0.35; }
