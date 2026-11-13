@@ -31,6 +31,7 @@ export const TAXONOMY = {
       sessions: 'What the coding agents did: sessions, turns, calls, and tools',
       code: 'What the project is made of: packages, modules, files, and their imports',
       plans: 'What the project means to do: epics, items, their status, and what blocks what',
+      workspace: 'The whole project: code, plans, and sessions, joined',
     },
   },
   category: {
@@ -82,6 +83,7 @@ export const TAXONOMY = {
       edgeless: 'Paper-white space, one saturated hue per actor, words instead of lines (Conversation Landscape)',
       'split-flap': 'A station board of fixed character cells; change arrives as falling flaps (Terminal Board)',
       horology: 'An enamel dial read like a watch: serif numerals, ink arcs, one orange sweep hand (Factory Clock)',
+      strata: 'Three translucent planes stacked in a deep void, one hue each, bright messages rising and falling between them (Strata)',
     },
   },
 } satisfies Taxonomy;
@@ -420,6 +422,20 @@ export const CATALOG: VisualizerEntry[] = [
     hero: true,
     credits: [{ ...NIGHTINGALE, relation: 'technique', note: 'Time as angle around a circle, a wedge per period' }, STASKO_RINGS],
     tags: { subject: ['sessions'], category: ['temporal'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['time', 'actor', 'hierarchy'], language: ['horology'] },
+  },
+  {
+    id: 'strata',
+    title: 'Strata',
+    description: 'The project as three stacked tilted planes: code as a wheel of packages and files on the floor, sessions and their agents in the middle, the plan’s epics as rings of items on the roof, with reads and edits dropping and mentions and closes rising between them as the sessions replay.',
+    why: 'To see what the sessions did to the code and to the plan, as traffic between three layers.',
+    hero: true,
+    credits: [
+      { work: 'Towards Improving the Mental Model of Software Developers through Cartographic Visualization', by: 'Adrian Kuhn, David Erni, and Oscar Nierstrasz', year: 2010, url: 'https://arxiv.org/html/1001.2386', relation: 'technique', note: 'Software Cartography: one stable layout that thematic layers reuse, as the three planes share one angular layout' },
+      { work: 'Synchronised Visualisation of Software Process and Product Artefacts: Concept, Design and Prototype Implementation', by: 'Mujtaba Alshakhouri, Jim Buchan, and Stephen G. MacDonell', year: 2018, url: 'https://arxiv.org/abs/2105.00705', relation: 'metaphor', note: 'ScrumCity: a code city linked to the sprints and stories of planned work' },
+      { ...NIGHTINGALE, relation: 'technique', note: 'The polar layout: a wedge per package around a circle, sized by its files' },
+      STASKO_RINGS,
+    ],
+    tags: { subject: ['workspace'], category: ['actor', 'dependency', 'state'], purpose: ['expressive'], level: ['project'], dimension: ['structure', 'actor', 'communication', 'status'], language: ['strata'] },
   },
 ];
 
