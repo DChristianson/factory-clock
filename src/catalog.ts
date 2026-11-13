@@ -242,8 +242,8 @@ export const CATALOG: VisualizerEntry[] = [
   {
     id: 'treemap',
     title: 'Treemap',
-    description: 'Tokens as area: by session, turn, and tool category, or by tool category across sessions.',
-    why: 'To compare spending at a glance, with area for tokens.',
+    description: 'Tokens as area: by session, turn, and tool category, or by tool category across sessions. Also draws code (packages, modules, and files by lines) and plans (epics and items by count, colored by status).',
+    why: 'To compare sizes at a glance, with area for tokens, lines, or items.',
     credits: [{ work: 'Tree visualization with tree-maps: 2-d space-filling approach', by: 'Ben Shneiderman', year: 1992, url: 'https://doi.org/10.1145/102377.115768', relation: 'form', note: 'The treemap' }, { work: 'Squarified Treemaps', by: 'Mark Bruls, Kees Huizing, and Jarke J. van Wijk', year: 2000, url: 'https://doi.org/10.1007/978-3-7091-6783-0_4', relation: 'technique', note: 'The squarified layout, which keeps blocks near square' }],
     tags: { subject: ['sessions', 'code', 'plans'], category: ['quantitative'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'structure', 'status'], language: ['standard'] },
   },

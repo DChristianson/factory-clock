@@ -400,6 +400,11 @@ select, input[type="search"] {
 .treemap-chart .treemap-label { fill: var(--fc-ink); font-size: 11px; pointer-events: none; paint-order: stroke; stroke: var(--fc-surface); stroke-width: 3px; stroke-linejoin: round; }
 .treemap-chart .treemap-selected { fill: none; stroke: var(--fc-accent, var(--fc-series-1)); stroke-width: 2.5; pointer-events: none; }
 .treemap-legend { margin-top: 6px; }
+.treemap-chart .treemap-head { cursor: pointer; }
+.treemap-chart .treemap-head:focus { outline: none; }
+.treemap-chart .treemap-head-hit { fill: transparent; }
+.treemap-chart .treemap-head:hover .treemap-head-hit, .treemap-chart .treemap-head:focus .treemap-head-hit { fill: var(--fc-hover); }
+.treemap-chart .treemap-block.shape-inferred { stroke-dasharray: 3 2; }
 
 /* Heatmap: a five-step ramp of the first series color, by opacity so it holds on either theme. */
 .heat-1 { --heat-opacity: 0.18; }
