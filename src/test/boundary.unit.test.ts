@@ -21,7 +21,7 @@ async function main() {
     });
   const sources = filesUnder(srcDir, /\.ts$/).filter((f) => !f.startsWith(path.join(srcDir, 'test') + path.sep));
   const importsOf = (file: string): string[] =>
-    [...fs.readFileSync(file, 'utf8').matchAll(/(?:from|import|require)\s*\(?\s*['"]([^'"]+)['"]/g)].map((m) => m[1]);
+    [...fs.readFileSync(file, 'utf8').matchAll(/(?<![\w'".-])(?:from|import|require)\s*\(?\s*['"]([^'"]+)['"]/g)].map((m) => m[1]);
   const rel = (file: string) => path.relative(root, file).split(path.sep).join('/');
 
   test('the page has its files', () => {
