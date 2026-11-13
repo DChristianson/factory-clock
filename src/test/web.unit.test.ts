@@ -108,7 +108,7 @@ async function main() {
     const state = set.explorerState([short, long, 'nope', short]);
     assert.deepStrictEqual(state.sessions.map((v) => v.summary.sessionId), [short, long]);
     assert.deepStrictEqual(state.notLoaded, ['nope']);
-    assert.ok(state.catalog.length >= 2 && Object.keys(state.taxonomy).length === 5);
+    assert.ok(state.catalog.length >= 2 && Object.keys(state.taxonomy).length === 6);
     const view = state.sessions[1];
     assert.deepStrictEqual(view.findings.map((f) => f.heuristicId), ['test-finding']);
     assert.ok(view.findings.every((f) => !f.active && f.turnIds.length > 0 && f.startedTs));
