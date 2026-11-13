@@ -604,6 +604,13 @@ select, input[type="search"] {
 .adj-chart .adj-on { stroke: var(--fc-ink); stroke-width: 2; stroke-dasharray: none; }
 .adj-chart .adj-count { fill: var(--fc-ink); font-size: 10px; pointer-events: none; paint-order: stroke; stroke: var(--fc-surface); stroke-width: 2.5px; stroke-linejoin: round; }
 .swatch.swatch-adj-inferred { background: none; outline: 1px dashed var(--fc-ink); outline-offset: -1px; }
+.adj-chart .adj-group { fill: none; stroke: var(--fc-ink-muted); stroke-width: 1; stroke-opacity: 0.6; pointer-events: none; }
+.adj-chart .adj-lit { fill: var(--fc-selection); fill-opacity: 0.35; }
+.adj-chart .adj-label-on { font-weight: 700; fill: var(--fc-ink); }
+.adj-chart .adj-row { cursor: pointer; }
+.adj-chart .adj-row:focus { outline: none; }
+.adj-chart .adj-row:hover .row-label, .adj-chart .adj-row:focus .row-label { text-decoration: underline; }
+.adj-chart .adj-swatch.shape-inferred { stroke-width: 1; }
 
 /* Swimlane */
 .swim-wrap { display: flex; align-items: flex-start; }

@@ -362,10 +362,10 @@ export const CATALOG: VisualizerEntry[] = [
   {
     id: 'adjacency-matrix',
     title: 'Adjacency matrix',
-    description: 'Who acted on whom, as a grid: messages, delegation, model calls, and tool calls, by count.',
-    why: 'To read exact counts of who acted on whom, without a tangle of lines.',
+    description: 'Who acted on whom, as a grid: messages, delegation, model calls, and tool calls, by count. Also draws code and plans as a coupling matrix: what imports or blocks what, by summed weight, grouped by parent and ordered so clusters show.',
+    why: 'To read exact counts of who acted on whom, or what depends on what, without a tangle of lines.',
     credits: [{ work: 'A Comparison of the Readability of Graphs Using Node-Link and Matrix-Based Representations', by: 'Mohammad Ghoniem, Jean-Daniel Fekete, and Philippe Castagliola', year: 2004, url: 'https://doi.org/10.1109/INFVIS.2004.1', relation: 'technique', note: 'Why a matrix reads better than lines once a graph is dense' }],
-    tags: { subject: ['sessions'], category: ['actor'], purpose: ['informative'], level: ['session', 'project'], dimension: ['actor', 'communication', 'quantity'], language: ['standard'] },
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['actor', 'dependency'], purpose: ['informative'], level: ['session', 'project'], dimension: ['actor', 'communication', 'quantity', 'structure', 'dependency'], language: ['standard'] },
   },
   {
     id: 'swimlane',
