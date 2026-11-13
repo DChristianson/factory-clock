@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import { SessionView } from '../schema';
-import { buildExplorerState, CATALOG, TAXONOMY, validateCatalog, VisualizerEntry } from '../index';
+import { buildExplorerState, CATALOG, TAXONOMY, unusedValues, validateCatalog, VisualizerEntry } from '../index';
 
 // Factory Clock's catalog and explorer state.
 
@@ -12,7 +12,7 @@ async function main() {
 
   test('the catalog conforms to the taxonomy', () => {
     assert.deepStrictEqual(validateCatalog(CATALOG, TAXONOMY), []);
-    assert.deepStrictEqual(Object.keys(TAXONOMY), ['category', 'purpose', 'level', 'dimension', 'language']);
+    assert.deepStrictEqual(Object.keys(TAXONOMY), ['subject', 'category', 'purpose', 'level', 'dimension', 'language']);
     assert.deepStrictEqual(Object.keys(TAXONOMY.category.values), ['temporal', 'actor', 'conversational', 'dependency', 'quantitative', 'state', 'semantic']);
     assert.deepStrictEqual(CATALOG.map((v) => v.id), ['turn-tree', 'context-timeline', 'session-strips', 'cost-per-prompt', 'context-fill', 'sequence-diagram', 'event-graph', 'actor-graph', 'prompt-terms', 'gantt', 'treemap', 'heatmap', 'tool-ribbon', 'week-picture', 'histogram', 'box-violin', 'ridgeline', 'scatter', 'bubble', 'sunburst', 'calendar-heatmap', 'radar', 'parallel-coords', 'streamgraph', 'sankey', 'adjacency-matrix', 'swimlane', 'living-network', 'session-fingerprint', 'conversation-landscape', 'terminal-board', 'factory-clock']);
   });
@@ -23,6 +23,24 @@ async function main() {
     for (const v of CATALOG) assert.deepStrictEqual(v.tags.language, [heroes[v.id] ?? 'standard'], v.id);
     const firstHero = CATALOG.findIndex((v) => v.id in heroes);
     assert.ok(CATALOG.slice(firstHero).every((v) => v.id in heroes), 'no standard view after the first hero');
+  });
+
+  test('hero is set on exactly the hero views, and the five session heroes stay heroes', () => {
+    assert.deepStrictEqual(CATALOG.filter((v) => v.hero).map((v) => v.id), ['living-network', 'session-fingerprint', 'conversation-landscape', 'terminal-board', 'factory-clock']);
+    assert.ok(CATALOG.every((v) => v.hero === true || v.hero === undefined));
+  });
+
+  test('every view says why to look at it, in one sentence', () => {
+    for (const v of CATALOG) {
+      assert.ok(v.why.length > 20 && v.why.length < 140, `${v.id}: ${v.why.length} characters`);
+      assert.match(v.why, /^[A-Z].*\.$/, v.id);
+      assert.ok(!/\.\s+[A-Z]/.test(v.why), `${v.id}: one sentence`);
+    }
+  });
+
+  test('every vocabulary value is used by some view, so no chip matches nothing', () => {
+    assert.deepStrictEqual(unusedValues(CATALOG, TAXONOMY), []);
+    assert.deepStrictEqual(unusedValues([CATALOG[0]], TAXONOMY).includes('language:horology'), true);
   });
 
   test('a broken catalog names each problem', () => {
@@ -37,6 +55,9 @@ async function main() {
     assert.match(problems([entry({ title: '' })])[0], /empty title/);
     assert.match(problems([entry({ description: '' })])[0], /empty description/);
     assert.match(problems([entry({ id: '' })])[0], /no id/);
+    assert.match(problems([entry({ why: ' ' })])[0], /empty why/);
+    assert.match(problems([entry({ thumbnail: 'poster' as 'live' })])[0], /thumbnail is not live or title/);
+    assert.match(problems([entry({ hero: 'yes' as unknown as boolean })])[0], /hero is not true or false/);
     assert.match(problems([entry({ tags: { ...CATALOG[0].tags, mood: ['calm'] } as VisualizerEntry['tags'] })])[0], /"mood" is not a facet/);
   });
 
