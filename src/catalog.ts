@@ -31,6 +31,7 @@ export const TAXONOMY = {
       sessions: 'What the coding agents did: sessions, turns, calls, and tools',
       code: 'What the project is made of: packages, modules, files, and their imports',
       plans: 'What the project means to do: epics, items, their status, and what blocks what',
+      workspace: 'The whole project: code, plans, and sessions, joined',
     },
   },
   category: {
@@ -71,6 +72,7 @@ export const TAXONOMY = {
       content: 'Content (what was said)',
       structure: 'Structure (containment: package, module, file; epic, item)',
       status: 'Status (open, in progress, blocked, done)',
+      place: 'Place (where in the code)',
     },
   },
   language: {
@@ -156,6 +158,8 @@ const HERSCHEL: Credit = { work: 'A scatterplot of double-star observations', by
 const STASKO_RINGS: Credit = { work: 'Focus+Context Display and Navigation Techniques for Enhancing Radial, Space-Filling Hierarchy Visualizations', by: 'John Stasko and Eugene Zhang', year: 2000, url: 'https://doi.org/10.1109/INFVIS.2000.885091', relation: 'technique', note: 'Rings outward for depth, as in the sunburst' };
 const NIGHTINGALE: Credit = { work: 'Diagram of the causes of mortality in the army in the East', by: 'Florence Nightingale', year: 1858, url: 'https://en.wikipedia.org/wiki/Pie_chart#Polar_area_diagram', relation: 'form', note: 'The polar area diagram: a wedge per period around a circle' };
 const FORCE_LAYOUT: Credit = { work: 'Graph drawing by force-directed placement', by: 'Thomas M. J. Fruchterman and Edward M. Reingold', year: 1991, url: 'https://doi.org/10.1002/spe.4380211102', relation: 'technique', note: 'Force-directed layout: pairs repel, links pull; the kit’s is a small variant' };
+const HILBERT_TREEMAP: Credit = { work: 'Algorithmic Improvements on Hilbert and Moore Treemaps for Visualization of Large Tree-structured Datasets', by: 'Willy Scheibel, Christopher Weyand, Joseph Bethge, and Jürgen Döllner', year: 2021, url: 'https://github.com/varg-dev/hilbert-moore-treemap-layouts-prototype', relation: 'technique', note: 'A hierarchy laid along a space-filling curve, so siblings stay together and the layout holds still as it changes (the prototype linked)' };
+const HILBERT_CURVE: Credit = { work: 'Über die stetige Abbildung einer Linie auf ein Flächenstück', by: 'David Hilbert', year: 1891, url: 'https://en.wikipedia.org/wiki/Hilbert_curve', relation: 'technique', note: 'The Hilbert curve, which keeps neighbors in order neighbors in the plane' };
 
 /** One entry per visualizer, in carousel order. */
 export const CATALOG: VisualizerEntry[] = [
@@ -374,6 +378,46 @@ export const CATALOG: VisualizerEntry[] = [
     why: 'To follow the hand-offs: who had the work at each moment.',
     credits: [{ work: 'Improving Performance', by: 'Geary A. Rummler and Alan P. Brache', year: 1990, url: 'https://en.wikipedia.org/wiki/Swimlane', relation: 'form', note: 'Named the swim lane diagram; multi-column process charts date from the 1940s' }],
     tags: { subject: ['sessions'], category: ['conversational', 'actor'], purpose: ['informative', 'expressive'], level: ['session'], dimension: ['communication', 'actor'], language: ['standard'] },
+  },
+  {
+    id: 'dependency-layers',
+    title: 'Dependency layers',
+    description: 'Files or modules in columns by the longest chain of dependencies beneath them, cycles ringed, edges bundled between layers.',
+    why: 'To see what the code is built on, in what order, and where the cycles are.',
+    credits: [
+      { work: 'Methods for Visual Understanding of Hierarchical System Structures', by: 'Kozo Sugiyama, Shojiro Tagawa, and Mitsuhiko Toda', year: 1981, url: 'https://en.wikipedia.org/wiki/Layered_graph_drawing', relation: 'form', note: 'The layered drawing of a directed graph; layers here by longest path, as that article describes' },
+      { work: 'Depth-first search and linear graph algorithms', by: 'Robert Tarjan', year: 1972, url: 'https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm', relation: 'technique', note: 'Strongly connected components: the cycles, which share a layer' },
+      { work: 'Hierarchical Edge Bundles: Visualization of Adjacency Relations in Hierarchical Data', by: 'Danny Holten', year: 2006, url: 'https://www.cs.jhu.edu/~misha/ReadingSeminar/Papers/Holten06.pdf', relation: 'technique', note: 'Edges pulled together into bundles; here simply per pair of layers' },
+    ],
+    tags: { subject: ['code'], category: ['dependency'], purpose: ['informative'], level: ['project'], dimension: ['dependency', 'structure'], language: ['standard'] },
+  },
+  {
+    id: 'package-wheel',
+    title: 'Package wheel',
+    description: 'Packages around a circle, an inner ring by module, ribbons as wide as the imports between them; externals on an arc of their own.',
+    why: 'To see which packages lean on which, and how heavily, at a glance.',
+    credits: [{ work: 'DependencyWheel', by: 'François Zaninotto', url: 'https://github.com/fzaninotto/DependencyWheel', relation: 'form', note: 'Package dependencies as a chord diagram, a disc section per package' }],
+    tags: { subject: ['code'], category: ['dependency', 'quantitative'], purpose: ['expressive', 'informative'], level: ['project'], dimension: ['dependency', 'quantity'], language: ['standard'] },
+  },
+  {
+    id: 'file-grid',
+    title: 'File grid',
+    description: 'Every file as a cell in its package’s row, along a Hilbert curve: area by lines, shade by fan-in, tests and docs in their own hues.',
+    why: 'To see how big and how depended-on every file is, each in a place that stays put.',
+    credits: [HILBERT_TREEMAP, HILBERT_CURVE],
+    tags: { subject: ['code'], category: ['quantitative'], purpose: ['informative'], level: ['project'], dimension: ['quantity', 'structure', 'place'], language: ['standard'] },
+  },
+  {
+    id: 'plan-over-code',
+    title: 'Plan over code',
+    description: 'The file grid with each plan item as a pin on the files it names, hue by status; items that name no code wait in a margin.',
+    why: 'To see which parts of the code each plan item names, and which items name none.',
+    credits: [
+      { work: 'Towards Improving the Mental Model of Software Developers through Cartographic Visualization', by: 'Adrian Kuhn, David Erni, and Oscar Nierstrasz', year: 2010, url: 'https://arxiv.org/abs/1001.2386', relation: 'metaphor', note: 'A stable map of the code that other things are pinned over as layers' },
+      { work: 'Synchronised Visualisation of Software Process and Product Artefacts: Concept, Design and Prototype Implementation', by: 'Mujtaba Alshakhouri, Jim Buchan, and Stephen G. MacDonell', year: 2018, url: 'https://arxiv.org/abs/2105.00705', relation: 'technique', note: 'ScrumCity: the code drawn with the planned work that names it' },
+      HILBERT_TREEMAP,
+    ],
+    tags: { subject: ['workspace'], category: ['dependency', 'state'], purpose: ['informative'], level: ['project'], dimension: ['place', 'status', 'structure'], language: ['standard'] },
   },
   // Hero views: each carries a design language of its own, and they go last.
   {
