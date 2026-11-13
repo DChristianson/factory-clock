@@ -647,6 +647,32 @@ select, input[type="search"] {
 .slide-head { flex: none; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
 /* The stage's height is set to fit the window (fitStage in explore.js); a taller drawing scrolls here. */
 .slide-host { flex: 1; min-height: 0; width: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-gutter: stable; }
+/* The stage while data loads: in the page from its first paint until the explorer mounts, and over the stage (the veil) while files are read. */
+.stage-loading {
+  box-sizing: border-box;
+  height: max(320px, 70vh);
+  border: 1px dashed var(--fc-rule);
+  border-radius: 4px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--fc-ink-muted);
+  text-align: center;
+}
+.stage-loading.veil { position: absolute; inset: 0; height: auto; z-index: 2; background: var(--fc-surface); }
+.stage-loading-bar { width: min(240px, 60%); height: 3px; border-radius: 2px; background: var(--fc-rule); overflow: hidden; }
+.stage-loading-bar i { display: block; width: 40%; height: 100%; background: var(--fc-accent); animation: fc-loading 1.2s ease-in-out infinite; }
+.stage-loading-text { margin: 0; }
+@keyframes fc-loading {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-loading-bar i { animation: none; width: 100%; opacity: 0.5; }
+}
 .stacked { border-top: 1px solid var(--fc-rule); padding-top: 8px; margin-top: 12px; }
 .stacked:first-child { border-top: none; margin-top: 0; padding-top: 0; }
 .stack-head { display: flex; align-items: baseline; gap: 4px; margin-bottom: 6px; }

@@ -6,7 +6,8 @@
 // web page (src/web/page.ts) gives it.
 // Plain DOM; all data is written with textContent, never innerHTML.
 //
-//   window.factoryClockExplore.mount(root, source, ctx) -> { shown(), destroy() }
+//   window.factoryClockExplore.mount(root, source, ctx) -> { shown(), hidden(), loading(text | null), destroy() }
+//     mount replaces root's children; loading(text) covers the stage with a loading screen until loading(null)
 //   window.factoryClockExplore.shown()  forwards to the mounted tab (for the page's tab switch)
 //   window.factoryClockExplore.hidden() the tab was hidden: every slide stops (setActive(false))
 //
@@ -234,7 +235,8 @@
 
     // The explorer takes the window; picking and loading sit below it, a scroll (or the nav's button) away.
     const projectHost = el('div', { class: 'project-picker' });
-    root.append(
+    // Replaces whatever the page put here before mounting (the web page's loading screen).
+    root.replaceChildren(
       explorer,
       el('div', { class: 'below-carousel' }, [el('p', { class: 'muted small', text: 'Experimental: every view draws the same loaded data its own way. The puck names the one on stage and filters the shelf by its tags.' }), picker, projectHost]),
       puck
@@ -678,6 +680,7 @@
     renderPuck();
     renderShelf();
 
+    let veil = null; // the loading screen over the stage, while the page reads data
     const tab = {
       /** The tab was just made visible: ask for what it hasn't got, and lay out at its real width. */
       shown() {
@@ -698,6 +701,24 @@
         for (const s of slides) for (const p of s.parts) p.instance.resize();
         renderShelf();
         activate();
+      },
+      /** Covers the stage with the loading screen and this text while the page reads data; null takes it away. */
+      loading(text) {
+        if (!text) {
+          if (veil) veil.remove();
+          veil = null;
+          stage.removeAttribute('aria-busy');
+          return;
+        }
+        if (!veil) {
+          veil = el('div', { class: 'stage-loading veil', role: 'status' }, [
+            el('div', { class: 'stage-loading-bar', 'aria-hidden': 'true' }, [el('i')]),
+            el('p', { class: 'stage-loading-text' }),
+          ]);
+        }
+        veil.lastChild.textContent = text;
+        stage.append(veil); // again after a rebuild emptied the stage
+        stage.setAttribute('aria-busy', 'true');
       },
       /** The tab was hidden: stop every view. */
       hidden() {

@@ -19,7 +19,13 @@
       <a class="repo" href="https://github.com/DChristianson/factory-clock">github.com/DChristianson/factory-clock</a>
     </div>
   </header>
-  <div id="explore-root"></div>
+  <div id="explore-root">
+    <!-- Shown from the first paint until explore.js mounts over it (viz.css, "The stage while data loads"). -->
+    <div class="stage-loading" role="status">
+      <div class="stage-loading-bar" aria-hidden="true"><i></i></div>
+      <p class="stage-loading-text">Loading the sessions and drawing the first view…</p>
+    </div>
+  </div>
   <section class="below-explorer" aria-label="About this page and loading your own sessions">
     <p id="examples-note" class="examples-note small"></p>
     <p>Factory Clock is a set of visualizations of coding-agent sessions, with a stage and a shelf of cards to move between them. Every visualizer draws the same sessions its own way. Pick which sessions above, under <strong>Sessions</strong>. It reads the event logs of <a href="https://github.com/DChristianson/snagboat">Snagboat</a>, a VS Code extension that watches Claude Code and GitHub Copilot sessions.</p>
