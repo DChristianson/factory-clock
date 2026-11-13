@@ -827,6 +827,8 @@ rect.pog-file { opacity: 1; }
   flex-direction: column;
 }
 .slide.offstage { position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
+/* Everything in it too: a view that animates sets visibility="visible" on its marks, which would beat an inherited hidden. */
+.slide.offstage * { visibility: hidden; }
 .slide.pinned { order: -1; }
 .stage.comparing .slide:not(.offstage) { border-color: var(--fc-ink-muted); }
 .slide-head { flex: none; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
