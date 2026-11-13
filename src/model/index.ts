@@ -5,3 +5,4 @@ export * from './code';
 export * from './plan';
 export * from './workspace';
 export * from './shape';
+export * from './adapter';
