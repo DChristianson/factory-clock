@@ -7,3 +7,4 @@ export * from './marks';
 export * from './synthetic';
 export * from './traces';
 export * from './syntheticWorkspace';
+export * from './loader';
