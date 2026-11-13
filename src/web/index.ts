@@ -6,3 +6,4 @@ export * from './jsonl';
 export * from './marks';
 export * from './synthetic';
 export * from './traces';
+export * from './syntheticWorkspace';
