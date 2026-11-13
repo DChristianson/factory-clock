@@ -1,6 +1,6 @@
 # Design: the workspace explorer
 
-Status: **proposal** (2026-11-12; sketches and the owner's Strata view and fusion question added 2026-11-13). Not yet reviewed. It extends the [visualization explorer](visualization-explorer.md), which stays the design of record for the session views and the visualizer contract; nothing there is undone by this document, and **every existing view and every existing design language stays**. The [preliminary plan](#preliminary-plan) at the end is tracked in beads under the epic named there.
+Status: **accepted** (2026-11-13, in review with the owner, with the changes in [Decisions](#decisions): adapters run in the page, the five existing hero views stay hero views, and every view credits its prior art). Proposed 2026-11-12; sketches, the owner's Strata view, and the fusion question added 2026-11-13. Design-language fusion is not decided: a spike decides it. It extends the [visualization explorer](visualization-explorer.md), which stays the design of record for the session views and the visualizer contract; nothing there is undone by this document, and **every existing view and every existing design language stays**. The [preliminary plan](#preliminary-plan) at the end is tracked in beads under the epic named there.
 
 Sketches of every screen and state are in [`images/`](images/): one static SVG per frame (`sketch-*.svg`, linked from the sections below) drawn from [`images/workspace-explorer-sketches.html`](images/workspace-explorer-sketches.html), the sketch page itself, which also plays the Strata artboard's motion. The sketches are wireframes in the page's own neutrals and accent; the hero artboards are color.
 
@@ -10,9 +10,10 @@ Factory Clock draws coding-agent sessions 32 ways. This design makes it a showca
 
 Three things change.
 
-1. **Subjects.** The explorer gains two subjects beside sessions, *code* and *plans*, each with a shared schema that an **adapter** fills from a particular tool: a build system for code (npm workspaces and TypeScript imports first), an issue tracker or a planning document for plans (beads and planning markdown first). Adapters are Node scripts that write a JSON file; the page reads the file the way it reads event files today, in the browser, sending nothing. A fourth subject, *workspace*, is all three loaded together with the joins between them, and is what the new hero views draw.
+1. **Subjects.** The explorer gains two subjects beside sessions, *code* and *plans*, each with a shared schema that an **adapter** fills from a particular tool: a build system for code (npm workspaces and TypeScript imports first), an issue tracker or a planning document for plans (beads and planning markdown first). Adapters run **in the page**: you pick a project's folder, and the page reads its files and builds the schema in the browser, sending nothing, the way it reads event files today. A fourth subject, *workspace*, is all three loaded together with the joins between them, and is what the new hero views draw.
 2. **The explorer.** The carousel becomes a **stage** with a **shelf**: one view fills the stage, and a strip of cards under it names every view the current filters allow, so fifty views are a scroll rather than fifty presses of Next. A **gallery** mode spreads the shelf into a grid of live thumbnails. The **puck** stays, and becomes a **guide**: it still names the view you're on and filters by tags, and it also asks what you want to see (which subject, which questions, informative or expressive, which look, motion or not), keeps the answers, and recommends an order. A **tour** plays through the recommended views for a showcase.
-3. **Hero views that show everything at once.** Three new design languages, each a whole-project picture: the **Atlas** (cartographic: code is terrain, dependencies are roads, plan items are pins and routes, sessions are trails), the **Skyline** (isometric: packages are blocks, files are buildings, open work is scaffolding, sessions are the lights coming on), and the **Transit map** (plans as lines and stations over the code districts they run through, sessions as trains). A fourth, the **Loom**, waits on a join the data doesn't carry yet.
+3. **Hero views that show everything at once.** The five hero views stay hero views, and four join them, each a whole-project picture in a new design language: the **Atlas** (cartographic: code is terrain, dependencies are roads, plan items are pins and routes, sessions are trails), the **Skyline** (isometric: packages are blocks, files are buildings, open work is scaffolding, sessions are the lights coming on), the **Transit map** (plans as lines and stations over the code districts they run through, sessions as trains), and the owner's **Strata** (code, sessions, and plans as three stacked planes with the messages between them moving). A **Loom** may follow.
+4. **Credit.** Every view names the prior art it draws on, in its catalog entry, shown in the puck and on a credits list.
 
 ## Problems this addresses
 
@@ -32,7 +33,7 @@ Three things change.
 
 ## Non-goals
 
-- A server, an index, or any fetch. Adapters run where the project is (a developer's machine, CI) and produce a file.
+- A server, an index, or any fetch. Everything runs in the page, adapters included, and all data stays in the browser.
 - Semantic analysis of code or plans: no parsing beyond imports and build manifests, no embeddings, no model calls. Planning markdown is read by heuristics that say they're heuristics.
 - Editing. The page shows plans; it doesn't change them.
 - Every build system. The adapter layer is designed for many; this plan builds one for code and two for plans, and the rest come with the projects that need them.
@@ -125,23 +126,32 @@ interface PlanLink {
 | --- | --- | --- |
 | Plan item → code artifact | `refs.paths` matched to `Artifact.path` (a path, or a directory prefix) | Buildable now: markdown links and beads descriptions name paths |
 | Plan item → session | A session's prompt text naming the item's id (`factory-clock-1av`) or title; text capture must be on | Heuristic, inferred |
-| Session → code artifact | The paths a session's tool calls touched | **Not in `SessionView`.** It records a tool call's name, category, and status, and never its target, on purpose, so the demo traces carry no paths. See [open questions](#open-questions) |
+| Session → code artifact | The paths a session's tool calls touched | **Built at load** (decided 2026-11-13): a `touches` list per session from the loaded events' file targets, relative to the workspace root, never command lines or absolute paths. Present only when the loaded files carry targets: the owner's own event files do, the redacted demo traces don't, and views say so. `SessionView` itself still carries no targets |
 
 Each join is a list of `{ from, to, inferred }` and views draw inferred joins as inferred (dashed, hatched, or ≈), the rule the first design set.
 
 ## Adapters
 
-An adapter is a Node script that reads one tool's artifacts and writes one schema file. It never runs in the browser: the page's security policy forbids reading anything but files the visitor chooses, and a repository is many files. The command is one entry point with a subcommand per adapter:
+An adapter is a TypeScript module that reads one tool's artifacts and returns one schema object. It runs **in the page**, inside the bundle, so a project's code and plans are read the way event files are: in the browser, from files the visitor chooses, sending nothing (decided 2026-11-13). The same module also runs in Node, for the unit tests and for the build that makes the demo.
 
-```bash
-npm run adapt -- code npm --root ../some-project --out some-project.code.json
-npm run adapt -- plan beads --root ../some-project --out some-project.plan.json
-npm run adapt -- plan markdown --root ../some-project/docs --out some-project-docs.plan.json
+**How a project reaches the adapters.** The loader gains a **Choose a project folder** button (`<input type="file" webkitdirectory>`, which current browsers support and the page's security policy allows, since it's a file the visitor chose and not a fetch), and a folder can be dropped too. The page walks the chosen files, skips `.git`, `node_modules`, build output, and binaries, stops at named limits (2 MB per file, 20,000 files, both tuned on the first target project), and hands each adapter a list of `{ path, text }` with paths relative to the folder. An adapter never sees an absolute path, the disk, or the network.
+
+**Detection.** Each adapter says whether the files are its kind: a `package.json` turns on the npm adapter, a beads export the beads adapter, Markdown with plan-shaped sections the markdown adapter. The loader lists what each one found ("npm: 1 package, 61 files; beads: 24 items; markdown: 3 documents, 64 items") with a switch to turn one off.
+
+```ts
+interface ProjectFile { path: string; text: string; bytes: number }    // path relative to the chosen folder
+interface AdapterOptions { name: string; keepText?: boolean; hints?: string[] }
+interface Adapter<T> {
+  id: string;                      // 'npm', 'beads', 'markdown'
+  subject: 'code' | 'plans';
+  detect(files: ProjectFile[]): boolean;
+  read(files: ProjectFile[], options: AdapterOptions): T;   // a CodeGraph or a PlanGraph
+}
 ```
 
-Adapters live in `src/adapters/<subject>/<tool>.ts`, are TypeScript compiled by the same `tsc`, and import only Node builtins and the model types. Each ships with a fixture (a tiny project under `src/test/fixtures/adapters/<tool>/`) and a unit test that checks the output validates and matches a snapshot. Adding an adapter is a file, a fixture, a test, and a row in the table below.
+Adapters live in `src/adapters/<subject>/<tool>.ts` and import only the model types: no Node builtins and no DOM, so the build's rule that no Node import reaches the bundle covers them, and the tests run them in Node unchanged. Each ships with a fixture (a tiny project under `src/test/fixtures/adapters/<tool>/`) and a unit test that checks the output validates and matches a snapshot. Adding an adapter is a file, a fixture, a test, a line in the adapter list, and a row in the table below.
 
-Options every adapter takes: `--root`, `--out`, `--name` (what `source.root` says; defaults to the folder's name), and `--keep-text` for plan adapters (off by default, so descriptions don't travel unless asked).
+Options are switches in the loader: the project's name (what `source.root` says; the folder's name by default), **keep text** for plan adapters (off by default, so descriptions are kept only when asked), and hints, below. A schema file (`*.code.json`, `*.plan.json`) can still be dropped, for the demo's files and for projects read elsewhere, and is validated the same way.
 
 ### Code adapters
 
@@ -154,7 +164,7 @@ Options every adapter takes: `--root`, `--out`, `--name` (what `source.root` say
 | Python | `pyproject.toml`, `import`/`from` | package, modules, files | `import` | With a target project |
 | Bazel / Buck | `BUILD` files | targets | `build` with `deps` | With a target project |
 
-The first adapter reads imports with a line scanner, not a parser: `import … from 'x'`, `export … from 'x'`, `require('x')`, and `/// <reference path>` lines. It resolves relative specifiers against the tree (`./a` → `a.ts`, `a.js`, `a/index.ts`) and marks a dependency `inferred` when it had to guess; a bare specifier becomes an `external`. Factory Clock's own `viz/*.js` scripts import nothing and talk through globals, so the adapter also records a `reference` dependency from each file to the files named in its comments' `see` lines and from `hosts/web/index.html` to the scripts it loads, both `inferred`, so the page's real structure shows. That's a Factory Clock-specific rule and lives in a `--hints` option, not in the adapter's core.
+The first adapter reads imports with a line scanner, not a parser: `import … from 'x'`, `export … from 'x'`, `require('x')`, and `/// <reference path>` lines. It resolves relative specifiers against the tree (`./a` → `a.ts`, `a.js`, `a/index.ts`) and marks a dependency `inferred` when it had to guess; a bare specifier becomes an `external`. Factory Clock's own `viz/*.js` scripts import nothing and talk through globals, so the adapter also records a `reference` dependency from each file to the files named in its comments' `see` lines and from `hosts/web/index.html` to the scripts it loads, both `inferred`, so the page's real structure shows. That's a Factory Clock-specific rule and lives in a `globals` hint, a switch the loader offers, not in the adapter's core.
 
 Every file gets `size.lines` and a `role` from its path (`test` under `src/test/`, `doc` for `.md`, `config` for manifests and dotfiles). Fan-in and fan-out are computed in the page from the dependencies, not by the adapter, so every adapter gets them for free.
 
@@ -167,15 +177,17 @@ Every file gets `size.lines` and a `role` from its path (`test` under `src/test/
 
 The markdown adapter is a heuristic and the schema makes that visible: every item it produces says `inferred` unless a checkbox said otherwise, and a view that shows status shows how sure the source was. The heuristics to start with are the ones that read [visualization-explorer.md](visualization-explorer.md) correctly: its **Steps** list with "done" in bold, its tables with a Status-like column, its Decisions and Open questions sections, and phrases like "after step 5" and "waits for". That document, with this one, is the markdown fixture, so the heuristics are tested on the plans this project actually writes. Status words that set an item done: `done`, `built`, `shipped`, `accepted`, `closed`, `✓`; in progress: `in progress`, `started`, `partly`, `but for`; deferred: `later`, `deferred`, `not planned`, `waits`. Each word's effect is a row in one table in the adapter, so adding a project's own vocabulary is a row.
 
-The beads adapter reads `bd export`'s output, whose fields this project has seen: `id`, `title`, `description`, `status`, `priority`, `issue_type`, `created_at`, `updated_at`, `closed_at`, the dependency list, labels, and comments. Comments are counted, not kept. `--keep-text` keeps descriptions.
+Beads keeps its issues in a Dolt database that a browser can't open, so the beads adapter reads beads' JSONL export: `.beads/issues.jsonl` in the chosen folder when the project keeps one, or a file made with `bd export` and dropped beside the folder. The loader says which it used, and how to make one when it found neither. The export's fields, which this project has seen: `id`, `title`, `description`, `status`, `priority`, `issue_type`, `created_at`, `updated_at`, `closed_at`, the dependency list, labels, and comments. Comments are counted, not kept. Keep text keeps descriptions.
 
 ### What the page does with a file
 
 ![The loader: one drop zone, and the list of dropped files sorted by content, one refused](images/sketch-loader.svg)
 
-The loader stops being three things and becomes one: drop or choose any files, and the page sorts them by content. A `.jsonl` whose first line has `kind` and `ts` is events; a `.json` whose top is `kind: 'code-graph'` or `'plan-graph'` is that subject; anything else is named and refused. Several files of one subject merge (two plan files are one plan with two sources; two code files are two roots). Each subject's data and picks live in the page state the way sessions' do now, and the explorer is remounted over the new `Workspace`.
+The sketch predates the decision to run adapters in the page: its *Make your own* commands become a **Choose a project folder** button beside the drop zone, and its file list gains a row per adapter that detected something.
 
-For the examples, the page builds without any file: the synthetic sessions it has, plus a synthetic code graph (a fake monorepo of five packages and some 120 files with imports, a couple of cycles, and tests) and a synthetic plan (three epics, thirty items, blocks and parents, dates spread over a month), both seeded. Beside them, as the demo traces are today, the demo **workspace**: this repository's own code graph, beads, and planning markdown, written by `npm run demo:workspace` into `hosts/web/demo/`, committed when the owner has looked at it, and offered with the traces. Later, static data from a target project goes in the same folder the same way.
+The loader stops being three things and becomes one: choose a project folder, or drop or choose any files, and the page sorts them out. A folder goes to the adapters, as above. Single files are sorted by content. A `.jsonl` whose first line has `kind` and `ts` is events; a `.json` whose top is `kind: 'code-graph'` or `'plan-graph'` is that subject; anything else is named and refused. Several files of one subject merge (two plan files are one plan with two sources; two code files are two roots). Each subject's data and picks live in the page state the way sessions' do now, and the explorer is remounted over the new `Workspace`.
+
+For the examples, the page builds without any file: the synthetic sessions it has, plus a synthetic code graph (a fake monorepo of five packages and some 120 files with imports, a couple of cycles, and tests) and a synthetic plan (three epics, thirty items, blocks and parents, dates spread over a month), both seeded. Beside them, as the demo traces are today, the demo **workspace**: this repository's own code, beads, and planning markdown, read at build time by `scripts/site.js` running the same adapters in Node and written into the page, and offered with the traces. Everything it reads is already in this public repository except the beads export, which is committed after the owner has read it. Later, static data from a target project goes in the same folder the same way.
 
 ## The explorer
 
@@ -230,6 +242,8 @@ The guide's recommendation is the shelf's order: within the allowed views, subje
 
 ### Taxonomy changes
 
+**In short:** the taxonomy is the set of tags every view carries and the puck filters by. Today it can say *what question* a view answers and *what it looks like*, but not *what it's a picture of*, because everything was a picture of sessions. The change adds that, as a new tag `subject` (sessions, code, plans, or the whole workspace), plus a few words the new views need. Nothing existing is renamed or removed; the 32 views just gain `subject: sessions`.
+
 One new facet and a few values, all additive. Every entry gives every facet, as before, and the unit test keeps it so.
 
 | Facet | Change |
@@ -240,9 +254,11 @@ One new facet and a few values, all additive. Every entry gives every facet, as 
 | `dimension` | Adds `structure` (containment: package, module, file; epic, task), `status` (open, blocked, done), and `place` (where in the code). |
 | `language` | Adds `cartographic`, `isometric`, `transit`, and later `textile`, one per hero view, with that view. |
 
-The catalog entry gains two optional fields: `why` (the guide's sentence) and `thumbnail` (`'live'`, the default, or `'title'`).
+The catalog entry gains `why` (the guide's sentence), `thumbnail` (`'live'`, the default, or `'title'`), `hero` (below), and `credits` (below).
 
 ### Shapes: one view, several subjects
+
+**In short:** a treemap of a session's tokens and a treemap of a project's files are the same picture with different data. Rather than writing a second treemap for code and a third for plans, the existing one learns to draw a neutral form, a *Shape* (boxes inside boxes, plus lines between them), and each subject knows how to turn itself into one. Five existing views get this, so code and plans start with ten views almost for free, and those views keep drawing sessions exactly as they do now.
 
 Five of the existing views draw a hierarchy, a graph, or both, and don't care that the nodes are turns and agents: the treemap, the sunburst, the adjacency matrix, the Sankey, and the actor graph. Rather than three copies each, the kit gains a **Shape**, the one form all three subjects can take:
 
@@ -290,6 +306,19 @@ The standard set, each a file under `viz/`, a catalog entry, and a note in this 
 | Touch map | Which files did the sessions touch, how often? The file grid heated by session activity (waits for the session→code join) | quantitative, temporal | expressive, informative | place, quantity, actor |
 
 ## Hero views: everything at once
+
+### All nine are hero views
+
+The five hero views built for sessions, Living Network, Session Fingerprint, Conversation Landscape, Terminal Board, and Factory Clock, **stay hero views** (the owner, 2026-11-13). The four below join them; none replaces one. To make that a fact the explorer can use rather than a convention, the catalog entry gains `hero: true`, set on all nine:
+
+- The shelf puts heroes last, as the carousel does now, and the gallery has a **Heroes** chip that shows just the nine.
+- The tour ends on the heroes, and in the puck's *Ask*, answering *For: impressing* leads with them.
+- The Map rings hero dots.
+- The first five keep `subject: sessions`. With a workspace loaded they still draw its sessions; teaching them about code or plans (files as nodes in the Living Network, say) is possible later and not planned.
+
+`hero` isn't a facet, because it's a role rather than a question a view answers, and filtering on it from *Here*'s chips would duplicate `purpose: expressive` in most cases. It's one boolean, tested to be set on exactly the views this document and the first one list.
+
+### Four new ones
 
 The first five hero views are each one question with a look chosen for it. These are each the *whole project* with a look chosen for it: a picture a person points at. Each takes the `workspace` subject and draws whichever parts are loaded, saying in its note which parts are missing, as Conversation Landscape says why it has no words. Each has a replay, from the shared clock, when sessions are loaded: time runs over the sessions' span, and the plan's items change state at their timestamps.
 
@@ -363,9 +392,11 @@ The three subjects as three planes of one object, with the messages between them
 
 ### What applies to all
 
-The same rules as the [first five](visualization-explorer.md#what-applies-to-all-five): one file under `viz/`, a catalog entry with its language, markup from `ctx` and styles in `viz.css` under a view-scoped class, system fonts, every mark leads back to a selection, performance tried on the largest real workspace available (this repository is small; a target project with a few thousand files is the test). Each hero view takes part in the tour. Its thumbnail is its **long exposure**: the view's rest state after a full replay (every trail drawn, every light that ever came on left faintly on), drawn once at card size with the replay stopped, the way a print of a Gource run would look. The first five hero views already have a rest state (the field after Conversation Landscape's replay finishes), so the same rule gives them thumbnails too; a view whose rest state is unreadable small still has `thumbnail: 'title'`.
+The same rules as the [first five](visualization-explorer.md#what-applies-to-all-five): one file under `viz/`, a catalog entry with its language, markup from `ctx` and styles in `viz.css` under a view-scoped class, system fonts, every mark leads back to a selection, performance tried on the largest real workspace available (this repository is small; a target project with a few thousand files is the test). Each hero view sets `hero: true`, carries its `credits`, and takes part in the tour. Its thumbnail is its **long exposure**: the view's rest state after a full replay (every trail drawn, every light that ever came on left faintly on), drawn once at card size with the replay stopped, the way a print of a Gource run would look. The first five hero views already have a rest state (the field after Conversation Landscape's replay finishes), so the same rule gives them thumbnails too; a view whose rest state is unreadable small still has `thumbnail: 'title'`.
 
 ## Design languages: keeping all, fusing some
+
+**In short:** each hero view has its own look: the Terminal Board is a station's flip-board, the Living Network a dark field with glowing particles. Today a look belongs to one view. *Fusing* would let you mix them: show the Living Network but with its labels on flip-board tiles that clack over when something changes, or draw the Terminal Board in the enamel and ink of the Factory Clock dial. To allow that, each look is split into four parts that can be swapped separately: the background and colors, the lettering, the shapes, and the way things move. The puck would offer "Living Network *with* Terminal Board's lettering". **This isn't decided:** step 22 tries it on two looks first, to see whether it's cheap and whether the mixes look good, and step 23 happens only if it is.
 
 Every language built so far stays, as a value in the vocabulary and as the look of the view that carries it. The question the owner raised on 2026-11-13 is whether languages can also be **fused**: Terminal Board's split-flap text on the Living Network's dark field, say, or the Terminal Board drawn as an enamel dial. Today they can't, because a language is a property of a view, baked into its script and its scoped block in `viz.css`. This section proposes how they could be, as a later step whose worth a spike decides first.
 
@@ -394,54 +425,77 @@ A view today uses all four from one language. A fusion is a view using the slots
 
 A spike before any of this (plan step 22): factor `split-flap` and `cinematic` into the four slots, draw the two fusions named above, and record how much of each view's code had to change and whether the contrast checks still hold. If a fusion needs more than the attributes and the shared helpers, the slots are wrong or the idea is; if it's cheap, step 23 builds it. Until then, the only thing this section changes is that every new hero view keeps its sheet, type, marks, and motion in separate blocks, which costs nothing and leaves the door open.
 
+## Credits
+
+Every view names the work it draws on, so the page gives proper credit: the chart type it is, the technique or layout it uses, the metaphor it borrows, and the design it came from (the owner, 2026-11-13).
+
+```ts
+interface Credit {
+  work: string;              // 'Hierarchical Edge Bundles'
+  by: string;                // 'Danny Holten'
+  year?: number;             // 2006
+  url?: string;              // only a link someone has opened and checked
+  relation: 'form' | 'technique' | 'metaphor' | 'design';
+  note?: string;             // one line: what was taken
+}
+```
+
+- **`form`** is the chart type itself (Sankey's diagram, the treemap). **`technique`** is a layout or algorithm used (edge bundling, circle packing, a Hilbert-curve order). **`metaphor`** is a borrowed picture (CodeCity's city, the metro map). **`design`** is where the view's own design came from: the visualization proposal and its categories, the hero concept pages (ChatGPT-generated), the design canvas, the owner's sketches.
+- **In the catalog.** `credits: Credit[]` on every entry; a unit test fails an entry with none. A view that is original says so with one `design` credit naming this project's design document, so "original" is a claim someone made, never a blank.
+- **On screen.** The puck's *Here* gains an *After* line ("After Holten 2006 · Wettel & Lanza 2008"), each name linking to its source. Below the fold, beside the picker and loader, a **Credits** list is built from the catalog, one row per view with all its credits, so the page's whole debt is in one place. The README links to it.
+- **For the new views**, credits come from [the prior-art survey](workspace-explorer-prior-art.md) as each view is built, and the rule joins those in [What applies to all](#what-applies-to-all).
+- **For the 32 existing views**, credits are researched once (plan step 24) and every URL opened before it's recorded. To start from, with the details to check: treemap (Shneiderman, early 1990s), Sankey diagram (Sankey, 1898), streamgraph (Byron and Wattenberg, 2008), parallel coordinates (Inselberg, 1985), sunburst (Stasko and Zhang, 2000), Gantt chart (Gantt, 1910s), sequence diagram (UML), and the hero views' concept pages and design canvas named in [the first design](visualization-explorer.md#hero-visualizations).
+
 ## Testing
 
 - **Schemas.** Validators for `CodeGraph` and `PlanGraph` with unit tests over good and bad files.
 - **Synthetic data.** Seeded generators for both, in `src/web/`, with the same properties the session generator has: the same output every run, and shapes that exercise the views (cycles, an external-heavy package, a blocked chain, an epic with everything done).
-- **Adapters.** A fixture project per adapter under `src/test/fixtures/adapters/`, the output snapshotted; the markdown adapter's fixture is this project's own `docs/`, so a change to the heuristics shows as a diff in what they read from the plans here.
+- **Adapters.** The same modules the page runs, run in Node over a fixture project per adapter under `src/test/fixtures/adapters/`, the output snapshotted; the markdown adapter's fixture is this project's own `docs/`, so a change to the heuristics shows as a diff in what they read from the plans here.
 - **Explorer model.** The guide's filtering and ordering, the loader's sorting of files, the joins, and `shapeOf` for each subject, in Node.
 - **Views.** By hand, in both themes, on the synthetic workspace, the demo workspace, and, as they arrive, the owner's static target projects.
-- **The page.** The build fails if a Node import reaches the bundle, as today.
+- **The page.** The build fails if a Node import reaches the bundle, as today, which now covers the adapters. The folder picker and the file walk are checked by hand on this repository and a target project.
+- **Catalog.** Every entry has credits, and `hero` is set on exactly the nine hero views.
 
 ## Preliminary plan
 
-Tracked in beads: the epic `factory-clock-bqx`, **Workspace explorer**, with one issue per step, `factory-clock-bqx.1` through `.23`, numbered as below and blocked in this order; `bd ready` lists what's unblocked. Steps marked ∥ can run beside the one before.
+Tracked in beads: the epic `factory-clock-bqx`, **Workspace explorer**, with one issue per step, `factory-clock-bqx.1` through `.24`, numbered as below and blocked in this order; `bd ready` lists what's unblocked. Steps marked ∥ can run beside the one before.
 
 1. **Design review.** This document reviewed; the decisions below confirmed or changed, the open questions settled.
-2. **Models.** `src/model/code.ts`, `plan.ts`, `workspace.ts` with validators, the joins, `shapeOf`, and unit tests. No UI.
+2. **Models.** `src/model/code.ts`, `plan.ts`, `workspace.ts` with validators, the joins (session→code from a `touches` list built at load), `shapeOf`, and unit tests. No UI.
 3. **Synthetic workspace.** The two generators and their tests; the page's examples gain the code graph and the plan.
-4. **Loader.** Files sorted by content, subjects in page state, `Workspace` built and handed to a source with the new methods. ∥ with 3.
-5. **Taxonomy and catalog.** The `subject` facet and the new values; `why` on every entry; every existing entry tagged `sessions`; tests updated. Small and first among the UI changes, since everything after reads it. ∥ with 2.
+4. **Loader.** The project-folder picker and file walk, files sorted by content, adapters detected and switchable, subjects in page state, `Workspace` built and handed to a source with the new methods. ∥ with 3.
+5. **Taxonomy and catalog.** The `subject` facet and the new values; `why` on every entry; `hero` on the five existing hero views; every existing entry tagged `sessions`; tests updated. Small and first among the UI changes, since everything after reads it. ∥ with 2.
 6. **Stage and shelf.** The carousel replaced; previous, next, keys, and the three-mounted rule kept; the compare toggle; the picker per subject. Checked by hand that every session view behaves as before.
 7. **The guide.** The puck's three bodies; preferences saved; the shelf ordered by them; the first-visit *Ask*.
-8. **Code adapter: npm and TypeScript.** With its fixture and test, and the `adapt` entry point. ∥ with 5–7.
-9. **Plan adapter: beads.** With its fixture. ∥ with 8.
+8. **Code adapter: npm and TypeScript.** An in-page module with its fixture and test. ∥ with 5–7.
+9. **Plan adapter: beads.** An in-page module over beads' JSONL export, with its fixture. ∥ with 8.
 10. **Plan adapter: planning markdown.** The heuristics, tested on this project's docs.
-11. **Demo workspace.** `npm run demo:workspace` writes this repository's files into `hosts/web/demo/`; committed after the owner reads them; the page offers them beside the traces.
+11. **Demo workspace.** The build runs the adapters over this repository and writes the result into the page; the beads export is committed after the owner reads it; the page offers the workspace beside the traces.
 12. **Shape views.** The five ported views draw code and plans. One change each.
 13. **Standard views for code and plans.** Dependency layers, blocking graph, roadmap, status strips, package wheel, burn-up, file grid, confidence map, plan over code: one change each, in roughly that order, each a gap filled in the Map.
 14. **Gallery and tour.** Thumbnails, mount-on-scroll, the tour and its narration. ∥ with 12–13.
 15. **Atlas.** Its language in the taxonomy, the view, and its note here.
 16. **Skyline.** Same.
 17. **Transit map.** Same. ∥ with 16.
-18. **Docs.** README, CONTRIBUTING (adding an adapter), the visualizer contract (`options.shape`, the new selection fields), PRIVACY (code and plan files are read in the browser like event files), and this document's implementation notes.
+18. **Docs.** README, CONTRIBUTING (adding an adapter; credits for a new view), the visualizer contract (`options.shape`, the new selection fields), PRIVACY (a project folder is read in the browser like event files, and nothing is sent), and this document's implementation notes.
 19. **Target project data.** The owner's static data for one or two projects, with whatever adapter they need, and the hero views tried at that size. Not scheduled; it starts when the data is chosen.
-20. **Session→code join and the Loom.** After the decision below; the Loom or Storylines, one of the two.
+20. **Loom or Storylines.** One of the two, on the session→code join from step 2.
 21. **Strata.** The fourth hero view, after Atlas's foundations (steps 11 and 12); its language in the taxonomy, the view, and its note here.
 22. **Design-language fusion spike.** Factor `split-flap` and `cinematic` into sheet, type, marks, and motion; draw the two named fusions; record the cost. Decides step 23.
-23. **Language slots.** The slots in `viz.css` and the kit, `slots` in the catalog, the puck's "with …" row. Every existing language unchanged when nothing is picked.
+23. **Language slots.** The slots in `viz.css` and the kit, `slots` in the catalog, the puck's "with …" row. Every existing language unchanged when nothing is picked. Only if step 22 says so.
+24. **Credits.** The `credits` field and its test, the puck's *After* line, the Credits list, and credits for all existing views, each source checked. ∥ with 6–7, after 5.
 
 Steps 2–5 are the foundation and are small. Steps 6–7 are the visible change and the ones to look at early. Steps 8–11 make the demo real. Everything from 12 on is a view at a time, as before.
 
 ## Decisions
 
-Proposed; to confirm in review.
+Confirmed in review with the owner on 2026-11-13. Rows marked *changed* differ from the proposal.
 
 | Question | Proposal |
 | --- | --- |
-| Where adapters run | In Node, as scripts that write a file; never in the page |
+| Where adapters run | *Changed:* in the page, over a project folder the visitor picks; all data stays in the browser. The same modules run in Node only for tests and the demo build |
 | The schemas | Two small ones, code and plan, with containment, typed links, and `inferred` on everything a heuristic produced |
-| How a file reaches the page | The same loader as events, sorting files by content |
+| How a project reaches the page | One loader: a project folder goes to the adapters; single files (events, schema files, a beads export) are sorted by content |
 | The explorer's shape | Stage and shelf, with a gallery mode and a tour; the carousel's keys and three-mounted rule kept |
 | The puck | Stays; three bodies: Here, Ask, Map; preferences are the filters with a friendlier front |
 | Recommendation | Catalog order within preference order, no scoring; scoring later if wanted, in the model |
@@ -449,19 +503,21 @@ Proposed; to confirm in review.
 | Reuse across subjects | A Shape in the kit, five views ported to draw it; everything else subject-specific |
 | First adapters | npm + TypeScript (code); beads and planning markdown (plans); this repository as the demo |
 | Markdown heuristics | A table of patterns in one file, tested on this project's own design documents; every result `inferred` |
-| Hero views | Atlas, then Skyline, then Transit map, then Strata; Loom after the session→code join |
+| Hero views | *Changed:* the five existing hero views stay hero views, marked `hero: true` with the four new ones. New ones in order: Atlas, Skyline, Transit map, Strata; Loom or Storylines later |
+| Session→code join | A `touches` list per session built at load from the events' file targets, relative paths only; absent for the redacted demo traces |
+| A markdown plan's unit | By shape: a document with a Steps, Plan, or Phases section is one epic; otherwise each top-level heading is one |
+| Tour on arrival | Only on the bare demo (nothing loaded, no preference saved), never with reduced motion |
+| Credits | *Added:* every view credits its prior art in the catalog (`credits`), shown in the puck and a Credits list; a test requires them |
 | Existing views and languages | All kept, unchanged; the design adds and never retires (the owner, 2026-11-13) |
-| Fusing design languages | Four slots (sheet, type, marks, motion), sheets indivisible; a spike on two languages decides whether to build it; new heroes keep their slots separate from the start |
+| Fusing design languages | **Not decided.** The spike (step 22) shows two fusions working before anything is built. New heroes keep their four slots in separate blocks meanwhile, which costs nothing |
 | Fonts | System stacks, as before |
 
 ## Open questions
 
-- **The session→code join.** `SessionView` drops tool targets on purpose, and the demo traces were redacted that way. Trails on the Atlas, lights in the Skyline, and the Loom all want the paths a session touched. Options: (a) a `touches` list per session built at load from the events' targets, relative paths only, never command lines, present only when the loaded files have them (the demo traces don't; the owner's own files do); (b) re-export the demo traces for this repository's sessions keeping file paths, since the paths of a public repository are public; (c) neither, and those features wait. (a) is cheap and private, and (b) is the owner's call per trace set.
-- **What a `unit` is for plans from markdown.** A document, or each top-level heading? A document reads naturally as an epic when it's a plan and as a folder of epics when it's a design document with several sections. The adapter could decide by whether the document has a Steps-like section. To settle on the fixture.
 - **Cycles in the npm adapter's imports.** This repository has none, and the first target project may; the dependency layers view needs to know how a cycle is reported (members on one layer is the proposal).
-- **How the guide handles the first visit of a returning visitor.** Preferences persist in `localStorage`; whether the tour should start on its own on the demo (a showcase wants motion on arrival; a person who came to work doesn't) is a one-line setting either way, and the proposal is: start the tour only when nothing has been loaded and no preference saved.
 - **Thumbnails of hero views.** The long-exposure rule above is the proposal; whether a hero view's rest state reads at card size is known only once it's drawn. A pre-rendered image per view (a headless browser in the build) is the fallback and costs a dependency the build doesn't have.
 - **The second subject tab in the picker.** The picker now lists sessions; with three subjects it's three lists. Whether they're tabs in the picker or three pickers stacked under the shelf is a layout call to make in step 6, with the data in front.
+- **Large folders.** The file walk's limits are guesses until a target project with a few thousand files is tried; reading a big folder may want a progress line and a worker.
 
 ## References
 
