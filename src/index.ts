@@ -5,3 +5,4 @@
 export * from './catalog';
 export * from './explorerModel';
 export * from './assets';
+export * from './model';
