@@ -617,6 +617,29 @@ select, input[type="search"] {
 .swim-call { fill: var(--fc-ink-muted); background: var(--fc-ink-muted); }
 .swim-compaction { fill: var(--fc-warn); }
 
+/* Shapes: code by kind (vizkit.js shapeClass), plans by status. Code's kinds are source, test, doc, config, asset, generated, external, container. */
+.shape-k-0 { fill: var(--fc-cat-1); background: var(--fc-cat-1); }
+.shape-k-1 { fill: var(--fc-cat-2); background: var(--fc-cat-2); }
+.shape-k-2 { fill: var(--fc-cat-3); background: var(--fc-cat-3); }
+.shape-k-3 { fill: var(--fc-cat-4); background: var(--fc-cat-4); }
+.shape-k-4 { fill: var(--fc-cat-5); background: var(--fc-cat-5); }
+.shape-k-5 { fill: var(--fc-info); background: var(--fc-info); }
+.shape-k-6 { fill: var(--fc-ink-muted); background: var(--fc-ink-muted); }
+.shape-k-7 { fill: var(--fc-rule); background: var(--fc-rule); }
+.shape-st-open { fill: var(--fc-info); background: var(--fc-info); }
+.shape-st-in_progress { fill: var(--fc-warn); background: var(--fc-warn); }
+.shape-st-blocked { fill: var(--fc-error); background: var(--fc-error); }
+.shape-st-done { fill: var(--fc-ok); background: var(--fc-ok); }
+.shape-st-deferred { fill: var(--fc-ink-muted); background: var(--fc-ink-muted); }
+.shape-st-dropped { fill: var(--fc-rule); background: var(--fc-rule); }
+.shape-inferred { stroke: var(--fc-ink); stroke-dasharray: 3 2; stroke-width: 1; }
+.swatch-shape-inferred { background: none; border: 1px dashed var(--fc-ink); }
+.shape-on { stroke: var(--fc-ink); stroke-width: 2; }
+.shape-link { fill: none; stroke: var(--fc-ink-muted); stroke-opacity: 0.55; }
+.shape-link.shape-inferred { stroke-dasharray: 4 3; stroke-width: inherit; }
+.slide-subject { margin-left: auto; }
+.slide-subject button { font-size: 0.85em; padding: 1px 8px; }
+
 /* The hidden attribute always hides: a class that sets display (.slide, .card) would otherwise beat the browser's own [hidden] rule. */
 [hidden] { display: none !important; }
 

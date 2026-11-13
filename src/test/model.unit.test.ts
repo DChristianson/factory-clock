@@ -6,8 +6,10 @@ import {
   PlanGraph,
   UNANCHORED_SEGMENTS,
   anchor,
+  SHAPE_NODE_LIMIT,
   buildWorkspace,
   checkCodeGraph,
+  codeFoldFor,
   checkPlanGraph,
   fanInOut,
   joinPlanToCode,
@@ -17,6 +19,7 @@ import {
   shapeOfCode,
   shapeOfPlan,
   shapeOfSessions,
+  shapeOfWorkspace,
   touchesOf,
 } from '../model';
 
@@ -267,6 +270,40 @@ async function main() {
     assert.strictEqual(new Set(two.nodes.map((n) => n.id)).size, two.nodes.length, 'ids are unique across sessions');
     const ids = new Set(two.nodes.map((n) => n.id));
     assert.ok(two.nodes.every((n) => !n.parent || ids.has(n.parent)), 'every parent exists');
+  });
+
+  test('a workspace’s code and plans become one Shape each, ids qualified by root as the joins are', () => {
+    const second: CodeGraph = { ...codeGraph(), source: source('other') };
+    const ws = buildWorkspace({ code: [codeGraph(), second], plans: [planGraph()] });
+    const code = shapeOfWorkspace(ws, 'code')!;
+    assert.strictEqual(code.fold, 'file');
+    assert.strictEqual(code.nodes.length, 2 * shapeOfCode(codeGraph(), 'file').nodes.length);
+    assert.ok(code.nodes.some((n) => n.id === qualify('demo', 'src/core')));
+    assert.ok(code.nodes.some((n) => n.id === qualify('other', 'src/core')), 'the same id in two graphs stays two nodes');
+    const ids = new Set(code.nodes.map((n) => n.id));
+    assert.ok(code.nodes.every((n) => !n.parent || ids.has(n.parent)), 'every parent exists');
+    assert.ok(code.links.every((l) => ids.has(l.from) && ids.has(l.to)), 'every link ends at a node');
+    const plan = shapeOfWorkspace(ws, 'plans')!;
+    assert.ok(plan.nodes.find((n) => n.id === qualify('beads', 'demo-2'))!.parent === qualify('beads', 'demo-1'));
+    for (const j of ws.joins.planToCode) assert.ok(plan.nodes.some((n) => n.id === j.from), 'a join’s plan end is a node of the plan Shape');
+    assert.strictEqual(shapeOfWorkspace(ws, 'sessions'), null, 'no sessions loaded');
+    assert.strictEqual(shapeOfWorkspace(buildWorkspace({}), 'code'), null);
+    assert.strictEqual(shapeOfWorkspace(ws, 'code', { by: 'package' })!.fold, 'package');
+  });
+
+  test('code folds a level when its nodes pass the limit', () => {
+    const big = (files: number): CodeGraph => ({
+      ...codeGraph(),
+      artifacts: [
+        { id: 'p', kind: 'package', name: 'p' },
+        ...Array.from({ length: Math.ceil(files / 10) }, (_, m) => ({ id: `m${m}`, kind: 'module' as const, name: `m${m}`, path: `m${m}`, parent: 'p' })),
+        ...Array.from({ length: files }, (_, i) => ({ id: `f${i}`, kind: 'file' as const, name: `f${i}`, path: `m${Math.floor(i / 10)}/f${i}`, parent: `m${Math.floor(i / 10)}` })),
+      ],
+      dependencies: [],
+    });
+    assert.strictEqual(codeFoldFor([codeGraph()]), 'file');
+    assert.strictEqual(codeFoldFor([big(SHAPE_NODE_LIMIT)]), 'module');
+    assert.strictEqual(codeFoldFor([big(SHAPE_NODE_LIMIT * 10)]), 'package');
   });
 
   let failed = 0;

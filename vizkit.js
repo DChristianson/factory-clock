@@ -806,5 +806,48 @@
     return { dx: Math.sin((2 * Math.PI * t) / px + (h & 7)) * amplitude, dy: Math.cos((2 * Math.PI * t) / py + ((h >>> 3) & 7)) * amplitude };
   }
 
-  window.factoryClockKit = { el, svg, compact, fmt, niceMax, clip, formatTime, tipFor, ms, short, duration, agentName, modelShort, fit, findNode, pathTo, callTokens, sessionName, secondsText, turnStats, METRICS, metricValues, quantile, density, niceAxis, heatScale, arcPath, modeButtons, vizPanel, interact, legendKey, sessionClass, svgText, REPLAY_SPEEDS, REPLAY_CHOICES, getReplayPrefs, setReplayPrefs, onReplayPrefs, speedText, replayEvents, countUpTo, createReplay, replayBar, hashId, forceLayout, drift, termsOf, foldPlural, fitHeight, fitter };
+  // ---------- Shapes (docs/workspace-explorer.md, "Shapes: one view, several subjects") ----------
+  // A view that draws a Shape gets options.shape and options.subject ('code' or 'plans') from the
+  // explorer. These keep the five Shape views' colors, legends, and selections the same.
+  const SHAPE_KIND_TEXT = { in_progress: 'in progress', container: 'package or module', source: 'source', test: 'test', doc: 'doc', config: 'config', asset: 'asset', generated: 'generated', external: 'external' };
+  /** A kind as the legend and tooltips say it. */
+  const shapeKindText = (kind) => SHAPE_KIND_TEXT[kind] || kind;
+  /** A node's color class: a plan item by its status, anything else by its kind's place in the legend. */
+  const shapeClass = (node) => (node.status ? `shape-st-${node.status}` : `shape-k-${node.colorGroup}`);
+  /** Legend keys for the kinds the Shape's nodes use, in legend order, and one for inferred when any node or link is. */
+  function shapeLegend(shape) {
+    const used = new Set(shape.nodes.map((n) => n.kind));
+    const keys = shape.kinds
+      .map((kind, i) => [kind, i])
+      .filter(([kind]) => used.has(kind))
+      .map(([kind, i]) => legendKey(shape.valueLabel === 'items' ? `shape-st-${kind}` : `shape-k-${i}`, shapeKindText(kind)));
+    if (shape.nodes.some((n) => n.inferred) || shape.links.some((l) => l.inferred)) keys.push(legendKey('swatch-shape-inferred', 'inferred'));
+    return keys;
+  }
+  /** The selection a node announces: an artifact for code, an item for plans. */
+  const shapeSelection = (subject, id) => (subject === 'plans' ? { itemId: id } : { artifactId: id });
+  /** Whether the selection names this node. */
+  const shapeSelected = (sel, id) => !!sel && (sel.artifactId === id || sel.itemId === id);
+  /** Children by parent id, roots under '' ; each list largest first. */
+  function shapeChildren(shape) {
+    const ids = new Set(shape.nodes.map((n) => n.id));
+    const kids = new Map([['', []]]);
+    for (const n of shape.nodes) {
+      const p = n.parent && ids.has(n.parent) ? n.parent : '';
+      if (!kids.has(p)) kids.set(p, []);
+      kids.get(p).push(n);
+    }
+    for (const list of kids.values()) list.sort((a, b) => b.value - a.value);
+    return kids;
+  }
+  /** A node's own value: its inclusive value less its children's. */
+  const shapeOwn = (kids, n) => Math.max(0, n.value - (kids.get(n.id) || []).reduce((a, c) => a + c.value, 0));
+  /** The tooltip rows for a node. */
+  function shapeTip(shape, n, extra) {
+    return [n.label, [n.status ? 'Status' : 'Kind', shapeKindText(n.kind) + (n.inferred ? ' (inferred)' : '')], [shape.valueLabel[0].toUpperCase() + shape.valueLabel.slice(1), fmt(n.value)], ...(extra || [])];
+  }
+  /** What the Shape counts and how code was folded, for a view's note. */
+  const shapeNote = (shape) => `Sized by ${shape.valueLabel}${shape.fold && shape.fold !== 'file' ? `, files folded to ${shape.fold}s to keep it readable` : ''}.`;
+
+  window.factoryClockKit = { shapeKindText, shapeClass, shapeLegend, shapeSelection, shapeSelected, shapeChildren, shapeOwn, shapeTip, shapeNote, el, svg, compact, fmt, niceMax, clip, formatTime, tipFor, ms, short, duration, agentName, modelShort, fit, findNode, pathTo, callTokens, sessionName, secondsText, turnStats, METRICS, metricValues, quantile, density, niceAxis, heatScale, arcPath, modeButtons, vizPanel, interact, legendKey, sessionClass, svgText, REPLAY_SPEEDS, REPLAY_CHOICES, getReplayPrefs, setReplayPrefs, onReplayPrefs, speedText, replayEvents, countUpTo, createReplay, replayBar, hashId, forceLayout, drift, termsOf, foldPlural, fitHeight, fitter };
 })();

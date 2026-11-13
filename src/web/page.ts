@@ -1,6 +1,6 @@
 import { CATALOG } from '../catalog';
 import { ExploreSessionList, ExplorerState } from '../explorerModel';
-import { ProjectFile, Workspace } from '../model';
+import { ProjectFile, Workspace, shapeOfWorkspace } from '../model';
 import { creditRows } from './credits';
 import { EventSet, FindingsFor } from './eventSet';
 import { ProjectRead, Picks, Subject, UnitSummary, WorkspaceSet, isSkippedDir, looksBinary, planWalk, readProject, readSingleFiles } from './loader';
@@ -225,7 +225,8 @@ export function startPage(findingsFor?: FindingsFor): void {
   const hintGlobals = byId<HTMLInputElement>('hint-globals');
 
   const kit = globals.factoryClockKit;
-  const ctx = { ...kit, tooltip, ...kit.tipFor(tooltip) };
+  // shapeFor(workspace, subject, options) builds options.shape for the Shape views (explore.js).
+  const ctx = { ...kit, tooltip, ...kit.tipFor(tooltip), shapeFor: shapeOfWorkspace };
   let tab: ExploreTab | null = null;
   let set = new WorkspaceSet(new EventSet([], findingsFor));
   /** The last folder read, kept so the switches can read it again. */

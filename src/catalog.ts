@@ -29,6 +29,8 @@ export const TAXONOMY = {
     label: 'Subject',
     values: {
       sessions: 'What the coding agents did: sessions, turns, calls, and tools',
+      code: 'What the project is made of: packages, modules, files, and their imports',
+      plans: 'What the project means to do: epics, items, their status, and what blocks what',
     },
   },
   category: {
@@ -67,6 +69,8 @@ export const TAXONOMY = {
       communication: 'Communication',
       quantity: 'Quantity (cost)',
       content: 'Content (what was said)',
+      structure: 'Structure (containment: package, module, file; epic, item)',
+      status: 'Status (open, in progress, blocked, done)',
     },
   },
   language: {
@@ -241,7 +245,7 @@ export const CATALOG: VisualizerEntry[] = [
     description: 'Tokens as area: by session, turn, and tool category, or by tool category across sessions.',
     why: 'To compare spending at a glance, with area for tokens.',
     credits: [{ work: 'Tree visualization with tree-maps: 2-d space-filling approach', by: 'Ben Shneiderman', year: 1992, url: 'https://doi.org/10.1145/102377.115768', relation: 'form', note: 'The treemap' }, { work: 'Squarified Treemaps', by: 'Mark Bruls, Kees Huizing, and Jarke J. van Wijk', year: 2000, url: 'https://doi.org/10.1007/978-3-7091-6783-0_4', relation: 'technique', note: 'The squarified layout, which keeps blocks near square' }],
-    tags: { subject: ['sessions'], category: ['quantitative'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy'], language: ['standard'] },
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['quantitative'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'structure', 'status'], language: ['standard'] },
   },
   {
     id: 'heatmap',
@@ -313,7 +317,7 @@ export const CATALOG: VisualizerEntry[] = [
     description: 'The turn tree as rings: sessions, prompts, agents, then tool categories, with angle for tokens.',
     why: 'To follow the tokens from session to tool in one round picture.',
     credits: [{ work: 'Focus+Context Display and Navigation Techniques for Enhancing Radial, Space-Filling Hierarchy Visualizations', by: 'John Stasko and Eugene Zhang', year: 2000, url: 'https://doi.org/10.1109/INFVIS.2000.885091', relation: 'form', note: 'The sunburst' }],
-    tags: { subject: ['sessions'], category: ['quantitative'], purpose: ['expressive'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'actor'], language: ['standard'] },
+    tags: { subject: ['sessions', 'code', 'plans'], category: ['quantitative'], purpose: ['expressive'], level: ['session', 'project'], dimension: ['quantity', 'hierarchy', 'actor', 'structure', 'status'], language: ['standard'] },
   },
   {
     id: 'calendar-heatmap',

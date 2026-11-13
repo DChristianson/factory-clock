@@ -24,10 +24,12 @@
 //   loadUnits(subject, ids) optional: pick those units; answered through onWorkspace
 //   onWorkspace(cb)      optional: cb(Workspace) whenever any subject's picks change
 //
-// ctx: the helpers from vizkit.js plus tooltip, showTip(evt, rows), hideTip(). The tab adds
+// ctx: the helpers from vizkit.js plus tooltip, showTip(evt, rows), hideTip(), and optionally
+// shapeFor(workspace, subject) -> Shape | null (src/model/shape.ts shapeOfWorkspace). The tab adds
 // select(selection) for each visualizer it mounts (see viz/registry.js).
 //
 // Saved state: { picked: string[], current: visualizer id, compare: visualizer id | null, filters: { facet: [values] }, replay: { speed, loop },
+// subjects: { [visualizer id]: 'sessions' | 'code' | 'plans' | 'workspace' },
 // collapsed: boolean, corner: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
 // selection: { sessionId?, turnId?, range?, focusId? } | null }.
 (function () {
@@ -71,6 +73,7 @@
       sessions: [], // SessionView[] loaded, in picked order
       notLoaded: [],
       requested: false, // whether this page already asked for the picked sessions
+      subjects: saved.subjects && typeof saved.subjects === 'object' ? saved.subjects : {}, // the subject picked on a view that draws several, by view id
     };
     const save = (partial) => source.setState(partial);
     // The hero views' playback settings (speed, loop) are shared by every replay and remembered with the tab.
@@ -325,8 +328,8 @@
 
     // ---------- project picker ----------
     // Code roots and plan roots, as the source lists them; checked when the
-    // workspace it last sent has them. No view draws them yet (that comes with
-    // the Shape views), so this only picks.
+    // workspace it last sent has them. The views that draw them read the
+    // workspace from onWorkspace.
     function renderProject() {
       if (typeof source.listUnits !== 'function') {
         projectHost.replaceChildren();
@@ -350,7 +353,7 @@
       }).filter(Boolean);
       projectHost.replaceChildren(
         ...(groups.length
-          ? [el('div', { class: 'controls' }, [el('span', { class: 'muted small', text: 'Project: code and plans' })]), ...groups, el('p', { class: 'muted small', text: 'Views that draw code and plans arrive next; the picks are kept for them.' })]
+          ? [el('div', { class: 'controls' }, [el('span', { class: 'muted small', text: 'Project: code and plans' })]), ...groups, el('p', { class: 'muted small', text: 'Views that draw code or plans have a Draw switch above them on the stage.' })]
           : [])
       );
     }
@@ -393,12 +396,13 @@
       shelf.replaceChildren();
       st.catalog.forEach((entry, i) => {
         const host = el('div', { class: 'slide-host' });
+        const subjectHost = el('div', { class: 'slide-subject' });
         const slide = el('article', { class: 'slide', 'aria-label': entry.title, hidden: true }, [
-          el('div', { class: 'slide-head' }, [el('span', { class: 'muted small', text: `${i + 1}/${st.catalog.length}` }), el('strong', { text: entry.title }), el('span', { class: 'muted small', text: entry.description })]),
+          el('div', { class: 'slide-head' }, [el('span', { class: 'muted small', text: `${i + 1}/${st.catalog.length}` }), el('strong', { text: entry.title }), el('span', { class: 'muted small', text: entry.description }), subjectHost]),
           host,
         ]);
         const c = card(entry);
-        slides.push({ entry, slide, host, card: c, allowed: true, parts: [] });
+        slides.push({ entry, slide, host, subjectHost, card: c, allowed: true, parts: [], subjectKey: null });
         stage.append(slide);
         shelf.append(c);
       });
@@ -537,11 +541,66 @@
 
     // A session-level visualizer gets one instance per loaded session, stacked
     // under the session's name; any other gets one instance with the whole list.
+    // ---------- subjects ----------
+    // A view lists the subjects it draws (tags.subject). It draws one that's
+    // loaded: the one picked on its slide, else the first the puck's Subject
+    // filter names, else the first it lists. The workspace subject needs two
+    // of the others. Shapes are built once per workspace and subject.
+    const SUBJECT_TEXT = { sessions: 'Sessions', code: 'Code', plans: 'Plans', workspace: 'Workspace' };
+    let shapes = { workspace: null, bySubject: new Map() };
+    function shapeOf(subject) {
+      if (shapes.workspace !== st.workspace) shapes = { workspace: st.workspace, bySubject: new Map() };
+      if (!shapes.bySubject.has(subject)) shapes.bySubject.set(subject, st.workspace && typeof ctx.shapeFor === 'function' ? ctx.shapeFor(st.workspace, subject) : null);
+      return shapes.bySubject.get(subject);
+    }
+    function loadedSubjects() {
+      const ws = st.workspace;
+      const have = [];
+      if (st.sessions.length) have.push('sessions');
+      if (ws && ws.code && ws.code.length) have.push('code');
+      if (ws && ws.plans && ws.plans.length) have.push('plans');
+      if (have.length >= 2) have.push('workspace');
+      return have;
+    }
+    const subjectsOf = (entry) => entry.tags.subject || ['sessions'];
+    function subjectFor(entry, options) {
+      if (!options.length) return null;
+      const picked = st.subjects[entry.id];
+      if (options.includes(picked)) return picked;
+      return (st.filters.subject || []).find((x) => options.includes(x)) || options[0];
+    }
+    function needsText(entry) {
+      const wants = subjectsOf(entry);
+      if (wants.length === 1 && wants[0] === 'sessions') return 'No sessions loaded. Pick sessions below (Sessions and project ↓) and press Load.';
+      if (wants.length === 1 && wants[0] === 'workspace') return 'This view draws the workspace: load two of sessions, code, and plans (Sessions and project ↓).';
+      const names = wants.map((x) => SUBJECT_TEXT[x].toLowerCase());
+      return `This view draws ${names.slice(0, -1).join(', ')}${names.length > 1 ? ' or ' : ''}${names[names.length - 1]}; none is loaded. Pick some below (Sessions and project ↓).`;
+    }
+    function renderSubjectSwitch(s, options, subject) {
+      if (options.length < 2) {
+        s.subjectHost.replaceChildren();
+        return;
+      }
+      s.subjectHost.replaceChildren(
+        ctx.modeButtons('Draw', options.map((x) => [x, SUBJECT_TEXT[x] || x]), subject, (x) => {
+          st.subjects = { ...st.subjects, [s.entry.id]: x };
+          save({ subjects: st.subjects });
+          updateSlide(s);
+        })
+      );
+    }
+
     function updateSlide(s) {
-      const sessions = st.sessions;
-      if (!sessions.length) {
+      const options = subjectsOf(s.entry).filter((x) => loadedSubjects().includes(x));
+      const subject = subjectFor(s.entry, options);
+      const switchKey = `${options.join()}|${subject}`;
+      if (s.switchKey !== switchKey) {
+        s.switchKey = switchKey;
+        renderSubjectSwitch(s, options, subject);
+      }
+      if (!subject) {
         destroyParts(s);
-        s.host.replaceChildren(el('p', { class: 'muted', text: 'No sessions loaded. Pick sessions below (Sessions and project ↓) and press Load.' }));
+        s.host.replaceChildren(el('p', { class: 'muted', text: needsText(s.entry) }));
         return;
       }
       const def = viz.get(s.entry.id);
@@ -550,6 +609,25 @@
         s.host.replaceChildren(el('p', { class: 'muted', text: `No renderer is registered for “${s.entry.id}”.` }));
         return;
       }
+      if (subject === 'sessions') {
+        updateSessions(s, def);
+        return;
+      }
+      // Code, plans, or the workspace: one drawing of everything loaded of it.
+      const key = `subject:${subject}`;
+      if (s.parts.length !== 1 || s.parts[0].sessionIds !== key) {
+        destroyParts(s);
+        const host = el('div', { class: 'viz-host' });
+        s.host.append(host);
+        s.parts = [{ host, sessionIds: key, instance: def.mount(host, { ...ctx, select }) }];
+      }
+      const shape = subject === 'workspace' ? null : shapeOf(subject);
+      s.parts[0].instance.update(st.sessions, st.selection, { subject, workspace: st.workspace, ...(shape ? { shape } : {}) });
+    }
+
+    /** Sessions, as every view has always drawn them: stacked one per session unless the view is project-level. */
+    function updateSessions(s, def) {
+      const sessions = st.sessions;
       const stacked = !(s.entry.tags.level || []).includes('project');
       const groups = stacked ? sessions.map((v) => [v]) : [sessions];
       const wantedIds = groups.map((g) => g.map((v) => v.summary.sessionId).join('\n'));
@@ -658,6 +736,7 @@
       source.onWorkspace((workspace) => {
         st.workspace = workspace;
         renderProject();
+        if (slides.length) layout(); // views drawing code or plans redraw; a subject that arrived or left changes their switches
       });
     }
     let resizeTimer;
