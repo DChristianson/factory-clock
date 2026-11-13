@@ -1,5 +1,7 @@
+import { CATALOG } from '../catalog';
 import { ExploreSessionList, ExplorerState } from '../explorerModel';
 import { ProjectFile, Workspace } from '../model';
+import { creditRows } from './credits';
 import { EventSet, FindingsFor } from './eventSet';
 import { ProjectRead, Picks, Subject, UnitSummary, WorkspaceSet, isSkippedDir, looksBinary, planWalk, readProject, readSingleFiles } from './loader';
 import { readDemoTraces } from './traces';
@@ -161,6 +163,39 @@ async function filesOfEntry(entry: FileSystemEntry): Promise<Array<{ file: File;
   const out: Array<{ file: File; path: string }> = [];
   for (const child of children) out.push(...(await filesOfEntry(child)));
   return out;
+}
+
+/** Fills the Credits list below the fold from the catalog: a row per view, each credit linked to its source when it has one. */
+function renderCredits(list: HTMLElement): void {
+  const make = <K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text?: string): HTMLElementTagNameMap[K] => {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  };
+  list.replaceChildren(
+    ...creditRows(CATALOG).map((row) => {
+      const item = make('li', 'credit-row');
+      item.id = `credits-${row.id}`;
+      const works = make('ul', 'credit-works');
+      for (const c of row.credits) {
+        const work = make('li', '');
+        let cite: HTMLElement = make('strong', '', c.cite);
+        if (c.url) {
+          const link = make('a', '');
+          link.href = c.url;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.append(cite);
+          cite = link;
+        }
+        work.append(cite, make('span', 'muted', ` · ${c.relation} · `), c.detail);
+        works.append(work);
+      }
+      item.append(make('span', 'credit-view', row.title), works);
+      return item;
+    })
+  );
 }
 
 /** Mounts the page; findingsFor gives each session's findings (see EventSet). */
@@ -372,4 +407,5 @@ export function startPage(findingsFor?: FindingsFor): void {
   });
 
   useBuiltIn('traces');
+  renderCredits(byId('credits-list'));
 }

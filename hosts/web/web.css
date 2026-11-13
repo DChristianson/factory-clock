@@ -43,3 +43,13 @@
   color: var(--fc-ink-muted);
 }
 .below-explorer a { color: var(--fc-link); }
+
+/* The Credits list: a row per view, its credits beneath it. */
+.credits { margin-top: 28px; border-top: 1px solid var(--fc-rule); padding-top: 4px; }
+.credits h2 { font-size: 1em; margin: 10px 0 0; }
+.credits > p { margin: 6px 0 0; }
+.credits a { color: var(--fc-link); }
+.credits-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.credit-view { font-weight: 600; }
+.credit-works { margin: 2px 0 0; padding-left: 18px; }
+.credit-works li { margin: 1px 0; }
