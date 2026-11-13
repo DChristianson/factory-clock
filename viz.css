@@ -640,6 +640,54 @@ select, input[type="search"] {
 .slide-subject { margin-left: auto; }
 .slide-subject button { font-size: 0.85em; padding: 1px 8px; }
 
+/* Plan views (blocking graph, roadmap, status strips, burn-up, confidence map): status fills come from shape-st-<status>, inferred from shape-inferred. */
+.blk-chart .blk-node { cursor: pointer; }
+.blk-chart .blk-node:focus { outline: none; }
+.blk-chart .blk-box { fill: var(--fc-panel); stroke: var(--fc-rule); stroke-width: 1; }
+.blk-chart .blk-node:hover .blk-box, .blk-chart .blk-node:focus .blk-box { stroke: var(--fc-ink-muted); }
+.blk-chart .blk-settled { opacity: 0.6; }
+.blk-chart .blk-node.blk-crit .blk-box { stroke: var(--fc-accent); stroke-width: 2; }
+.blk-chart .blk-box.shape-on { stroke: var(--fc-ink); stroke-width: 2; }
+.blk-chart .blk-label { fill: var(--fc-ink); font-size: 11px; pointer-events: none; }
+.blk-chart .blk-edge { fill: none; stroke: var(--fc-ink-muted); stroke-opacity: 0.6; stroke-width: 1.2; }
+.blk-chart .blk-edge.blk-crit { stroke: var(--fc-accent); stroke-opacity: 1; stroke-width: 2.5; }
+.blk-chart .blk-square { cursor: pointer; }
+.swatch.blk-crit-key { height: 3px; background: var(--fc-accent); }
+.rmap-chart .rmap-band { fill: var(--fc-panel); }
+.rmap-chart .rmap-head { font-weight: 600; }
+.rmap-chart .rmap-row { cursor: pointer; }
+.rmap-chart .rmap-row:focus { outline: none; }
+.rmap-chart .rmap-row:hover .hit, .rmap-chart .rmap-row:focus .hit { fill: var(--fc-hover, rgba(128, 128, 128, 0.15)); }
+.rmap-chart .rmap-asof { stroke: var(--fc-accent); stroke-width: 1; stroke-dasharray: 4 3; }
+.rmap-chart .rmap-follows { fill: none; stroke: var(--fc-ink-muted); stroke-width: 1.2; }
+.rmap-chart .rmap-step { fill: var(--fc-ink-muted); }
+.swatch.rmap-asof-key { width: 0; border-left: 1px dashed var(--fc-accent); background: none; }
+.swatch.rmap-follows-key { width: 4px; border-radius: 50%; background: var(--fc-ink-muted); }
+.pstrip-chart .pstrip-track { fill: var(--fc-panel); stroke: var(--fc-rule); stroke-width: 1; }
+.pstrip-chart .pstrip-fill { fill: var(--fc-ok); fill-opacity: 0.22; }
+.pstrip-chart .pstrip-block { stroke: none; cursor: pointer; }
+.pstrip-chart .pstrip-block.shape-inferred { stroke: var(--fc-ink); }
+.pstrip-chart .pstrip-block.shape-on { stroke: var(--fc-ink); stroke-width: 2; }
+.pstrip-chart .row-label[role="button"] { cursor: pointer; }
+.pstrip-chart .pstrip-on, .conf-chart .conf-on { font-weight: 600; text-decoration: underline; }
+.swatch.pstrip-fill-key { background: var(--fc-ok); opacity: 0.35; outline: 1px solid var(--fc-rule); }
+.burn-chart .burn-gap { fill: var(--fc-info); fill-opacity: 0.14; stroke: none; }
+.burn-chart .burn-line { fill: none; stroke-width: 2; }
+.burn-chart .burn-line.burn-opened { stroke: var(--fc-info); }
+.burn-chart .burn-line.burn-closed { stroke: var(--fc-ok); }
+.burn-chart .burn-dot { stroke: var(--fc-surface); stroke-width: 1; cursor: pointer; }
+.burn-chart .burn-dot.burn-opened { fill: var(--fc-info); }
+.burn-chart .burn-dot.burn-closed { fill: var(--fc-ok); }
+.burn-chart .burn-dot.shape-inferred { stroke: var(--fc-ink); }
+.burn-chart .burn-dot.shape-on { stroke: var(--fc-ink); stroke-width: 2; }
+.swatch.burn-opened-key { height: 3px; background: var(--fc-info); }
+.swatch.burn-closed-key { height: 3px; background: var(--fc-ok); }
+.swatch.burn-gap-key { background: var(--fc-info); opacity: 0.3; }
+.conf-chart .conf-band { fill: var(--fc-panel); }
+.conf-chart .conf-doc { font-weight: 600; }
+.conf-chart .conf-square { cursor: pointer; }
+.conf-chart .row-label[role="button"] { cursor: pointer; }
+
 /* The hidden attribute always hides: a class that sets display (.slide, .card) would otherwise beat the browser's own [hidden] rule. */
 [hidden] { display: none !important; }
 
