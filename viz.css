@@ -676,6 +676,81 @@ select, input[type="search"] {
 .slide-subject { margin-left: auto; }
 .slide-subject button { font-size: 0.85em; padding: 1px 8px; }
 
+/* Dependency layers (viz/dependencyLayers.js) */
+.deplayers-chart { display: block; }
+.deplayers-edge { stroke-opacity: 0.35; }
+.deplayers-edge-dim { stroke-opacity: 0.12; }
+.deplayers-edge-on { stroke: var(--fc-accent); stroke-opacity: 0.9; }
+.deplayers-cycle-edge { stroke: var(--fc-warn); stroke-opacity: 0.8; stroke-width: 1; }
+.deplayers-cycle { fill: none; stroke: var(--fc-warn); stroke-width: 1.5; }
+.swatch.deplayers-swatch-cycle { background: none; border: 1.5px solid var(--fc-warn); }
+.deplayers-hit { fill: transparent; }
+.deplayers-node { cursor: pointer; }
+.deplayers-node:hover .deplayers-hit, .deplayers-node:focus .deplayers-hit, .deplayers-node-on .deplayers-hit { fill: var(--fc-selection-soft); }
+.deplayers-node:focus { outline: none; }
+.deplayers-label { fill: var(--fc-ink); font-size: 10px; }
+.deplayers-label-small { font-size: 8.5px; }
+.deplayers-node-on .deplayers-label { font-weight: 600; }
+
+/* Package wheel (viz/packageWheel.js) */
+.wheel-chart { display: block; margin: 0 auto; }
+.wheel-ext { fill: var(--fc-ink-muted); stroke: var(--fc-ink-muted); background: var(--fc-ink-muted); }
+.wheel-arc, .wheel-part { cursor: pointer; stroke: none; }
+.wheel-part { fill-opacity: 0.55; }
+.wheel-arc:hover, .wheel-part:hover, .wheel-arc:focus, .wheel-part:focus { fill-opacity: 0.8; outline: none; }
+.wheel-arc.shape-on, .wheel-part.shape-on { stroke: var(--fc-ink); stroke-width: 2; }
+.wheel-ribbon { fill-opacity: 0.42; stroke-opacity: 0.6; stroke-width: 0.5; cursor: pointer; }
+.wheel-ribbon.shape-inferred { stroke: var(--fc-ink); stroke-dasharray: 3 2; }
+.wheel-ribbon:hover, .wheel-ribbon:focus { fill-opacity: 0.75; outline: none; }
+.wheel-ribbon-dim { fill-opacity: 0.1; }
+.wheel-ribbon-on { fill-opacity: 0.7; }
+.wheel-label { fill: var(--fc-ink); font-size: 11px; }
+.wheel-label-on { font-weight: 600; }
+.swatch.wheel-swatch-ribbon { background: var(--fc-cat-1); opacity: 0.5; }
+.swatch.wheel-swatch-ring { background: var(--fc-cat-1); opacity: 0.55; height: 4px; }
+
+/* File grid and Plan over code (viz/fileGrid.js, viz/planOverCode.js) */
+.filegrid-scroll { overflow-x: auto; }
+.filegrid-chart, .pog-chart { display: block; }
+.filegrid-pkg, .pog-pkg { fill: var(--fc-ink-muted); font-size: 10px; }
+.filegrid-pkg[role="button"], .pog-pkg[role="button"] { cursor: pointer; }
+.filegrid-pkg[role="button"]:hover, .pog-pkg[role="button"]:hover { fill: var(--fc-ink); }
+.filegrid-pkg-on { fill: var(--fc-ink); font-weight: 600; }
+.filegrid-cell, .pog-cell { cursor: pointer; }
+.filegrid-cell:focus, .pog-cell:focus { outline: none; }
+.filegrid-bg, .pog-bg { fill: var(--fc-ink-muted); stroke: none; }
+.filegrid-mod-0, .pog-bg { fill-opacity: 0.05; }
+.filegrid-mod-1 { fill-opacity: 0.12; }
+.filegrid-cell:hover .filegrid-bg, .filegrid-cell:focus .filegrid-bg, .pog-cell:hover .pog-bg, .pog-cell:focus .pog-bg { fill: var(--fc-accent); fill-opacity: 0.25; }
+.filegrid-zero { fill: var(--fc-ink-muted); fill-opacity: 0.3; background: var(--fc-ink-muted); opacity: 0.6; }
+.filegrid-file.filegrid-zero { opacity: 1; }
+.filegrid-other { fill: var(--fc-rule); background: var(--fc-rule); }
+.filegrid-on, .pog-on { fill: none; stroke: var(--fc-ink); stroke-width: 1.5; pointer-events: none; }
+.pog-file { fill: var(--fc-ink-muted); fill-opacity: 0.28; background: var(--fc-ink-muted); opacity: 0.6; }
+.pog-file.pog-file-named { fill-opacity: 0.6; }
+.swatch.pog-file { opacity: 0.35; }
+.swatch.pog-file.pog-file-named { opacity: 0.75; }
+rect.pog-file { opacity: 1; }
+.pog-pin { stroke: var(--fc-surface); stroke-width: 1; cursor: pointer; }
+.pog-pin:focus { outline: none; }
+.pog-pin:hover, .pog-pin:focus { stroke: var(--fc-ink); }
+.pog-pin-region { stroke: var(--fc-ink); stroke-width: 1.25; }
+.pog-pin-inferred { stroke: var(--fc-ink); stroke-dasharray: 2 1.5; }
+.pog-pin-on { stroke: var(--fc-ink); stroke-width: 2; }
+.pog-more { cursor: pointer; }
+.pog-more-dot { fill: var(--fc-panel); stroke: var(--fc-ink-muted); }
+.pog-more-text { fill: var(--fc-ink); font-size: 8px; }
+.pog-rule { stroke: var(--fc-rule); }
+.pog-margin-head { fill: var(--fc-ink-muted); font-size: 10px; }
+.pog-row { cursor: pointer; }
+.pog-row:focus { outline: none; }
+.pog-row-hit { fill: transparent; }
+.pog-row:hover .pog-row-hit, .pog-row:focus .pog-row-hit, .pog-row-on .pog-row-hit { fill: var(--fc-selection-soft); }
+.pog-row-text { fill: var(--fc-ink); font-size: 11px; }
+.pog-row-on .pog-row-text { font-weight: 600; }
+.swatch.pog-swatch-pin { border-radius: 50%; }
+.swatch.pog-swatch-inferred { background: none; border: 1px dashed var(--fc-ink); }
+
 /* The hidden attribute always hides: a class that sets display (.slide, .card) would otherwise beat the browser's own [hidden] rule. */
 [hidden] { display: none !important; }
 

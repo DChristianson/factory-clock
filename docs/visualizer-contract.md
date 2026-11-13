@@ -128,6 +128,12 @@ Read the comments in `vizkit.js` for details; this is the list, in the groups be
 
 The clock respects `prefers-reduced-motion`: it opens on the final state and doesn't autoplay. See [Shared replay](visualization-explorer.md#shared-replay) and `viz/factoryClock.js` for a full use.
 
+**The code grid** (the File grid and Plan over code)
+
+- `codeGrid(codeGraphs, { fileLimit })` → `{ groups, cells, under, fold, files }`: the loaded code's files (or modules, past `fileLimit` files) grouped by package, ids qualified `root::id`, each cell `{ id, label, path, lines, role, fanIn, fanOut, inferredIn, module, package, count }`; `under` maps every artifact id to the cells it is or holds.
+- `hilbertBands(groups, { width, maxHeight, labelHeight?, gap?, maxCell?, minCell? })` → `{ cell, width, height, bands: [{ group, y, top, rows, cells: [{ item, x, y }] }] }`: a band per group, its items along a Hilbert curve.
+- `hilbertPoint(n, d)` → `{ x, y }`: the d-th point of the Hilbert curve on an n × n grid.
+
 **Force layout**
 
 `forceLayout(nodes, links, { width, height, previous? })` returns `Map(id → { x, y })`. Deterministic: starting positions come from `hashId(id)`, a stable number for a string, also in `ctx`. Pass the last result as `previous` so an update moves nodes gently. `drift(id, t, amplitude)` → `{ dx, dy }` is decoration only. Every pair of nodes is compared, so fold to a few dozen nodes first. See [Shared force layout](visualization-explorer.md#shared-force-layout).
