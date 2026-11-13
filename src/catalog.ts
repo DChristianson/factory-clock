@@ -419,6 +419,55 @@ export const CATALOG: VisualizerEntry[] = [
     ],
     tags: { subject: ['workspace'], category: ['dependency', 'state'], purpose: ['informative'], level: ['project'], dimension: ['place', 'status', 'structure'], language: ['standard'] },
   },
+  {
+    id: 'blocking-graph',
+    title: 'Blocking graph',
+    description: 'What blocks what: plan items in columns by how many blockers deep they sit, the longest chain of unfinished work lit, inferred links dashed.',
+    why: 'To find what the open work is waiting on, and which item to finish to unblock the most.',
+    credits: [
+      { work: 'Methods for Visual Understanding of Hierarchical System Structures', by: 'Kozo Sugiyama, Shojiro Tagawa, and Mitsuhiko Toda', year: 1981, url: 'https://en.wikipedia.org/wiki/Layered_graph_drawing', relation: 'technique', note: 'Layered drawing of a directed graph: layers by longest path, then ordering to cut crossings' },
+      { work: 'Critical path method', by: 'James E. Kelley Jr. and Morgan R. Walker (Kelley & Walker)', year: 1959, url: 'https://en.wikipedia.org/wiki/Critical_path_method', relation: 'technique', note: 'The longest chain of dependent work, which sets how long the rest must wait' },
+    ],
+    tags: { subject: ['plans'], category: ['dependency', 'state'], purpose: ['informative'], level: ['project'], dimension: ['dependency', 'status'], language: ['standard'] },
+  },
+  {
+    id: 'roadmap',
+    title: 'Roadmap',
+    description: 'Plan items as bars from opened to closed, grouped under their epics and colored by status; a markdown plan’s step order as a chain.',
+    why: 'To see when each piece of the plan was opened and closed, and what is still running.',
+    credits: [{ work: 'Gantt chart', by: 'Henry L. Gantt', url: 'https://en.wikipedia.org/wiki/Gantt_chart', relation: 'form', note: 'Bars of work over time, a row per task, designed around 1910–1915' }],
+    tags: { subject: ['plans'], category: ['temporal', 'state'], purpose: ['informative'], level: ['project'], dimension: ['time', 'status', 'structure'], language: ['standard'] },
+  },
+  {
+    id: 'status-strips',
+    title: 'Status strips',
+    description: 'A strip per epic, its items as blocks colored by status, done first, the strip filled to the share of its work that is done.',
+    why: 'To see at a glance where each epic’s work stands and which are nearly finished.',
+    credits: [{ work: 'LifeLines: visualizing personal histories', by: 'Catherine Plaisant, Brett Milash, Anne Rose, Seth Widoff, and Ben Shneiderman', year: 1996, url: 'https://doi.org/10.1145/238386.238493', relation: 'form', note: 'One horizontal strip per record, its parts as marks along it' }],
+    tags: { subject: ['plans'], category: ['state', 'quantitative'], purpose: ['expressive', 'informative'], level: ['project'], dimension: ['status', 'quantity'], language: ['standard'] },
+  },
+  {
+    id: 'burn-up',
+    title: 'Burn-up',
+    description: 'Plan items opened and closed over time as two rising lines, the gap between them the work still open.',
+    why: 'To see whether work is closing as fast as it is being opened.',
+    credits: [
+      { work: 'Burnup chart', by: 'Agile project management practice (agile practice)', url: 'https://en.wikipedia.org/wiki/Burndown_chart', relation: 'form', note: 'Completed work rising toward a line of total scope; no single originator is recorded' },
+      PLAYFAIR_LINE,
+    ],
+    tags: { subject: ['plans'], category: ['quantitative', 'temporal'], purpose: ['informative'], level: ['project'], dimension: ['quantity', 'time'], language: ['standard'] },
+  },
+  {
+    id: 'confidence-map',
+    title: 'Confidence map',
+    description: 'Plan items by source document and epic, one square each, split between what the adapter read and what it guessed.',
+    why: 'To see how much of a plan was read from its source and how much was guessed.',
+    credits: [
+      { work: 'Isotype', by: 'Otto Neurath and Gerd Arntz', year: 1925, url: 'https://en.wikipedia.org/wiki/Isotype_(picture_language)', relation: 'form', note: 'Counts as rows of same-sized marks, one per unit, not a bigger mark' },
+      { work: 'Visualizing Uncertain Information', by: 'Alan M. MacEachren', year: 1992, url: 'https://cartographicperspectives.org/index.php/journal/article/view/cp13-maceachren', relation: 'technique', note: 'Showing how certain each datum is as a visual variable of its own' },
+    ],
+    tags: { subject: ['plans'], category: ['state'], purpose: ['informative'], level: ['project'], dimension: ['status'], language: ['standard'] },
+  },
   // Hero views: each carries a design language of its own, and they go last.
   {
     id: 'living-network',
