@@ -37,7 +37,7 @@ JetBrains and the `devcontainer` CLI read it too.
 |---|---|
 | `Dockerfile` | Debian + git, curl, jq, ripgrep; **bd** pinned to a verified release; **Claude Code**; removes `sudo` |
 | `devcontainer.json` | Node 24 and the GitHub CLI (as features), security options, Claude login volume, env vars, setup hooks, VS Code extension |
-| `post-create.sh` | Runs once at creation: prints tool versions, turns bd metrics off |
+| `post-create.sh` | Runs once at creation: prints tool versions, turns bd metrics off, installs dependencies with `npm ci` |
 | `init-project.sh` | Run once by hand: `git init` + `bd init --skip-hooks` (already done for this repo) |
 | `check-host-safety.sh` | Runs on every start: warns if git hooks, or git settings that run commands, have been configured (see below) |
 
@@ -51,11 +51,13 @@ JetBrains and the `devcontainer` CLI read it too.
 3. In the container's terminal:
    ```bash
    claude        # log in once; the login is kept in a Docker volume
-   npm ci
    bd ready      # the beads queue
    ```
 
 ## Building and testing
+
+Dependencies are installed when the container is created. After a change to
+`package-lock.json`, run `npm ci` again.
 
 ```bash
 npm run build    # type-check, bundle, and assemble the page in site/
