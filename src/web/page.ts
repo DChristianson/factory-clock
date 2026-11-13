@@ -1,8 +1,10 @@
 import { ExploreSessionList, ExplorerState } from '../explorerModel';
+import { ProjectFile, Workspace } from '../model';
 import { EventSet, FindingsFor } from './eventSet';
-import { parseJsonl } from './jsonl';
+import { ProjectRead, Picks, Subject, UnitSummary, WorkspaceSet, isSkippedDir, looksBinary, planWalk, readProject, readSingleFiles } from './loader';
 import { readDemoTraces } from './traces';
 import { syntheticEvents, syntheticSessionIds } from './synthetic';
+import { syntheticCodeGraph, syntheticPlanGraph } from './syntheticWorkspace';
 
 /**
  * The web page (docs/visualization-explorer.md, "A web demo on
@@ -28,6 +30,11 @@ interface ExploreSource {
   onSessions(cb: (list: ExploreSessionList) => void): void;
   onExplorer(cb: (state: ExplorerState | null) => void): void;
   openSessionId(): string | null;
+  /** The pickable units of one subject: sessions, code roots, or plan roots. */
+  listUnits(subject: Subject): UnitSummary[];
+  /** Picks units of one subject and sends the Workspace for every subject's picks. */
+  loadUnits(subject: Subject, ids: string[]): void;
+  onWorkspace(cb: (workspace: Workspace) => void): void;
 }
 
 interface ExploreTab {
@@ -64,17 +71,47 @@ function writeState(state: Record<string, unknown>): void {
   }
 }
 
-/** A source over one event set: lists and loads synchronously, since everything is in memory. */
-function sourceOver(data: EventSet): ExploreSource {
-  const listeners = { sessions: [] as Array<(list: ExploreSessionList) => void>, explorer: [] as Array<(state: ExplorerState | null) => void> };
+/** The picks of code and plans, saved beside the sessions' `picked`. */
+function storedPicks(): Picks {
+  const raw = readState().picks;
+  const out: Picks = {};
+  if (raw && typeof raw === 'object') {
+    for (const subject of ['code', 'plans'] as const) {
+      const ids = (raw as Record<string, unknown>)[subject];
+      if (Array.isArray(ids)) out[subject] = ids.filter((id): id is string => typeof id === 'string');
+    }
+  }
+  return out;
+}
+
+/**
+ * A source over the page's workspace: lists and loads synchronously, since
+ * everything is in memory. The session methods are the ones explore.js has
+ * always called; listUnits, loadUnits, and onWorkspace serve every subject.
+ */
+function sourceOver(set: WorkspaceSet): ExploreSource {
+  const data = set.sessions;
+  const listeners = {
+    sessions: [] as Array<(list: ExploreSessionList) => void>,
+    explorer: [] as Array<(state: ExplorerState | null) => void>,
+    workspace: [] as Array<(workspace: Workspace) => void>,
+  };
+  let sessionPick: string[] = [];
+  const sendWorkspace = () => {
+    if (!listeners.workspace.length) return;
+    const workspace = set.workspace({ ...storedPicks(), sessions: sessionPick });
+    for (const cb of listeners.workspace) cb(workspace);
+  };
   return {
     listSessions() {
       const list = data.listAll();
       for (const cb of listeners.sessions) cb(list);
     },
     loadSessions(ids) {
+      sessionPick = ids;
       const state = data.explorerState(ids);
       for (const cb of listeners.explorer) cb(state);
+      sendWorkspace();
     },
     closeExplorer() {
       for (const cb of listeners.explorer) cb(null);
@@ -90,7 +127,40 @@ function sourceOver(data: EventSet): ExploreSource {
       listeners.explorer.push(cb);
     },
     openSessionId: () => null,
+    listUnits: (subject) => set.listUnits(subject),
+    loadUnits(subject, ids) {
+      if (subject === 'sessions') {
+        this.loadSessions(ids);
+        return;
+      }
+      writeState({ ...readState(), picks: { ...storedPicks(), [subject]: set.keep(subject, ids) } });
+      sendWorkspace();
+    },
+    onWorkspace(cb) {
+      listeners.workspace.push(cb);
+      cb(set.workspace({ ...storedPicks(), sessions: sessionPick }));
+    },
   };
+}
+
+/** A dropped folder's files, listed through the entries API, pruning skipped folders before listing them. */
+async function filesOfEntry(entry: FileSystemEntry): Promise<Array<{ file: File; path: string }>> {
+  if (entry.isFile) {
+    const file = await new Promise<File>((resolve, reject) => (entry as FileSystemFileEntry).file(resolve, reject));
+    return [{ file, path: entry.fullPath.replace(/^\//, '') }];
+  }
+  if (!entry.isDirectory || (entry.fullPath.split('/').length > 2 && isSkippedDir(entry.name))) return [];
+  const reader = (entry as FileSystemDirectoryEntry).createReader();
+  const children: FileSystemEntry[] = [];
+  // readEntries returns a batch at a time; an empty batch means the end.
+  for (;;) {
+    const batch = await new Promise<FileSystemEntry[]>((resolve, reject) => reader.readEntries(resolve, reject));
+    if (!batch.length) break;
+    children.push(...batch);
+  }
+  const out: Array<{ file: File; path: string }> = [];
+  for (const child of children) out.push(...(await filesOfEntry(child)));
+  return out;
 }
 
 /** Mounts the page; findingsFor gives each session's findings (see EventSet). */
@@ -110,24 +180,37 @@ export function startPage(findingsFor?: FindingsFor): void {
   const tracesBtn = byId<HTMLButtonElement>('traces');
   const traces = readDemoTraces(globals.factoryClockDemoTraces);
   const examplesNote = byId('examples-note');
+  const folderInput = byId<HTMLInputElement>('folder');
+  const projectBox = byId('project');
+  const projectName = byId('project-name');
+  const projectFound = byId('project-found');
+  const keepText = byId<HTMLInputElement>('keep-text');
+  const hintGlobals = byId<HTMLInputElement>('hint-globals');
 
   const kit = globals.factoryClockKit;
   const ctx = { ...kit, tooltip, ...kit.tipFor(tooltip) };
   let tab: ExploreTab | null = null;
+  let set = new WorkspaceSet(new EventSet([], findingsFor));
+  /** The last folder read, kept so the switches can read it again. */
+  let project: { name: string; files: ProjectFile[]; off: Set<string> } | null = null;
 
   /**
    * (Re)mounts the explorer over a set. The picked ids only mean something
    * for the data they were picked from, so ones the new set doesn't have are
    * dropped, and with none left the default pick stands in.
    */
-  function mountExplorer(data: EventSet, defaultPick: string[]): void {
+  function mountExplorer(next: WorkspaceSet, defaultPick: string[]): void {
     tab?.destroy();
+    set = next;
+    const data = next.sessions;
     const stored = readState().picked;
     const kept = Array.isArray(stored) ? stored.filter((id): id is string => typeof id === 'string' && !!data.index.get(id)) : [];
     writeState({ ...readState(), picked: kept.length ? kept : defaultPick });
-    tab = globals.factoryClockExplore.mount(root, sourceOver(data), ctx);
+    tab = globals.factoryClockExplore.mount(root, sourceOver(next), ctx);
     tab.shown();
   }
+
+  const n = (count: number, noun: string) => `${count.toLocaleString()} ${noun}${count === 1 ? '' : 's'}`;
 
   /** Shows one of the built-in sets; the other's button stays offered. */
   function useBuiltIn(which: 'traces' | 'generated'): void {
@@ -137,36 +220,123 @@ export function startPage(findingsFor?: FindingsFor): void {
     examplesBtn.hidden = !useTraces;
     examplesNote.hidden = false;
     examplesNote.textContent = useTraces ? TRACES_NOTE : GENERATED_NOTE;
-    if (useTraces && traces) mountExplorer(new EventSet(traces.events, findingsFor), traces.picked.slice(0, 2));
-    else mountExplorer(new EventSet(syntheticEvents(), findingsFor), syntheticSessionIds().slice(0, 2));
+    // The generated sessions come with the example code and plan they were made beside.
+    project = null;
+    projectBox.hidden = true;
+    if (useTraces && traces) mountExplorer(new WorkspaceSet(new EventSet(traces.events, findingsFor)), traces.picked.slice(0, 2));
+    else mountExplorer(new WorkspaceSet(new EventSet(syntheticEvents(), findingsFor), [syntheticCodeGraph()], [syntheticPlanGraph()]), syntheticSessionIds().slice(0, 2));
   }
 
-  async function loadFiles(files: ArrayLike<File>): Promise<void> {
-    const list = Array.from(files);
-    if (!list.length) return;
-    dataNote.textContent = `Reading ${list.length} file${list.length === 1 ? '' : 's'}…`;
-    const seen = new Set<string>();
-    const events = [];
-    let skipped = 0;
-    let duplicates = 0;
-    for (const file of list) {
-      const parsed = parseJsonl(await file.text(), seen);
-      events.push(...parsed.events);
-      skipped += parsed.skipped;
-      duplicates += parsed.duplicates;
-    }
-    const data = new EventSet(events, findingsFor);
-    const sessions = data.index.list();
-    const n = (count: number, noun: string) => `${count.toLocaleString()} ${noun}${count === 1 ? '' : 's'}`;
-    const notes = [`Loaded ${n(events.length, 'event')} from ${n(list.length, 'file')}: ${n(sessions.length, 'session')} on ${n(data.index.days().length, 'day')}.`];
-    if (skipped) notes.push(`${n(skipped, 'line')} skipped (not JSON, or not an event).`);
-    if (duplicates) notes.push(`${n(duplicates, 'duplicate event')} ignored.`);
-    if (!sessions.length) notes.push('No agent sessions in these files; is this Snagboat’s events folder?');
-    dataNote.textContent = notes.join(' ');
+  /** After any load, the built-in sets are offered again. */
+  function offerBuiltIns(): void {
     examplesBtn.hidden = false;
     tracesBtn.hidden = !traces;
     examplesNote.hidden = true;
-    mountExplorer(data, data.listAll().sessions.slice(0, 2).map((s) => s.sessionId));
+  }
+
+  /** Single files, sorted by content: events replace the sessions, graphs and beads exports the project. */
+  async function loadFiles(files: ArrayLike<File>): Promise<void> {
+    const list = Array.from(files);
+    if (!list.length) return;
+    dataNote.textContent = `Reading ${n(list.length, 'file')}…`;
+    const read = [];
+    for (const file of list) read.push({ name: file.name, text: await file.text() });
+    const sorted = readSingleFiles(read);
+    const notes: string[] = [];
+    let next = set;
+    if (sorted.events.length) {
+      const data = new EventSet(sorted.events, findingsFor);
+      const sessions = data.index.list();
+      notes.push(`Loaded ${n(sorted.events.length, 'event')}: ${n(sessions.length, 'session')} on ${n(data.index.days().length, 'day')}.`);
+      if (!sessions.length) notes.push('No agent sessions in these files; is this Snagboat’s events folder?');
+      next = next.withSessions(data);
+    }
+    if (sorted.code.length || sorted.plans.length) {
+      notes.push(`Loaded ${[sorted.code.length ? n(sorted.code.length, 'code graph') : '', sorted.plans.length ? n(sorted.plans.length, 'plan') : ''].filter(Boolean).join(' and ')}.`);
+      next = next.withProject(sorted.code, sorted.plans);
+      project = null;
+      projectBox.hidden = true;
+    }
+    if (sorted.skippedLines) notes.push(`${n(sorted.skippedLines, 'line')} skipped (not JSON, or not an event).`);
+    if (sorted.duplicates) notes.push(`${n(sorted.duplicates, 'duplicate event')} ignored.`);
+    for (const r of sorted.refused) notes.push(`${r.name}: not read (${r.reason}).`);
+    dataNote.textContent = notes.join(' ');
+    if (next === set) return;
+    offerBuiltIns();
+    mountExplorer(next, next.sessions.listAll().sessions.slice(0, 2).map((s) => s.sessionId));
+  }
+
+  /** Lists what each adapter found, each with a switch; an adapter that found nothing says so. */
+  function showProject(read: ProjectRead): void {
+    projectBox.hidden = false;
+    projectName.textContent = `Project: ${read.name}`;
+    projectFound.replaceChildren();
+    for (const report of read.reports) {
+      const li = document.createElement('li');
+      if (!report.detected) {
+        li.className = 'missing small';
+        li.textContent = report.id === 'beads'
+          ? 'beads: no export found. Run bd export > issues.jsonl in the project and drop the file here.'
+          : `${report.id}: nothing of its kind in this folder.`;
+      } else {
+        const label = document.createElement('label');
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.checked = report.ran;
+        box.addEventListener('change', () => {
+          if (!project) return;
+          if (box.checked) project.off.delete(report.id);
+          else project.off.add(report.id);
+          readFolderAgain();
+        });
+        label.append(box, `${report.id} (${report.subject}): ${report.ran ? report.summary || 'nothing usable' : 'off'}`);
+        li.append(label);
+        if (report.errors.length) {
+          const errors = document.createElement('div');
+          errors.className = 'errors small';
+          errors.textContent = report.errors.slice(0, 3).join(' · ') + (report.errors.length > 3 ? ` · and ${report.errors.length - 3} more` : '');
+          li.append(errors);
+        }
+      }
+      projectFound.append(li);
+    }
+  }
+
+  /** Runs the adapters over the folder last read, with the switches as they are now. */
+  function readFolderAgain(): void {
+    if (!project) return;
+    const read = readProject(project.files, {
+      name: project.name,
+      off: [...project.off],
+      keepText: keepText.checked,
+      hints: hintGlobals.checked ? ['globals'] : [],
+    });
+    showProject(read);
+    offerBuiltIns();
+    mountExplorer(set.withProject(read.code, read.plans), set.sessions.listAll().sessions.slice(0, 2).map((s) => s.sessionId));
+  }
+
+  /** A chosen or dropped folder: walked, read as text, and handed to the adapters. Sessions stay as they are. */
+  async function loadFolder(entries: Array<{ file: File; path: string }>): Promise<void> {
+    if (!entries.length) return;
+    const plan = planWalk(entries.map((e) => ({ ...e, bytes: e.file.size })));
+    dataNote.textContent = `Reading ${n(plan.keep.length, 'file')} from ${plan.name}…`;
+    const files: ProjectFile[] = [];
+    let binary = plan.skipped.binary;
+    for (const { entry, path } of plan.keep) {
+      const text = await entry.file.text();
+      if (looksBinary(text)) binary += 1;
+      else files.push({ path, text, bytes: entry.bytes });
+    }
+    project = { name: plan.name, files, off: new Set(project?.name === plan.name ? project.off : []) };
+    const skips = [
+      plan.skipped.folders ? `${n(plan.skipped.folders, 'file')} in skipped folders` : '',
+      binary ? `${n(binary, 'binary file')}` : '',
+      plan.skipped.large.length ? `${n(plan.skipped.large.length, 'file')} over 2 MB` : '',
+      plan.skipped.overLimit ? `${n(plan.skipped.overLimit, 'file')} past the 20,000-file limit` : '',
+    ].filter(Boolean);
+    dataNote.textContent = `Read ${n(files.length, 'file')} from ${plan.name}.${skips.length ? ` Not read: ${skips.join(', ')}.` : ''}`;
+    readFolderAgain();
   }
 
   filesInput.addEventListener('change', () => {
@@ -174,6 +344,14 @@ export function startPage(findingsFor?: FindingsFor): void {
       filesInput.value = ''; // so picking the same files again reloads them
     });
   });
+  folderInput.addEventListener('change', () => {
+    const chosen = Array.from(folderInput.files ?? []).map((file) => ({ file, path: file.webkitRelativePath || file.name }));
+    void loadFolder(chosen).finally(() => {
+      folderInput.value = '';
+    });
+  });
+  keepText.addEventListener('change', readFolderAgain);
+  hintGlobals.addEventListener('change', readFolderAgain);
   examplesBtn.addEventListener('click', () => useBuiltIn('generated'));
   tracesBtn.addEventListener('click', () => useBuiltIn('traces'));
 
@@ -183,7 +361,14 @@ export function startPage(findingsFor?: FindingsFor): void {
   drop.addEventListener('dragleave', () => drop.classList.remove('over'));
   drop.addEventListener('drop', (e) => {
     drop.classList.remove('over');
-    void loadFiles(e.dataTransfer?.files ?? []);
+    // A folder goes to the adapters; loose files are sorted by content.
+    const items = Array.from(e.dataTransfer?.items ?? []);
+    const entries = items.map((item) => item.webkitGetAsEntry?.()).filter((x): x is FileSystemEntry => !!x);
+    if (entries.some((x) => x.isDirectory)) {
+      void Promise.all(entries.filter((x) => x.isDirectory).map(filesOfEntry)).then((lists) => loadFolder(lists.flat()));
+    } else {
+      void loadFiles(e.dataTransfer?.files ?? []);
+    }
   });
 
   useBuiltIn('traces');
