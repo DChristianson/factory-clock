@@ -40,6 +40,8 @@
   const MIN_STAGE_HEIGHT = 320;
   // Below the dock: the body's bottom padding, and a little air.
   const BELOW_DOCK = 16;
+  // The room the collapsed puck takes at the dock's end when it sits at the bottom; matches the 112px in viz.css .dock.
+  const PUCK_ROOM = 112;
   // A card's glyph per subject, and the order of a card's category dots (a dot's place says which category).
   const SUBJECT_GLYPH = { sessions: '◷', code: '⌗', plans: '☰', workspace: '◫' };
   const CATEGORY_ORDER = ['temporal', 'actor', 'conversational', 'dependency', 'quantitative', 'state', 'semantic'];
@@ -514,13 +516,15 @@
       compareBtn.setAttribute('aria-pressed', String(!!st.compareId));
       compareBtn.disabled = !st.compareId && vis.length < 2;
       compareBtn.textContent = st.compareId ? 'Stop comparing' : 'Compare';
-      // Keep the current card in view, scrolling only the shelf.
+      // Keep the current card in view, scrolling only the shelf, and clear of the puck when it sits at the bottom (viz.css .dock).
       const cur = current();
       if (cur && cur.allowed && shelf.offsetParent) {
         const left = cur.card.offsetLeft - shelf.offsetLeft;
         const right = left + cur.card.offsetWidth;
-        if (left < shelf.scrollLeft) shelf.scrollLeft = left - 8;
-        else if (right > shelf.scrollLeft + shelf.clientWidth) shelf.scrollLeft = right - shelf.clientWidth + 8;
+        const underLeft = st.corner === 'bottom-left' ? PUCK_ROOM : 0;
+        const underRight = st.corner === 'bottom-right' ? PUCK_ROOM : 0;
+        if (left < shelf.scrollLeft + underLeft) shelf.scrollLeft = left - underLeft - 8;
+        else if (right > shelf.scrollLeft + shelf.clientWidth - underRight) shelf.scrollLeft = right - shelf.clientWidth + underRight + 8;
       }
     }
 

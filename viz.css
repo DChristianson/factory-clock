@@ -703,18 +703,21 @@ select, input[type="search"] {
 .stacked:first-child { border-top: none; margin-top: 0; padding-top: 0; }
 .stack-head { display: flex; align-items: baseline; gap: 4px; margin-bottom: 6px; }
 .viz-host { width: 100%; }
-/* The dock: the shelf and the nav under the stage. Sticky for windows too short to fit the stage, and over the puck (20) so nothing covers it;
-   it leaves room on the side the puck sits when the puck is at the bottom. */
+/* The dock: the shelf and the nav under the stage. Sticky for windows too short to fit the stage, under the puck (20) and over the
+   tooltip (10). With the puck at the bottom, the nav leaves room on the puck's side, and the shelf runs the full width with a spacer
+   at that end, so its last card can scroll out from under the puck. */
 .dock {
   position: sticky;
   bottom: 0;
-  z-index: 21;
+  z-index: 19;
   padding: 6px 0;
   background: var(--fc-surface);
 }
-.explorer[data-puck="bottom-right"] .dock { padding-right: 112px; }
-.explorer[data-puck="bottom-left"] .dock { padding-left: 112px; }
+.explorer[data-puck="bottom-right"] .nav { padding-right: 112px; }
+.explorer[data-puck="bottom-left"] .nav { padding-left: 112px; }
 .shelf { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; padding: 2px 2px 6px; }
+.explorer[data-puck="bottom-right"] .shelf::after { content: ''; flex: none; width: 112px; }
+.explorer[data-puck="bottom-left"] .shelf::before { content: ''; flex: none; width: 112px; }
 .card {
   flex: none;
   display: grid;
