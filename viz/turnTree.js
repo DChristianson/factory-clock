@@ -6,6 +6,8 @@
 // tab's breadcrumb). Several sessions draw as a forest under a root
 // "sessions" node, widths by tokens. Sees only its host and ctx: no VS Code.
 (function () {
+  const ROW = 40; // px per row at least; rows spread to fill the slide, up to ROW_MAX
+  const ROW_MAX = 200; // generous: an icicle has a few rows, and they share the slide's height
   window.factoryClock.register({
     id: 'turn-tree',
     title: 'Turn tree',
@@ -19,6 +21,7 @@
       let selection = null;
       let expanded = false;
       let draws = 0;
+      const fitH = ctx.fitter(host); // the rows spread to fill the slide's height, up to ROW_MAX each
 
       const sessionLabel = (s) => (s.name ? clip(s.name, 60) : short(s.sessionId));
 
@@ -72,7 +75,6 @@
         const root = (focusId && findNode(tree, focusId)) || tree;
         focusId = root.id;
         const width = Math.max(320, host.clientWidth || 800);
-        const rowH = 40;
         const gap = 4;
         const maxDepth = expanded ? 1 : 3;
         const levels = [];
@@ -86,7 +88,10 @@
             x += w;
           }
         })(root, 0, 0, width);
-        const height = (expanded ? levels.length - 1 : levels.length) * (rowH + gap);
+        const rows = expanded ? levels.length - 1 : levels.length;
+        const natural = rows * (ROW + gap);
+        const height = Math.max(natural, fitH.height(natural, 0));
+        const rowH = Math.max(ROW, Math.min(ROW_MAX, height / Math.max(1, rows) - gap));
         const selectedTurn = selection && selection.turnId;
         const selectedSession = selection && selection.sessionId;
         const root$ = svg('svg', { class: 'tree', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': tree.kind === 'sessions' ? 'Turn tree: where these sessions’ tokens went' : 'Turn tree: where this session’s tokens went' });
@@ -124,6 +129,7 @@
           }
         });
         host.replaceChildren(root$, expanded ? '' : treeLegend(levels));
+        fitH.settle(height, draw);
       }
 
       // Turns alternate two shades so neighbors contrast; categories take their color group (tinted, with a solid top stripe).

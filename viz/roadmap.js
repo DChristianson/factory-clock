@@ -9,7 +9,8 @@
 // for the new subjects". Sees only its host and ctx.
 (function () {
   const MAX_ROWS = 160; // rows drawn; the rest fold, and the note says how many
-  const ROW = 20;
+  const ROW = 20; // a row's pitch at least; in a tall slide rows stretch to fill it, up to MAX_STRETCH times
+  const MAX_STRETCH = 2;
   const BAR_H = 12;
   const AXIS = 22;
   const CHAIN_W = 18; // the follows gutter, when there are follows links
@@ -74,6 +75,7 @@
     mount(host, ctx) {
       const { svg, svgText, fit, clip, fmt, vizPanel, interact, legendKey, shapeSelected } = ctx;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the chart fills the slide's height; more rows than fit scroll
       let selection = null;
       let data = { graphs: [], items: [], links: [] };
 
@@ -110,8 +112,11 @@
         const x0 = labelW + chainW + 6;
         const x1 = width - 12;
         const x = (t) => x0 + ((t - lo) / (hi - lo)) * (x1 - x0);
-        const height = AXIS + shown.length * ROW + 6;
-        const y = (i) => AXIS + i * ROW;
+        const natural = AXIS + shown.length * ROW + 6;
+        const avail = fitH.height(natural, natural);
+        const row = Math.max(ROW, Math.min(ROW * MAX_STRETCH, (avail - AXIS - 6) / Math.max(1, shown.length)));
+        const height = Math.max(Math.ceil(AXIS + shown.length * row + 6), avail);
+        const y = (i) => AXIS + i * row;
 
         const root = svg('svg', { class: 'viz-chart rmap-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Roadmap of ${fmt(items.length)} plan items under ${groups.length} groups${dated ? `, from ${new Date(lo).toDateString()} to ${new Date(hi).toDateString()}` : ', with no dates'}` });
 
@@ -134,18 +139,18 @@
         let undated = 0;
         shown.forEach((r, i) => {
           const top = y(i);
-          if (r.head) root.append(svg('rect', { class: 'rmap-band', x: 0, y: top, width, height: ROW }));
+          if (r.head) root.append(svg('rect', { class: 'rmap-band', x: 0, y: top, width, height: row }));
           if (!r.node) {
-            root.append(svgText({ class: 'row-label rmap-head', x: 4, y: top + 14 }, fit(`${many ? `${r.group.root} · ` : ''}No epic`, labelW)));
+            root.append(svgText({ class: 'row-label rmap-head', x: 4, y: top + row / 2 + 4 }, fit(`${many ? `${r.group.root} · ` : ''}No epic`, labelW)));
             return;
           }
           const n = r.node;
           const it = n.item;
           const on = shapeSelected(selection, n.id);
           const g = svg('g', { class: 'rmap-row' });
-          g.append(svg('rect', { class: 'hit', x: 0, y: top, width, height: ROW }));
+          g.append(svg('rect', { class: 'hit', x: 0, y: top, width, height: row }));
           const indent = 4 + r.depth * 10;
-          g.append(svgText({ class: `row-label${r.head ? ' rmap-head' : ''}`, x: indent, y: top + 14 }, fit(`${r.head && many ? `${n.root} · ` : ''}${it.title || it.id}`, labelW - indent)));
+          g.append(svgText({ class: `row-label${r.head ? ' rmap-head' : ''}`, x: indent, y: top + row / 2 + 4 }, fit(`${r.head && many ? `${n.root} · ` : ''}${it.title || it.id}`, labelW - indent)));
 
           // The span: an epic with no dates of its own takes its items'.
           let from = time(it.created);
@@ -161,16 +166,16 @@
           const cls = `shape-st-${it.status}${it.confidence === 'inferred' ? ' shape-inferred' : ''}${on ? ' shape-on' : ''}`;
           let when;
           if (!Number.isNaN(from) && !Number.isNaN(to)) {
-            g.append(svg('rect', { class: `rmap-bar ${cls}`, x: x(from), y: top + (ROW - BAR_H) / 2, width: Math.max(MIN_BAR, x(to) - x(from)), height: BAR_H, rx: 2 }));
+            g.append(svg('rect', { class: `rmap-bar ${cls}`, x: x(from), y: top + (row - BAR_H) / 2, width: Math.max(MIN_BAR, x(to) - x(from)), height: BAR_H, rx: 2 }));
             when = SETTLED.has(it.status) ? `${new Date(from).toDateString()} to ${new Date(to).toDateString()}` : `opened ${new Date(from).toDateString()}, still ${STATUS_TEXT[it.status]}`;
           } else if (!Number.isNaN(from) || !Number.isNaN(to)) {
             // One end known: a dot where it is.
             const t = Number.isNaN(from) ? to : from;
-            g.append(svg('circle', { class: `rmap-dot ${cls}`, cx: x(t), cy: top + ROW / 2, r: 4 }));
+            g.append(svg('circle', { class: `rmap-dot ${cls}`, cx: x(t), cy: top + row / 2, r: 4 }));
             when = Number.isNaN(from) ? `closed ${new Date(t).toDateString()}, opening not recorded` : `opened ${new Date(t).toDateString()}, closing not recorded`;
           } else {
             undated++;
-            if (dated || !r.head) g.append(svgText({ class: 'axis-label', x: x0 + 2, y: top + 14 }, dated ? 'no dates' : ''));
+            if (dated || !r.head) g.append(svgText({ class: 'axis-label', x: x0 + 2, y: top + row / 2 + 4 }, dated ? 'no dates' : ''));
             when = 'no dates';
           }
           interact(ctx, g, {
@@ -184,12 +189,12 @@
         // The follows chain, in its gutter: a link from each item to the one it follows.
         const cx = labelW + chainW / 2;
         for (const l of follows) {
-          const ya = y(rowOf.get(l.to)) + ROW / 2;
-          const yb = y(rowOf.get(l.from)) + ROW / 2;
-          const bend = Math.min(chainW / 2 - 2, 3 + Math.abs(yb - ya) / ROW);
+          const ya = y(rowOf.get(l.to)) + row / 2;
+          const yb = y(rowOf.get(l.from)) + row / 2;
+          const bend = Math.min(chainW / 2 - 2, 3 + Math.abs(yb - ya) / row);
           root.append(svg('path', { class: `rmap-follows${l.inferred ? ' shape-inferred' : ''}`, d: `M${cx},${ya} C${cx + bend},${ya} ${cx + bend},${yb} ${cx},${yb}` }));
         }
-        for (const id of new Set(follows.flatMap((l) => [l.from, l.to]))) root.append(svg('circle', { class: 'rmap-step', cx, cy: y(rowOf.get(id)) + ROW / 2, r: 2.5 }));
+        for (const id of new Set(follows.flatMap((l) => [l.from, l.to]))) root.append(svg('circle', { class: 'rmap-step', cx, cy: y(rowOf.get(id)) + row / 2, r: 2.5 }));
 
         panel.chart.replaceChildren(root);
         const used = new Set(items.map((n) => n.item.status));
@@ -207,6 +212,7 @@
         if (folded) parts.push(`${fmt(folded)} rows folded past ${MAX_ROWS}.`);
         parts.push('Click a row to select its item.');
         panel.note.textContent = parts.join(' ');
+        fitH.settle(height, draw);
       }
 
       return {

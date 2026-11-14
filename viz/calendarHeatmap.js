@@ -7,6 +7,7 @@
 (function () {
   const MIN_WEEKS = 13;
   const MAX_CELL = 20;
+  const MAX_CELL_FIT = 44; // in the explorer, days grow toward this to fill the slide's height, as the width allows
   const pad2 = (n) => String(n).padStart(2, '0');
   const dayKey = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
   const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
@@ -23,6 +24,7 @@
         draw();
       });
       const panel = vizPanel(host, [controls]);
+      const fitH = ctx.fitter(host); // the calendar fills the slide's height, as far as its width allows
 
       /** Map(dayKey -> { tokens, calls, findings, weights: Map(session\nturn -> tokens) }). */
       function collect() {
@@ -76,11 +78,14 @@
         const width = Math.max(320, host.clientWidth || 800);
         const dayLabel = 34;
         const head = 18;
-        const cell = Math.max(8, Math.min(MAX_CELL, Math.floor((width - dayLabel) / weeks)));
+        const room = fitH.height(0, 0); // 0 outside the explorer: the calendar keeps its own size
+        const cap = room ? Math.max(MAX_CELL, Math.min(MAX_CELL_FIT, Math.floor((room - head) / 7))) : MAX_CELL;
+        const cell = Math.max(8, Math.min(cap, Math.floor((width - dayLabel) / weeks)));
+        const height = Math.max(head + 7 * cell, room);
         const value = (d) => (d ? d[measure] : 0);
         const scale = heatScale(Math.max(1, ...[...days.values()].map(value)));
         const fullWidth = dayLabel + weeks * cell;
-        const root = svg('svg', { class: 'viz-chart cal-chart', width: fullWidth, height: head + 7 * cell, viewBox: `0 0 ${fullWidth} ${head + 7 * cell}`, role: 'img', 'aria-label': `Calendar of ${measure}, ${weeks} weeks` });
+        const root = svg('svg', { class: 'viz-chart cal-chart', width: fullWidth, height, viewBox: `0 0 ${fullWidth} ${height}`, role: 'img', 'aria-label': `Calendar of ${measure}, ${weeks} weeks` });
         [1, 3, 5].forEach((wd) => root.append(svgText({ class: 'axis-label', x: 0, y: head + wd * cell + cell - 3 }, new Date(2024, 0, 7 + wd).toLocaleDateString([], { weekday: 'short' }))));
         let lastMonth = -1;
         for (let w = 0; w < weeks; w++) {
@@ -118,6 +123,7 @@
             .map(([i, text]) => legendKey(`heat-swatch heat-${i}`, text))
         );
         panel.note.textContent = `Local days. Only the ${views.length === 1 ? 'loaded session counts' : `${fmt(views.length)} loaded sessions count`}, so a quiet day here may not have been quiet. Click a day to select its busiest turn.`;
+        fitH.settle(height, draw);
       }
       return {
         update(sessions) {
