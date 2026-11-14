@@ -36,6 +36,7 @@ const copies = [
   ['theme.css', 'theme.css'],
   ['viz.css', 'viz.css'],
   ['hosts/web/web.css', 'web.css'],
+  ['hosts/web/analytics.js', 'analytics.js'],
 ];
 const viz = fs
   .readdirSync(path.join(root, 'viz'))

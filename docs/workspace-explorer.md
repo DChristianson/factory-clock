@@ -29,7 +29,7 @@ Three things change.
 - Adapters for the tools this project itself uses, so the demo is this repository: its npm package and TypeScript imports, its beads, and its design documents as planning markdown.
 - An explorer that lets a visitor find a view by what they want, not by position, and that can run itself as a showcase.
 - Three hero views of the whole project, each with its own design language, under the same rules as the first five (no dependencies, SVG and DOM, system fonts, both themes where the language follows the theme).
-- The same promises: a static page, files read in the browser, no network requests, text through `textContent`.
+- The same promises: a static page, files read in the browser, no network requests but the published page's analytics page view (see [PRIVACY.md](../PRIVACY.md)), text through `textContent`.
 
 ## Non-goals
 

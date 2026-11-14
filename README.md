@@ -2,7 +2,7 @@
 
 Factory Clock is a set of visualizations for coding-agent sessions. It draws each session 32 ways: timelines, trees, graphs, distributions, and five "hero" views with a look of their own. The explorer puts one on a stage, with a shelf of cards under it to move between them (or two side by side, to compare). A small panel called the puck filters the shelf by tags.
 
-It runs as a static web page: <https://dchristianson.github.io/factory-clock/>. The page shows generated example sessions. You can also load your own event files. Nothing is installed and nothing leaves your browser.
+It runs as a static web page: <https://dchristianson.github.io/factory-clock/>. The page shows generated example sessions. You can also load your own event files. Nothing is installed, and the files you load never leave your browser. The published page counts visits with Google Analytics.
 
 Factory Clock started inside [Snagboat](https://github.com/DChristianson/snagboat), a VS Code extension that records Claude Code and GitHub Copilot sessions. It moved to this repository in November 2026, keeping the git history of its folder in Snagboat (`packages/viz`). Earlier history, from before that folder existed, stays in Snagboat. Factory Clock reads the event files Snagboat writes.
 
@@ -83,7 +83,7 @@ The page shows no findings. Inside Snagboat, the page replayed Snagboat's heuris
 
 ## Privacy
 
-The page sends nothing anywhere and has no analytics. See [PRIVACY.md](PRIVACY.md).
+The files you load never leave your browser. The published page sends one page view to Google Analytics, with no query or hash in its address. A copy you build or serve yourself sends nothing. See [PRIVACY.md](PRIVACY.md).
 
 ## Layout
 

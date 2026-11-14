@@ -177,7 +177,7 @@ The explorer loads at most 8 sessions (`EXPLORE_SESSION_CAP`), and each carries 
 
 ## Constraints
 
-- **No network.** The web page's policy is `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'`. No `fetch`, no XHR, no remote images or fonts.
+- **No network.** The web page's policy allows scripts and styles only from the page (plus Google's analytics tag), and network requests only to Google Analytics, for the published page's page view. A view makes none: no `fetch`, no XHR, no remote images or fonts, and nothing a view draws goes into the page's address or title.
 - **No globals** beyond `window.factoryClock` to register. Everything else comes through `ctx`. Don't read `window.factoryClockKit` directly, and don't touch the page outside `host` (the tooltip is reached through `showTip`).
 - **The host owns saved state.** Keep a view's state in the instance. The explorer saves only the shared selection and the replay settings.
 - **Any size.** Work at any slide width and down to a 320 px slide height. Use `viewBox` and the host's width, and the slide's height (below).
