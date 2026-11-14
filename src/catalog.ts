@@ -492,11 +492,11 @@ export const CATALOG: VisualizerEntry[] = [
   {
     id: 'conversation-landscape',
     title: 'Conversation Landscape',
-    description: 'What each actor talked about: a dot per actor in its own hue, its most distinctive words around it, no lines; closeness is how much they interacted.',
+    description: 'What each actor talked about across every loaded session: a dot per actor in its own hue, its most distinctive words around it, no lines; closeness is how much they interacted.',
     why: 'To see what each actor talked about, not just that they talked.',
     hero: true,
     credits: [FORCE_LAYOUT, { work: 'A statistical interpretation of term specificity and its application in retrieval', by: 'Karen Spärck Jones (Spärck Jones)', year: 1972, url: 'https://doi.org/10.1108/eb026526', relation: 'technique', note: 'Inverse document frequency: a word weighs more the fewer actors use it' }],
-    tags: { subject: ['sessions'], category: ['semantic', 'conversational', 'actor'], purpose: ['expressive'], level: ['session'], dimension: ['content', 'actor', 'communication'], language: ['edgeless'] },
+    tags: { subject: ['sessions'], category: ['semantic', 'conversational', 'actor'], purpose: ['expressive'], level: ['session', 'project'], dimension: ['content', 'actor', 'communication'], language: ['edgeless'] },
   },
   {
     id: 'terminal-board',

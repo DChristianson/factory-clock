@@ -9,16 +9,27 @@
 // The words are counted, not read: your prompts and the agents' reply
 // excerpts (when text capture is on), weighted by how often an actor used a
 // word and how few other actors did. Tools have no text, so a tool category's
-// words are its tool names and its failures. The semantic mode needs derived
+// words are its tools' names and its failures. The semantic mode needs derived
 // data Snagboat doesn't keep, so it's offered disabled, with the reason.
 // Replay shows the field forming: an actor's dot appears when it first acts
-// and its words fade in and grow as they're used. A session-level
-// visualizer: draws the first session it's given. Clicking a word lists the
-// messages it came from; clicking a dot lists the actor's messages; clicking
-// a message selects its turn. Sees only its host and ctx: no VS Code.
+// and its words fade in and grow as they're used.
+//
+// Session- and project-level: every loaded session is merged into one field.
+// You, the agent, and each tool category are one dot across all of them, so
+// a word used in several sessions is one placement, weighed over them all;
+// subagents stay their own session's. With more than one session loaded the
+// sessions are numbered S1, S2… in start order, and that number tells them
+// apart where it matters: on subagent names, on each message in the reader,
+// and in the tips of words and dots. The replay runs over the sessions
+// together, in time order, on the shared clock. The layout is computed once
+// per change in the data (per proximity mode) and reused for replay ticks,
+// selection, and resize (which scales it), so the field never creeps.
+// Clicking a word lists the messages it came from; clicking a dot lists the
+// actor's messages; clicking a message selects its session and turn. Sees
+// only its host and ctx: no VS Code.
 (function () {
   const MAX_WORDS = 5; // per actor
-  const MAX_SUBAGENTS = 6; // subagent dots, then one for the rest
+  const MAX_SUBAGENTS = 6; // subagent dots across every session, then one for the rest
   const MAX_TOOLS = 5; // tool-category dots, then one for the rest
   const CLOUD = 74; // room the layout leaves around a dot for its words
   const MIN_FONT = 11;
@@ -26,6 +37,7 @@
   const MAX_TOOL_FONT = 19;
   const DECAY_MS = 2500; // playback time an actor's activity takes to fade to a third
   const FADE_FLOOR = 0.3; // how far an idle actor and its words fade
+  const MAX_READ = 40; // messages listed in the reader
   const HUES = ['red', 'purple', 'blue', 'green', 'amber'];
   const MODES = [
     ['interaction', 'Interaction'],
@@ -40,18 +52,19 @@
   window.factoryClock.register({
     id: 'conversation-landscape',
     title: 'Conversation Landscape',
-    tags: { category: ['semantic', 'conversational', 'actor'], purpose: ['expressive'], level: ['session'], dimension: ['content', 'actor', 'communication'], language: ['edgeless'] },
+    tags: { category: ['semantic', 'conversational', 'actor'], purpose: ['expressive'], level: ['session', 'project'], dimension: ['content', 'actor', 'communication'], language: ['edgeless'] },
     mount(host, ctx) {
-      const { el, svg, svgText, fmt, clip, short, formatTime, showTip, hideTip, settledLayout, hashId, countUpTo, termsOf, foldPlural, modeButtons } = ctx;
+      const { el, svg, svgText, fmt, clip, short, formatTime, showTip, hideTip, forceLayout, hashId, countUpTo, termsOf, foldPlural, modeButtons } = ctx;
       const frame = el('div', { class: 'hero-edgeless' });
       const note = el('p', { class: 'muted small' });
       host.replaceChildren(frame, note);
-      let view = null;
+      let views = [];
+      let dataKey = null;
       let selection = null;
       let model = null;
       let mode = 'interaction';
-      // One settled layout per proximity model: each runs once per session and is reused for every redraw.
-      const layouts = { interaction: settledLayout(), delegation: settledLayout() };
+      let layouts = { interaction: null, delegation: null }; // { width, height, pos, stale } per mode
+      let placement = null; // where the words went, for one mode and size
       let scene = null;
       let reading = null; // { kind: 'word' | 'actor', id, term? } listed under the field
       const clock = ctx.createReplay({ onFrame: () => paintFrame() });
@@ -69,32 +82,49 @@
       semanticBtn.title = 'Needs derived data (embeddings or a model’s labels) that Snagboat doesn’t keep';
 
       function update(sessions, sel) {
-        const next = sessions[0] || null;
-        if (!view || !next || view.summary.sessionId !== next.summary.sessionId) {
-          layouts.interaction.reset();
-          layouts.delegation.reset();
+        selection = sel || null;
+        const next = (sessions || []).slice().sort((a, b) => (Date.parse(a.summary.firstTs) || 0) - (Date.parse(b.summary.firstTs) || 0) || a.summary.sessionId.localeCompare(b.summary.sessionId));
+        const key = next.map((v) => `${v.summary.sessionId}:${v.prompts.length}:${v.calls.length}:${v.tools.length}`).join('\n');
+        if (key === dataKey && scene) {
+          paintFrame(); // only the selection changed: the field stays as it is
+          return;
+        }
+        if (next.map((v) => v.summary.sessionId).join('\n') !== views.map((v) => v.summary.sessionId).join('\n')) {
+          layouts = { interaction: null, delegation: null };
           reading = null;
         }
-        view = next;
-        selection = sel || null;
-        model = view ? analyze(view) : null;
-        clock.setSessions(view ? [view] : []);
+        // The same sessions with more in them: the old layout seeds the new one, so the field shifts rather than reshuffles.
+        for (const m of Object.keys(layouts)) if (layouts[m]) layouts[m].stale = true;
+        dataKey = key;
+        views = next;
+        placement = null;
+        model = views.length ? analyze(views) : null;
+        if (reading && (!model || !model.byId.has(reading.id))) reading = null;
+        clock.setSessions(views);
         draw();
       }
 
-      /** Actors, their messages and words, and the links the two proximity models weigh. */
-      function analyze(v) {
+      /** Actors across every loaded session, their messages and words, and the links the two proximity models weigh. */
+      function analyze(list) {
+        const multi = list.length > 1;
+        const sNo = new Map(list.map((v, i) => [v.summary.sessionId, i + 1]));
+        const tag = (sid) => (multi ? `S${sNo.get(sid)} · ` : '');
+        const merged = (key) => list.flatMap((v) => v[key].map((x) => ({ ...x, sessionId: v.summary.sessionId })));
+        const v = { prompts: merged('prompts'), calls: merged('calls'), tools: merged('tools') };
+        // A subagent belongs to its session: with several loaded, its key carries the session.
+        const subOf = (x) => (!x.agentId ? null : multi ? `${x.sessionId}/${x.agentId}` : x.agentId);
+
         const actors = new Map();
         const actor = (id, kind, label, hue) => {
           let a = actors.get(id);
           if (!a) {
-            a = { id, kind, label, hue, messages: [], tools: new Map(), failed: 0, first: Infinity, texted: 0, acts: [] };
+            a = { id, kind, label, hue, messages: [], tools: new Map(), failed: 0, first: Infinity, texted: 0, acts: [], sessions: new Set() };
             actors.set(id, a);
           }
           return a;
         };
-        const subs = [...new Set([...v.calls, ...v.tools].map((x) => x.agentId).filter(Boolean))];
-        const subWork = new Map(subs.map((id) => [id, v.calls.filter((c) => c.agentId === id).length + v.tools.filter((t) => t.agentId === id).length]));
+        const subs = [...new Set([...v.calls, ...v.tools].map(subOf).filter(Boolean))];
+        const subWork = new Map(subs.map((id) => [id, v.calls.filter((c) => subOf(c) === id).length + v.tools.filter((t) => subOf(t) === id).length]));
         const subKeep = new Set([...subs].sort((a, b) => subWork.get(b) - subWork.get(a) || a.localeCompare(b)).slice(0, subs.length > MAX_SUBAGENTS ? MAX_SUBAGENTS - 1 : MAX_SUBAGENTS));
         const cats = new Map();
         for (const t of v.tools) cats.set(t.category, (cats.get(t.category) || 0) + 1);
@@ -103,11 +133,12 @@
         const you = actor('you', 'you', 'You', 'red');
         const main = actor('agent', 'agent', 'Agent', 'purple');
         let subHue = 0;
-        const actorFor = (agentId) => {
-          if (!agentId) return main;
-          if (!subKeep.has(agentId)) return actor('sub:+', 'subagent', `${subs.length - subKeep.size} more subagents`, 'blue');
-          const a = actors.get(`sub:${agentId}`);
-          return a || actor(`sub:${agentId}`, 'subagent', `Subagent ${agentId.replace(/^agent-/, '').slice(0, 6)}`, subHue++ % 2 === 0 ? 'blue' : 'green');
+        const actorFor = (x) => {
+          const sub = subOf(x);
+          if (!sub) return main;
+          if (!subKeep.has(sub)) return actor('sub:+', 'subagent', `${subs.length - subKeep.size} more subagents`, 'blue');
+          const a = actors.get(`sub:${sub}`);
+          return a || actor(`sub:${sub}`, 'subagent', `Subagent ${x.agentId.replace(/^agent-/, '').slice(0, 6)}${multi ? ` · S${sNo.get(x.sessionId)}` : ''}`, subHue++ % 2 === 0 ? 'blue' : 'green');
         };
         const toolActor = (category) => (catKeep.has(category) ? actor(`tool:${category}`, 'tool', category, 'amber') : actor('tool:+', 'tool', 'Other tools', 'amber'));
         const links = new Map();
@@ -121,34 +152,45 @@
         for (const p of v.prompts) {
           you.first = Math.min(you.first, ms(p.ts));
           you.acts.push({ t: ms(p.ts) });
+          you.sessions.add(p.sessionId);
           main.first = Math.min(main.first, ms(p.ts));
+          main.sessions.add(p.sessionId);
           link('you', 'agent', 'message');
-          if (p.text) you.messages.push({ t: ms(p.ts), turnId: p.turnId, text: p.text, label: `P${p.index}` });
+          if (p.text) you.messages.push({ t: ms(p.ts), sessionId: p.sessionId, turnId: p.turnId, text: p.text, label: `${tag(p.sessionId)}P${p.index}` });
         }
         const delegated = new Set();
         for (const c of v.calls) {
-          const a = actorFor(c.agentId);
+          const a = actorFor(c);
           a.first = Math.min(a.first, ms(c.ts));
           a.acts.push({ t: ms(c.ts) });
-          if (c.agentId && !delegated.has(`${c.agentId}|${c.turnId}`)) {
-            delegated.add(`${c.agentId}|${c.turnId}`);
+          a.sessions.add(c.sessionId);
+          const handoff = `${subOf(c)}|${c.sessionId}|${c.turnId}`;
+          if (c.agentId && !delegated.has(handoff)) {
+            delegated.add(handoff);
             link('agent', a.id, 'delegation');
           }
-          if (c.reply) a.messages.push({ t: ms(c.ts), turnId: c.turnId, text: c.reply, label: 'reply' });
+          if (c.reply) a.messages.push({ t: ms(c.ts), sessionId: c.sessionId, turnId: c.turnId, text: c.reply, label: `${tag(c.sessionId)}reply` });
         }
         for (const t of v.tools) {
-          const caller = actorFor(t.agentId);
+          const caller = actorFor(t);
           const tool = toolActor(t.category);
           tool.first = Math.min(tool.first, ms(t.ts));
           tool.acts.push({ t: ms(t.ts) });
+          tool.sessions.add(t.sessionId);
           link(caller.id, tool.id, 'tool');
           const name = t.name || t.category;
           const entry = tool.tools.get(name) || tool.tools.set(name, { name, times: [], fails: [] }).get(name);
-          entry.times.push({ t: ms(t.ts), turnId: t.turnId });
+          entry.times.push({ t: ms(t.ts), sessionId: t.sessionId, turnId: t.turnId });
           if (t.status === 'failure') {
-            entry.fails.push({ t: ms(t.ts), turnId: t.turnId });
+            entry.fails.push({ t: ms(t.ts), sessionId: t.sessionId, turnId: t.turnId });
             tool.failed += 1;
           }
+        }
+        // Sessions overlap in time: everything the replay counts through is put in time order.
+        for (const a of actors.values()) {
+          a.acts.sort((x, y) => x.t - y.t);
+          a.messages.sort((x, y) => x.t - y.t);
+          for (const e of a.tools.values()) e.times.sort((x, y) => x.t - y.t);
         }
 
         // Words: an actor's terms by how often it used them, times how few other actors did.
@@ -184,7 +226,7 @@
             for (const t of m.terms) {
               const c = counts.get(t) || counts.set(t, { term: t, times: [], n: 0 }).get(t);
               c.n += 1;
-              c.times.push({ t: m.t, turnId: m.turnId });
+              c.times.push({ t: m.t, sessionId: m.sessionId, turnId: m.turnId });
             }
           const n = Math.max(1, texted.length);
           a.words = [...counts.values()]
@@ -194,58 +236,57 @@
             .slice(0, MAX_WORDS);
           a.texted = a.messages.length;
         }
-        for (const a of actors.values()) a.acts.sort((x, y) => x.t - y.t);
-        const list = [...actors.values()].filter((a) => Number.isFinite(a.first));
-        return { actors: list, byId: new Map(list.map((a) => [a.id, a])), links: [...links.values()], anyText: texted.length > 0, maxActs: Math.max(1, ...list.map((a) => a.acts.length)) };
+        const shown = [...actors.values()].filter((a) => Number.isFinite(a.first));
+        const crossing = shown.reduce((k, a) => k + a.words.filter((w) => new Set(w.times.map((x) => x.sessionId)).size > 1).length, 0);
+        return { actors: shown, byId: new Map(shown.map((a) => [a.id, a])), links: [...links.values()], anyText: texted.length > 0, maxActs: Math.max(1, ...shown.map((a) => a.acts.length)), multi, sNo, crossing };
       }
 
-      // ---------- drawing ----------
-      function draw() {
-        hideTip();
-        if (!view || !model) {
-          frame.replaceChildren(el('p', { class: 'ce-empty', text: 'No session.' }));
-          note.textContent = '';
-          scene = null;
-          return;
-        }
-        const width = Math.max(320, host.clientWidth || 800);
-        const height = fit.height(Math.round(Math.min(620, Math.max(360, width * 0.56))), 320);
-        const weights = model.links.map((l) => ({ source: l.a, target: l.b, weight: mode === 'interaction' ? Math.sqrt(l.count) : l.type === 'tool' ? 0.3 : l.type === 'delegation' ? 4 : 3 }));
-        const pos = layouts[mode](
-          model.actors.map((a) => ({ id: a.id, r: CLOUD, pin: a.id === 'you' ? { x: Math.max(CLOUD, width * 0.14), y: height * 0.35 } : undefined })),
-          weights,
-          { width, height, padding: 10, spacing: CLOUD * 2.1 }
-        );
+      /** "S1, S2": the sessions a set of times or session ids touches, by number. */
+      function sessionsText(ids) {
+        return [...new Set(ids)].map((id) => model.sNo.get(id)).filter(Boolean).sort((a, b) => a - b).map((n) => `S${n}`).join(', ');
+      }
 
-        const root = svg('svg', { class: 'ce-svg', width, height, viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Conversation Landscape of ${view.summary.name || short(view.summary.sessionId)}: ${model.actors.length} actors` });
-        root.append(svg('rect', { class: 'ce-ground', x: 0, y: 0, width, height }));
+      // ---------- layout: once per change in the data, per mode ----------
+      /** The dots' positions at this size: the mode's one layout, scaled when the size isn't the one it was computed at. */
+      function layoutAt(width, height) {
+        let L = layouts[mode];
+        if (!L || L.stale) {
+          const weights = model.links.map((l) => ({ source: l.a, target: l.b, weight: mode === 'interaction' ? Math.sqrt(l.count) : l.type === 'tool' ? 0.3 : l.type === 'delegation' ? 4 : 3 }));
+          const pos = forceLayout(
+            model.actors.map((a) => ({ id: a.id, r: CLOUD, pin: a.id === 'you' ? { x: Math.max(CLOUD, width * 0.14), y: height * 0.35 } : undefined })),
+            weights,
+            { width, height, padding: 10, previous: L ? scaled(L, width, height) : null, spacing: CLOUD * 2.1 }
+          );
+          L = layouts[mode] = { width, height, pos, stale: false };
+          placement = null;
+        }
+        return L.width === width && L.height === height ? L.pos : scaled(L, width, height);
+      }
+
+      function scaled(L, width, height) {
+        const sx = width / L.width;
+        const sy = height / L.height;
+        return new Map([...L.pos].map(([id, p]) => [id, { x: p.x * sx, y: p.y * sy }]));
+      }
+
+      /** Words on a spiral out from their dot, starting at an angle from a hash of the word, never overlapping. Deterministic, and kept per mode and size. */
+      function placeWords(pos, width, height) {
+        const key = `${mode}|${width}|${height}`;
+        if (placement && placement.key === key) return placement.words;
         // What was said leads: text words and tool words have scales of their own, and tool words top out smaller.
         const maxText = Math.max(1e-9, ...model.actors.flatMap((a) => a.words.filter((w) => !w.tool).map((w) => w.weight)));
         const maxTool = Math.max(1e-9, ...model.actors.flatMap((a) => a.words.filter((w) => w.tool).map((w) => w.weight)));
         const fontOf = (w) => Math.round(MIN_FONT + ((w.tool ? MAX_TOOL_FONT : MAX_FONT) - MIN_FONT) * Math.sqrt(w.weight / (w.tool ? maxTool : maxText)));
-        const placed = []; // rectangles already taken: dots and words
-        const overlaps = (r) => placed.some((q) => r.x < q.x + q.w && r.x + r.w > q.x && r.y < q.y + q.h && r.y + r.h > q.y);
+        const taken = []; // rectangles already taken: dots and words
+        const overlaps = (r) => taken.some((q) => r.x < q.x + q.w && r.x + r.w > q.x && r.y < q.y + q.h && r.y + r.h > q.y);
         for (const a of model.actors) {
           const p = pos.get(a.id);
           const nameW = Math.min(24, a.label.length) * 7 + 8; // the name under the dot, in spaced capitals
-          placed.push({ x: p.x - 16, y: p.y - 16, w: 32, h: 32 }, { x: p.x - nameW / 2, y: p.y + 18, w: nameW, h: 14 });
+          taken.push({ x: p.x - 16, y: p.y - 16, w: 32, h: 32 }, { x: p.x - nameW / 2, y: p.y + 18, w: nameW, h: 14 });
         }
-
-        const dotParts = new Map();
-        const wordParts = [];
+        const words = [];
         for (const a of model.actors) {
           const p = pos.get(a.id);
-          const g = svg('g', { class: `ce-actor ce-${a.hue}` });
-          const halo = svg('circle', { class: 'ce-halo', cx: p.x, cy: p.y, r: 16 });
-          const dot = svg('circle', { class: 'ce-dot', cx: p.x, cy: p.y, r: 7 });
-          const name = svgText({ class: 'ce-name', x: p.x, y: p.y + 28, 'text-anchor': 'middle' }, clip(a.label.toUpperCase(), 24));
-          const hit = svg('circle', { class: 'ce-hit', cx: p.x, cy: p.y, r: 18, tabindex: 0, role: 'button', 'aria-label': `${a.label}: ${actorSummary(a)}. Show its messages.` });
-          ctx.interact(ctx, hit, { tip: () => [a.label, ['Messages with text', fmt(a.messages.length)], ...(a.kind === 'tool' ? [['Tool calls', fmt([...a.tools.values()].reduce((n, e) => n + e.times.length, 0))]] : []), ...(a.failed ? [['Failed', fmt(a.failed)]] : []), 'Click to list what it said'], pick: () => read({ kind: 'actor', id: a.id }) });
-          g.append(halo, dot, name, hit);
-          root.append(g);
-          dotParts.set(a.id, { g, halo, dot, a });
-
-          // Words on a spiral out from the dot, starting at an angle from a hash of the word, never overlapping.
           for (const w of a.words) {
             const size = fontOf(w);
             const tw = w.display.length * size * 0.56;
@@ -262,29 +303,74 @@
               if (!overlaps(r)) spot = r;
             }
             if (!spot) continue;
-            placed.push(spot);
-            const t = svgText({ class: `ce-word${w.failure ? ' ce-failure' : ''}${size < 15 ? ' ce-small' : ''}`, x: spot.x + spot.w / 2, y: spot.y + th * 0.8, 'text-anchor': 'middle', 'font-size': size, tabindex: 0, role: 'button', 'aria-label': `${w.display}, from ${a.label}. Show where it came from.` }, w.display);
-            ctx.interact(ctx, t, {
-              tip: () => [`${w.display} · ${a.label}`, [w.tool ? 'Calls' : 'Messages', fmt(w.times.length)], ...(w.tool ? [] : [['Weight', w.weight.toFixed(1)]]), 'Click to list where it came from'],
-              pick: () => read({ kind: 'word', id: a.id, term: w.term }),
-            });
-            g.append(t);
-            wordParts.push({ t, w, a, size });
+            taken.push(spot);
+            words.push({ a, w, size, spot, th });
           }
         }
+        placement = { key, words };
+        return words;
+      }
 
-        const head = el('div', { class: 'ce-head' }, [el('span', { class: 'ce-caps', text: `Communication & meaning · ${short(view.summary.sessionId)}` }), el('span', { class: 'ce-caps', text: `Force model: ${mode}` })]);
+      // ---------- drawing ----------
+      function draw() {
+        hideTip();
+        if (!views.length || !model) {
+          frame.replaceChildren(el('p', { class: 'ce-empty', text: 'No session.' }));
+          note.textContent = '';
+          scene = null;
+          return;
+        }
+        const width = Math.max(320, host.clientWidth || 800);
+        const height = fit.height(Math.round(Math.min(620, Math.max(360, width * 0.56))), 320);
+        const pos = layoutAt(width, height);
+        const words = placeWords(pos, width, height);
+        const merged = model.multi ? `${fmt(views.length)} sessions merged` : short(views[0].summary.sessionId);
+        const sessionsOf = (a) => (model.multi ? [['Sessions', sessionsText(a.sessions)]] : []);
+
+        const root = svg('svg', { class: 'ce-svg', width, height, viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Conversation Landscape of ${model.multi ? `${fmt(views.length)} sessions, merged` : views[0].summary.name || short(views[0].summary.sessionId)}: ${model.actors.length} actors` });
+        root.append(svg('rect', { class: 'ce-ground', x: 0, y: 0, width, height }));
+        const dotParts = new Map();
+        const groups = new Map();
+        for (const a of model.actors) {
+          const p = pos.get(a.id);
+          const g = svg('g', { class: `ce-actor ce-${a.hue}` });
+          const halo = svg('circle', { class: 'ce-halo', cx: p.x, cy: p.y, r: 16 });
+          const dot = svg('circle', { class: 'ce-dot', cx: p.x, cy: p.y, r: 7 });
+          const name = svgText({ class: 'ce-name', x: p.x, y: p.y + 28, 'text-anchor': 'middle' }, clip(a.label.toUpperCase(), 24));
+          const hit = svg('circle', { class: 'ce-hit', cx: p.x, cy: p.y, r: 18, tabindex: 0, role: 'button', 'aria-label': `${a.label}: ${actorSummary(a)}. Show its messages.` });
+          ctx.interact(ctx, hit, { tip: () => [a.label, ['Messages with text', fmt(a.messages.length)], ...(a.kind === 'tool' ? [['Tool calls', fmt([...a.tools.values()].reduce((n, e) => n + e.times.length, 0))]] : []), ...(a.failed ? [['Failed', fmt(a.failed)]] : []), ...sessionsOf(a), 'Click to list what it said'], pick: () => read({ kind: 'actor', id: a.id }) });
+          g.append(halo, dot, name, hit);
+          root.append(g);
+          groups.set(a.id, g);
+          dotParts.set(a.id, { g, halo, dot, a });
+        }
+        const wordParts = [];
+        for (const { a, w, size, spot, th } of words) {
+          const t = svgText({ class: `ce-word${w.failure ? ' ce-failure' : ''}${size < 15 ? ' ce-small' : ''}`, x: spot.x + spot.w / 2, y: spot.y + th * 0.8, 'text-anchor': 'middle', 'font-size': size, tabindex: 0, role: 'button', 'aria-label': `${w.display}, from ${a.label}. Show where it came from.` }, w.display);
+          ctx.interact(ctx, t, {
+            tip: () => [`${w.display} · ${a.label}`, [w.tool ? 'Calls' : 'Messages', fmt(w.times.length)], ...(w.tool ? [] : [['Weight', w.weight.toFixed(1)]]), ...(model.multi ? [['Sessions', sessionsText(w.times.map((x) => x.sessionId))]] : []), 'Click to list where it came from'],
+            pick: () => read({ kind: 'word', id: a.id, term: w.term }),
+          });
+          groups.get(a.id).append(t);
+          wordParts.push({ t, w, a, size });
+        }
+
+        const head = el('div', { class: 'ce-head' }, [el('span', { class: 'ce-caps', text: `Communication & meaning · ${merged}` }), el('span', { class: 'ce-caps', text: `Force model: ${mode}` })]);
         const reader = el('div', { class: 'ce-reader', 'aria-live': 'polite' });
         frame.replaceChildren(head, root, el('div', { class: 'ce-foot' }, [modeBar, bar.element]), reader);
         scene = { dotParts, wordParts, reader };
         paintFrame();
         renderReader();
 
+        const sessionList = views.map((v, i) => `S${i + 1} ${v.summary.name ? clip(v.summary.name, 40) : short(v.summary.sessionId)}`).join(', ');
         note.textContent = [
+          model.multi
+            ? `${fmt(views.length)} sessions merged into one field (${sessionList}): you, the agent, and each tool category are one dot across them, so a word used in several sessions is placed once${model.crossing ? ` (${fmt(model.crossing)} of the words shown span sessions)` : ''}; subagents stay their own session’s, and the replay runs over them together in time order.`
+            : '',
           MODE_NOTE[mode],
           'Distance means interaction only in that mode; no line is drawn between actors.',
           'Words are counted, not read by a model: each actor’s are the ones it used most that other actors used least, from your prompts and the agents’ reply excerpts. A tool category’s words are its tools’ names and its failures.',
-          model.anyText ? '' : 'No text was captured for this session (text capture off, or before it existed), so only tools have words.',
+          model.anyText ? '' : `No text was captured for ${model.multi ? 'these sessions' : 'this session'} (text capture off, or before it existed), so only tools have words.`,
           'Click a word for the messages it came from, a dot for everything that actor said; click a message to select its turn.',
         ]
           .filter(Boolean)
@@ -297,7 +383,8 @@
         bar.sync();
         if (!scene) return;
         const t = clock.time;
-        const sel = selection && selection.turnId && (!selection.sessionId || selection.sessionId === view.summary.sessionId) ? selection.turnId : null;
+        const sel = selection && selection.turnId ? selection : null;
+        const inTurn = (x) => x.turnId === sel.turnId && (!sel.sessionId || sel.sessionId === x.sessionId);
         const focus = reading ? reading.id : null;
         // Once a replay has finished (or with reduced motion) the picture rests: everything at full strength, dots sized by calls.
         const resting = !clock.playing && clock.atEnd();
@@ -328,7 +415,7 @@
           const share = n / wp.w.times.length;
           wp.t.setAttribute('opacity', n === 0 ? 0 : (0.35 + 0.65 * share).toFixed(2));
           wp.t.setAttribute('font-size', Math.max(MIN_FONT - 2, Math.round(wp.size * (0.6 + 0.4 * share))));
-          wp.t.classList.toggle('ce-in-turn', !!sel && wp.w.times.some((x) => x.turnId === sel));
+          wp.t.classList.toggle('ce-in-turn', !!sel && wp.w.times.some(inTurn));
           wp.t.classList.toggle('ce-reading', !!reading && reading.kind === 'word' && reading.id === wp.a.id && reading.term === wp.w.term);
         }
       }
@@ -349,15 +436,16 @@
         }
         let items;
         let title;
+        const sTag = (sid) => (model.multi ? `S${model.sNo.get(sid)}` : '');
         if (a.kind === 'tool') {
           const word = reading.kind === 'word' ? a.words.find((w) => w.term === reading.term) : null;
           const times = word ? word.times : [...a.tools.values()].flatMap((e) => e.times).sort((x, y) => x.t - y.t);
           title = word ? `${word.display} · ${a.label}` : `${a.label}: tool calls`;
-          items = times.slice(0, 40).map((x) => ({ t: x.t, turnId: x.turnId, text: word ? word.display.replace(/ ×\d+$/, '') : a.label }));
+          items = times.slice(0, MAX_READ).map((x) => ({ t: x.t, sessionId: x.sessionId, turnId: x.turnId, text: word ? word.display.replace(/ ×\d+$/, '') : a.label, label: sTag(x.sessionId) }));
         } else {
           const msgs = reading.kind === 'word' ? a.messages.filter((m) => m.terms.has(reading.term)) : a.messages;
           title = reading.kind === 'word' ? `“${reading.term}” in ${fmt(msgs.length)} of ${a.label}’s messages` : `${a.label}: ${fmt(msgs.length)} messages`;
-          items = msgs.slice(0, 40).map((m) => ({ t: m.t, turnId: m.turnId, text: m.text, label: m.label }));
+          items = msgs.slice(0, MAX_READ).map((m) => ({ t: m.t, sessionId: m.sessionId, turnId: m.turnId, text: m.text, label: m.label }));
         }
         const close = el('button', { class: 'ce-close', text: 'Close' });
         close.addEventListener('click', () => read(reading));
@@ -369,14 +457,14 @@
             items.map((m) => {
               const li = el('li', { tabindex: m.turnId ? 0 : undefined }, [el('span', { class: 'ce-when', text: `${formatTime(m.t)}${m.label ? ` · ${m.label}` : ''}` }), el('span', { class: 'ce-text', text: clip(m.text, 600) })]);
               if (m.turnId) {
-                const pick = () => ctx.select({ sessionId: view.summary.sessionId, turnId: m.turnId });
+                const pick = () => ctx.select({ sessionId: m.sessionId, turnId: m.turnId });
                 li.addEventListener('click', pick);
                 li.addEventListener('keydown', (e) => e.key === 'Enter' && pick());
               }
               return li;
             })
           ),
-          ...(items.length >= 40 ? [el('p', { class: 'ce-when', text: 'The first 40; the rest are in the session’s other views.' })] : [])
+          ...(items.length >= MAX_READ ? [el('p', { class: 'ce-when', text: `The first ${MAX_READ}; the rest are in the ${model.multi ? 'sessions’' : 'session’s'} other views.` })] : [])
         );
       }
 
