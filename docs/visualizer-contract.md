@@ -99,7 +99,7 @@ Read the comments in `vizkit.js` for details; this is the list, in the groups be
 - `modeButtons(label, options, initial, onChange)`: a row of buttons that picks one of `[[id, text]]`.
 - `legendKey(cls, text)`: a swatch and label for a legend.
 - `interact(ctx, node, { label, tip, pick })`: the tooltip on hover, and with `pick`, a click and Enter that call it, `tabindex` and `role="button"`. Pass `ctx` itself as the first argument.
-- `fitHeight(host)`, `fitter(host)`: the height left in the carousel's slide, so a view fills it without scrolling. `null` or the fallback outside the carousel.
+- `fitHeight(host)`, `fitter(host)`: the height left in the carousel's slide, so a view fills it without scrolling. `null` or the fallback outside the carousel. Every view uses them; see [Fitting a slide](#fitting-a-slide).
 - `tipFor(tooltip)` → `{ showTip, hideTip }`: how a host makes the tooltip functions. A visualizer uses `ctx.showTip` and `ctx.hideTip` instead.
 
 **Formatting**
@@ -176,9 +176,21 @@ The explorer loads at most 8 sessions (`EXPLORE_SESSION_CAP`), and each carries 
 - **No network.** The web page's policy is `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'`. No `fetch`, no XHR, no remote images or fonts.
 - **No globals** beyond `window.factoryClock` to register. Everything else comes through `ctx`. Don't read `window.factoryClockKit` directly, and don't touch the page outside `host` (the tooltip is reached through `showTip`).
 - **The host owns saved state.** Keep a view's state in the instance. The explorer saves only the shared selection and the replay settings.
-- **Any size.** Work at any slide width and down to a 320 px slide height. Use `viewBox` and the host's width.
+- **Any size.** Work at any slide width and down to a 320 px slide height. Use `viewBox` and the host's width, and the slide's height (below).
 - **Performance.** Aggregate or cap marks; put each limit in a named constant at the top of the file and say it in the view's note. Animate only through the replay clock, and only while active. Try the view on the longest session you have, not only the demo data.
 - **Accessible.** Give the SVG `role="img"` and an `aria-label`. Make clickable marks keyboard-reachable (`interact` does this). Every view takes part in the shared selection: clicking a mark should select its turn or session.
+
+## Fitting a slide
+
+**A view fills the height it's given.** The stage keeps one height while the owner flips along the shelf: it changes only with the window (the slide head is one line at a fixed height, and nothing in the dock changes height from view to view). So a view never draws at a fixed height of its own; it sizes its drawing to its slide, at every slide size, and two views side by side on the shelf are the same height.
+
+- Make one `const fitH = ctx.fitter(host)` in `mount`. In `draw`, take the drawing's height from `fitH.height(fallback, min)`: `fallback` is the height outside the carousel (the Sessions tab, where there is no slide), `min` the least it stays readable at. Draw at that height, then call `fitH.settle(height, draw)` last, with the height drawn: it measures what surrounds the drawing (controls, legend, note) and draws once more if that changed, so the whole view fits.
+- **Plots** (bars, lines, areas, scatter, flows, treemaps, graphs) take the fitted height; the plot is that less its margins.
+- **Rows** (strips, lanes, a Gantt's rows, ridges, matrices' cells) stretch their pitch to fill, up to a cap (about twice their usual pitch), and never below their usual pitch. The drawing takes the fitted height even when its rows are capped (the rows stay at the top).
+- **Round things** (dials, wheels, sunbursts, radars) take the smaller of the width and the fitted height.
+- **Content that is naturally taller** than the slide (a long list, a big matrix, a long sequence) keeps its usual pitch and scrolls inside the slide's host; it never makes the slide taller.
+- **Stacked sessions** (level `session`, one instance per loaded session) get one slide's height each, less the session's heading, and the slide scrolls from one session to the next.
+- The fitted height follows the slide, not the data or the selection: resize redraws, so a layout cached per data change is reused at the new size where it can be.
 
 ## Adding the catalog entry
 
@@ -226,6 +238,7 @@ Run `npm test`.
     mount(host, ctx) {
       const { svg, svgText, fmt, fit, niceAxis, sessionName, sessionClass, vizPanel, interact } = ctx;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the chart fills the slide's height
       let views = [];
       let selection = null;
 
@@ -233,11 +246,12 @@ Run `npm test`.
         if (!views.length) return panel.empty('');
         const width = Math.max(320, host.clientWidth || 800);
         const m = { l: 44, r: 12, t: 10, b: 24 };
-        const ph = 200;
+        const height = fitH.height(m.t + 200 + m.b, m.t + 120 + m.b); // 200 px of plot outside the carousel, 120 at the least
+        const ph = height - m.t - m.b;
         const axis = niceAxis(Math.max(1, ...views.map((v) => v.calls.length)));
         const y = (n) => m.t + ph - (n / axis.top) * ph;
         const bw = (width - m.l - m.r) / views.length;
-        const root = svg('svg', { class: 'viz-chart', viewBox: `0 0 ${width} ${m.t + ph + m.b}`, role: 'img', 'aria-label': `Model calls in ${views.length} sessions` });
+        const root = svg('svg', { class: 'viz-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Model calls in ${views.length} sessions` });
         for (const t of axis.ticks) {
           root.append(svg('line', { class: 'grid', x1: m.l, x2: width - m.r, y1: y(t), y2: y(t) }));
           root.append(svgText({ class: 'axis-label', x: m.l - 6, y: y(t) + 4, 'text-anchor': 'end' }, fmt(t)));
@@ -257,6 +271,7 @@ Run `npm test`.
         });
         panel.chart.replaceChildren(root);
         panel.note.textContent = 'Click a bar to select its session.';
+        fitH.settle(height, draw);
       }
 
       return {
