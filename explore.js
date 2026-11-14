@@ -30,7 +30,7 @@
 // guide's order; without it, the filters alone in catalog order). The tab adds
 // select(selection) for each visualizer it mounts (see viz/registry.js).
 //
-// Saved state: { picked: string[], current: visualizer id, compare: visualizer id | null, filters: { facet: [values] }, replay: { speed, loop },
+// Saved state: { picked: string[], pickChosen: boolean (the visitor ticked the pick; else the page's default, every session), current: visualizer id, compare: visualizer id | null, filters: { facet: [values] }, replay: { speed, loop },
 // subjects: { [visualizer id]: 'sessions' | 'code' | 'plans' | 'workspace' },
 // collapsed: boolean, corner: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
 // selection: { sessionId?, turnId?, range?, focusId? } | null,
@@ -384,7 +384,7 @@
           if (now.includes(s.sessionId)) st.picked = now.filter((id) => id !== s.sessionId);
           else if (now.length < CAP) st.picked = [...now, s.sessionId];
           else return;
-          save({ picked: st.picked });
+          save({ picked: st.picked, pickChosen: true }); // the visitor's own pick; the page keeps it over the default
           renderPicker();
         };
         box.addEventListener('change', toggle);

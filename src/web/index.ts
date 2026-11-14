@@ -5,6 +5,7 @@ export * from './eventSet';
 export * from './jsonl';
 export * from './marks';
 export * from './synthetic';
+export * from './pick';
 export * from './traces';
 export * from './syntheticWorkspace';
 export * from './loader';

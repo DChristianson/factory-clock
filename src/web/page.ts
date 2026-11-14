@@ -4,8 +4,9 @@ import { ProjectFile, Workspace, shapeOfWorkspace } from '../model';
 import { creditRows } from './credits';
 import { EventSet, FindingsFor } from './eventSet';
 import { ProjectRead, Picks, Subject, UnitSummary, WorkspaceSet, isSkippedDir, looksBinary, planWalk, readProject, readSingleFiles } from './loader';
+import { startingPick } from './pick';
 import { readDemoTraces } from './traces';
-import { syntheticEvents, syntheticSessionIds } from './synthetic';
+import { syntheticEvents } from './synthetic';
 import { syntheticCodeGraph, syntheticPlanGraph } from './syntheticWorkspace';
 
 /**
@@ -232,18 +233,14 @@ export function startPage(findingsFor?: FindingsFor): void {
   /** The last folder read, kept so the switches can read it again. */
   let project: { name: string; files: ProjectFile[]; off: Set<string> } | null = null;
 
-  /**
-   * (Re)mounts the explorer over a set. The picked ids only mean something
-   * for the data they were picked from, so ones the new set doesn't have are
-   * dropped, and with none left the default pick stands in.
-   */
-  function mountExplorer(next: WorkspaceSet, defaultPick: string[]): void {
+  /** (Re)mounts the explorer over a set, picking every session in it unless the visitor chose a pick that still applies (startingPick). */
+  function mountExplorer(next: WorkspaceSet): void {
     tab?.destroy();
     set = next;
     const data = next.sessions;
-    const stored = readState().picked;
-    const kept = Array.isArray(stored) ? stored.filter((id): id is string => typeof id === 'string' && !!data.index.get(id)) : [];
-    writeState({ ...readState(), picked: kept.length ? kept : defaultPick });
+    const state = readState();
+    const all = data.listAll().sessions.map((s) => s.sessionId);
+    writeState({ ...state, ...startingPick(state, all, (id) => !!data.index.get(id)) });
     tab = globals.factoryClockExplore.mount(root, sourceOver(next), ctx);
     tab.shown();
   }
@@ -279,8 +276,8 @@ export function startPage(findingsFor?: FindingsFor): void {
     // The generated sessions come with the example code and plan they were made beside.
     project = null;
     projectBox.hidden = true;
-    if (useTraces && traces) mountExplorer(new WorkspaceSet(new EventSet(traces.events, findingsFor)), traces.picked.slice(0, 2));
-    else mountExplorer(new WorkspaceSet(new EventSet(syntheticEvents(), findingsFor), [syntheticCodeGraph()], [syntheticPlanGraph()]), syntheticSessionIds().slice(0, 2));
+    if (useTraces && traces) mountExplorer(new WorkspaceSet(new EventSet(traces.events, findingsFor)));
+    else mountExplorer(new WorkspaceSet(new EventSet(syntheticEvents(), findingsFor), [syntheticCodeGraph()], [syntheticPlanGraph()]));
   }
 
   /** After any load, the built-in sets are offered again. */
@@ -320,7 +317,7 @@ export function startPage(findingsFor?: FindingsFor): void {
     dataNote.textContent = notes.join(' ');
     if (next === set) return;
     offerBuiltIns();
-    mountExplorer(next, next.sessions.listAll().sessions.slice(0, 2).map((s) => s.sessionId));
+    mountExplorer(next);
   }
 
   /** Lists what each adapter found, each with a switch; an adapter that found nothing says so. */
@@ -370,7 +367,7 @@ export function startPage(findingsFor?: FindingsFor): void {
     });
     showProject(read);
     offerBuiltIns();
-    mountExplorer(set.withProject(read.code, read.plans), set.sessions.listAll().sessions.slice(0, 2).map((s) => s.sessionId));
+    mountExplorer(set.withProject(read.code, read.plans));
   }
 
   /** A chosen or dropped folder: walked, read as text, and handed to the adapters. Sessions stay as they are. */
