@@ -1699,3 +1699,125 @@ rect.pog-file { opacity: 1; }
 .hero-strata .st-sw-deferred { background: var(--strata-deferred); }
 .hero-strata .st-sw-dropped { background: var(--strata-dropped); }
 .hero-strata .st-sw-inferred { border: 1px dashed var(--strata-muted); background: none; transform: none; }
+
+/* Storylines, design language `narrative`: a narrative chart on a pale sheet, one lane per package in alternating
+   bands, each actor a cased line in its session's hue, labels at both ends so actors read without color; scenes
+   where actors share a file shaded behind them. The sheet's colors are variables, so the dark sheet swaps them. */
+.hero-storylines {
+  --sl-sheet: #fbfaf6;
+  --sl-band: #f1eee6;
+  --sl-ink: #26241f;
+  --sl-muted: #5f5b52; /* 6:1 on the sheet */
+  --sl-rule: #d8d2c4;
+  --sl-scene: #e6dcc3;
+  --sl-h0: #c0392b;
+  --sl-h1: #1f6fb2;
+  --sl-h2: #2e8b57;
+  --sl-h3: #8e44ad;
+  --sl-h4: #d35400;
+  --sl-h5: #00838f;
+  --sl-done: #2e8b57;
+  --sl-dropped: #7d7a72;
+  --sl-serif: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+  --sl-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--sl-sheet);
+  color: var(--sl-ink);
+  border-radius: 4px;
+  overflow: hidden;
+  font-family: var(--sl-sans);
+}
+@media (prefers-color-scheme: dark) {
+  .hero-storylines {
+    --sl-sheet: #1b1d24;
+    --sl-band: #22252e;
+    --sl-ink: #ece8de;
+    --sl-muted: #b2ada1;
+    --sl-rule: #3a3e4a;
+    --sl-scene: #3b3a33;
+    --sl-h0: #f07a6a;
+    --sl-h1: #6fb0ec;
+    --sl-h2: #6cc58f;
+    --sl-h3: #c08ae0;
+    --sl-h4: #f2a05a;
+    --sl-h5: #4fc8d2;
+    --sl-done: #6cc58f;
+    --sl-dropped: #9a968c;
+  }
+}
+.hero-storylines .sl-svg { display: block; max-width: 100%; }
+.hero-storylines .sl-empty { color: var(--sl-muted); font: italic 13px var(--sl-serif); padding: 24px; margin: 0; }
+.hero-storylines .sl-sheet { fill: var(--sl-sheet); }
+/* Lanes */
+.hero-storylines .sl-band { fill: var(--sl-sheet); }
+.hero-storylines .sl-lane.sl-alt .sl-band { fill: var(--sl-band); }
+.hero-storylines .sl-lane[role="button"] { cursor: pointer; }
+.hero-storylines .sl-lane:focus { outline: none; }
+.hero-storylines .sl-lane:hover .sl-lane-name, .hero-storylines .sl-lane:focus .sl-lane-name { text-decoration: underline; }
+.hero-storylines .sl-lane.sl-on .sl-band { fill: var(--sl-scene); }
+.hero-storylines .sl-lane.sl-folded .sl-lane-name { font-style: italic; }
+.hero-storylines .sl-rail { stroke: var(--sl-rule); stroke-width: 0.8; stroke-dasharray: 1 3; }
+.hero-storylines .sl-margin { stroke: var(--sl-rule); stroke-width: 1; }
+.hero-storylines .sl-lane-name { fill: var(--sl-ink); font: 600 11px var(--sl-serif); font-variant: small-caps; letter-spacing: 0.04em; }
+.hero-storylines .sl-lane-sub { fill: var(--sl-muted); font: 9px var(--sl-sans); }
+/* Time */
+.hero-storylines .sl-axis { pointer-events: none; }
+.hero-storylines .sl-tick { stroke: var(--sl-rule); stroke-width: 0.6; stroke-dasharray: 2 4; }
+.hero-storylines .sl-tick-label, .hero-storylines .sl-gutter-label, .hero-storylines .sl-stamp { fill: var(--sl-muted); font: italic 10px var(--sl-serif); }
+/* Scenes and lines: each line cased in the sheet's color, so crossings read */
+.hero-storylines .sl-scene { fill: var(--sl-scene); fill-opacity: 0.85; }
+.hero-storylines .sl-actor { cursor: pointer; }
+.hero-storylines .sl-actor:focus { outline: none; }
+.hero-storylines .sl-h0 { --sl-hue: var(--sl-h0); }
+.hero-storylines .sl-h1 { --sl-hue: var(--sl-h1); }
+.hero-storylines .sl-h2 { --sl-hue: var(--sl-h2); }
+.hero-storylines .sl-h3 { --sl-hue: var(--sl-h3); }
+.hero-storylines .sl-h4 { --sl-hue: var(--sl-h4); }
+.hero-storylines .sl-h5 { --sl-hue: var(--sl-h5); }
+.hero-storylines .sl-casing { fill: none; stroke: var(--sl-sheet); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.hero-storylines .sl-line, .hero-storylines .sl-inferred, .hero-storylines .sl-core { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.hero-storylines .sl-line { stroke: var(--sl-hue, var(--sl-ink)); }
+.hero-storylines .sl-main .sl-line { stroke-width: 2.6; }
+.hero-storylines .sl-sub .sl-casing { stroke-width: 3.6; }
+.hero-storylines .sl-sub .sl-line { stroke-width: 1.3; }
+.hero-storylines .sl-you .sl-casing { stroke-width: 6.5; }
+.hero-storylines .sl-you .sl-line { stroke: var(--sl-ink); stroke-width: 4; }
+.hero-storylines .sl-you .sl-core { stroke: var(--sl-sheet); stroke-width: 1.4; }
+.hero-storylines .sl-inferred { stroke: var(--sl-sheet); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.hero-storylines .sl-hit { fill: none; stroke: transparent; stroke-width: 10; pointer-events: stroke; }
+.hero-storylines .sl-actor:hover .sl-casing, .hero-storylines .sl-actor:focus .sl-casing, .hero-storylines .sl-actor.sl-on .sl-casing { stroke: var(--sl-ink); stroke-opacity: 0.3; }
+.hero-storylines .sl-actor.sl-dim { opacity: 0.3; }
+.hero-storylines .sl-labels, .hero-storylines .sl-heads { pointer-events: none; }
+.hero-storylines .sl-label { font: italic 9.5px var(--sl-serif); fill: var(--sl-hue, var(--sl-ink)); paint-order: stroke; stroke: var(--sl-sheet); stroke-width: 3px; stroke-linejoin: round; }
+.hero-storylines .sl-label.sl-you { font-weight: 700; fill: var(--sl-ink); }
+.hero-storylines .sl-label.sl-sub { font-size: 8.5px; }
+.hero-storylines .sl-head { fill: var(--sl-hue, var(--sl-ink)); stroke: var(--sl-sheet); stroke-width: 1.2; }
+/* Plan marks: hollow where opened, filled by status where closed */
+.hero-storylines .sl-event { cursor: pointer; stroke-width: 1; }
+.hero-storylines .sl-event:focus { outline: none; }
+.hero-storylines .sl-event.sl-opened { fill: var(--sl-sheet); stroke: var(--sl-ink); }
+.hero-storylines .sl-event.sl-closed { stroke: var(--sl-ink); stroke-width: 0.6; }
+.hero-storylines .sl-event.sl-st-done { fill: var(--sl-done); }
+.hero-storylines .sl-event.sl-st-dropped { fill: var(--sl-dropped); }
+.hero-storylines .sl-event.sl-inferred-item { stroke-dasharray: 1.5 1.5; }
+.hero-storylines .sl-event:hover, .hero-storylines .sl-event:focus, .hero-storylines .sl-event.sl-on { stroke-width: 2; }
+.hero-storylines .sl-count { fill: var(--sl-muted); font: 8px var(--sl-sans); pointer-events: none; }
+.hero-storylines .sl-empty-card { fill: var(--sl-sheet); stroke: var(--sl-rule); }
+.hero-storylines .sl-empty-text { fill: var(--sl-muted); font: italic 12px var(--sl-serif); }
+/* Foot: replay and legend */
+.hero-storylines .sl-foot { display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap; padding: 6px 10px 8px; border-top: 1px solid var(--sl-rule); }
+.hero-storylines .sl-foot .replay-bar { flex: 1 1 360px; margin: 0; }
+.hero-storylines .replay-scrub { accent-color: var(--sl-h0); }
+.hero-storylines .replay-badge { color: var(--sl-h0); border-color: var(--sl-h0); }
+.hero-storylines .replay-where { color: var(--sl-muted); font-size: 11px; }
+.hero-storylines .sl-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font: italic 11px var(--sl-serif); color: var(--sl-muted); }
+.hero-storylines .sl-key { display: inline-flex; align-items: center; gap: 5px; }
+.hero-storylines .sl-swatch { display: inline-block; width: 18px; height: 0; }
+.hero-storylines .sl-sw-you { height: 1.4px; border-top: 1.4px solid var(--sl-ink); border-bottom: 1.4px solid var(--sl-ink); }
+.hero-storylines .sl-sw-main { border-top: 2.6px solid var(--sl-h1); }
+.hero-storylines .sl-sw-sub { border-top: 1.3px solid var(--sl-h1); }
+.hero-storylines .sl-sw-scene { height: 9px; background: var(--sl-scene); border-radius: 4px; }
+.hero-storylines .sl-sw-inferred { border-top: 2px dashed var(--sl-muted); }
+.hero-storylines .sl-sw-opened { width: 7px; height: 7px; border: 1px solid var(--sl-ink); border-radius: 50%; }
+.hero-storylines .sl-sw-closed { width: 7px; height: 7px; border: 0.6px solid var(--sl-ink); transform: rotate(45deg); }
+.hero-storylines .sl-sw-closed.sl-st-done { background: var(--sl-done); }
+.hero-storylines .sl-sw-closed.sl-st-dropped { background: var(--sl-dropped); }

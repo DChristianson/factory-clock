@@ -86,6 +86,7 @@ export const TAXONOMY = {
       horology: 'An enamel dial read like a watch: serif numerals, ink arcs, one orange sweep hand (Factory Clock)',
       cartographic: 'Paper, contour lines, roads and pins; uncertain coasts dashed (Atlas)',
       strata: 'Three translucent planes stacked in a deep void, one hue each, bright messages rising and falling between them (Strata)',
+      narrative: 'A narrative chart on a pale sheet: each actor a cased line through time, bending into the lanes where it works and running beside the others it meets (Storylines)',
     },
   },
 } satisfies Taxonomy;
@@ -543,6 +544,19 @@ export const CATALOG: VisualizerEntry[] = [
       STASKO_RINGS,
     ],
     tags: { subject: ['workspace'], category: ['actor', 'dependency', 'state'], purpose: ['expressive'], level: ['project'], dimension: ['structure', 'actor', 'communication', 'status'], language: ['strata'] },
+  },
+  {
+    id: 'storylines',
+    title: 'Storylines',
+    description: 'The project as a narrative chart: a lane per package, time left to right, and each actor (you, each session’s agent, each subagent) a line that bends into the lane of the file it touches, running beside the others working there, with plan items marked where they were opened and closed.',
+    why: 'To read the sessions as a story: who worked where, when, and alongside whom.',
+    hero: true,
+    credits: [
+      { work: 'Software Evolution Storylines', by: 'Michael Ogawa and Kwan-Liu Ma', year: 2010, url: 'https://vis.cs.ucdavis.edu/papers/softvis_storylines.pdf', relation: 'form', note: 'Developers as lines through time that converge when they work on the same part of the code' },
+      { work: 'Movie Narrative Charts (xkcd 657)', by: 'Randall Munroe', year: 2009, url: 'https://xkcd.com/657/', relation: 'metaphor', note: 'Characters as lines through time, together when they share a scene' },
+      { work: 'Methods for Visual Understanding of Hierarchical System Structures', by: 'Kozo Sugiyama, Shojiro Tagawa, and Mitsuhiko Toda', year: 1981, relation: 'technique', note: 'The barycentric heuristic: order each column by the mean position of its neighbors in the last, to cut crossings' },
+    ],
+    tags: { subject: ['workspace'], category: ['actor', 'temporal'], purpose: ['expressive'], level: ['project'], dimension: ['actor', 'time', 'place'], language: ['narrative'] },
   },
 ];
 
