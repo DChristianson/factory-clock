@@ -185,13 +185,13 @@ Beads keeps its issues in a Dolt database that a browser can't open, so the bead
 
 The sketch predates the decision to run adapters in the page: its *Make your own* commands become a **Choose a project folder** button beside the drop zone, and its file list gains a row per adapter that detected something.
 
-The loader stops being three things and becomes one: choose a project folder, or drop or choose any files, and the page sorts them out. A folder goes to the adapters, as above. Single files are sorted by content. A `.jsonl` whose first line has `kind` and `ts` is events; a `.json` whose top is `kind: 'code-graph'` or `'plan-graph'` is that subject; anything else is named and refused. Several files of one subject merge (two plan files are one plan with two sources; two code files are two roots). Each subject's data and picks live in the page state the way sessions' do now, and the explorer is remounted over the new `Workspace`.
+The loader stops being three things and becomes one: choose a project folder, or drop or choose any files, and the page sorts them out. A folder goes to the adapters, as above. Single files are sorted by content. A `.jsonl` whose first line has `kind` and `ts` is events; a `.json` whose top is `kind: 'code-graph'` or `'plan-graph'` is that subject; anything else is named and refused. Several files of one subject merge (two plan files are one plan with two sources; two code files are two roots). Each subject's data and picks live in the page state the way sessions' do now, and the explorer is remounted over the new `Workspace`. *Since 2026-11-14 (bqx.39):* a `.json` whose top is `kind: 'workspace-package'` is a whole workspace, and whatever is chosen becomes a workspace in the picker rather than replacing one subject of the current one ("The workspace picker", below).
 
 For the examples, the page builds without any file: the synthetic sessions it has, plus a synthetic code graph (a fake monorepo of five packages and some 120 files with imports, a couple of cycles, and tests) and a synthetic plan (three epics, thirty items, blocks and parents, dates spread over a month), both seeded. Beside them, as the demo traces are today, the demo **workspace**: this repository's own code, beads, and planning markdown, read at build time by `scripts/site.js` running the same adapters in Node and written into the page, and offered with the traces. Everything it reads is already in this public repository except the beads export, which is committed after the owner has read it. Later, static data from a target project goes in the same folder the same way.
 
 ## Workspace packages and the store
 
-Decided 2026-11-14, superseding the demo workspace above: the example data stops being three unrelated things (generated sessions, a generated code graph and plan, redacted traces), and every view draws one **workspace** at a time. A workspace is one project's sessions, code, and plans packaged together. The model and store are in [`src/web/workspaceStore.ts`](../src/web/workspaceStore.ts); the picker that lists them and the scrape script that makes them come later.
+Decided 2026-11-14, superseding the demo workspace above: the example data stops being three unrelated things (generated sessions, a generated code graph and plan, redacted traces), and every view draws one **workspace** at a time. A workspace is one project's sessions, code, and plans packaged together. The model and store are in [`src/web/workspaceStore.ts`](../src/web/workspaceStore.ts), the picker that lists them is below ("The workspace picker"), and the scrape script that makes them comes later.
 
 ### Name, time range, identity
 
@@ -205,7 +205,7 @@ The name and the range together are the workspace's identity: the same project p
 
 Adding a workspace whose identity is already held **replaces** it, and `add` says it did. Loading the same files again should give what's in them now; and two packages with the same name and the same first and last event can't be told apart in the list, so keeping both would show two rows nobody could choose between. A visitor's package can replace a built-in one this way, and is marked loaded from then on.
 
-Today only the generated workspace goes through the store: the page adds it at start and draws the generated sessions from it, exactly as it drew them before. The example traces are drawn as before until the picker decides what becomes of them.
+Every workspace the page shows goes through the store: the generated one, the example traces when the build has them, the site's packages, and the visitor's files.
 
 ### The package format
 
@@ -232,9 +232,25 @@ interface WorkspacePackage {
 
 ### Where packages live
 
-Each built-in package is a file in the site, loaded only when picked, rather than all of them in one bundle. The page's security policy allows scripts from its own origin and no fetches, so a package is a script, not a JSON file: `workspaces/<file>.js` registers its package on `window.factoryClockWorkspaces` under its id (`workspaceScript` writes one). The site lists them in `workspaces/index.js`, which sets `window.factoryClockWorkspaceIndex` to `{ name, range, file }` entries (`workspaceIndexScript` writes it), so the picker can list every workspace by name and range before any is loaded. When one is picked, the page adds its script tag, reads it back with `readRegisteredWorkspace`, and fills the listed entry (`addListed`, then `fill`, which refuses a package whose name or range isn't the one the index promised). The scrape script writes these files; the page's script injection comes with the picker.
+Each built-in package is a file in the site, loaded only when picked, rather than all of them in one bundle. The page's security policy allows scripts from its own origin and no fetches, so a package is a script, not a JSON file: `workspaces/<file>.js` registers its package on `window.factoryClockWorkspaces` under its id (`workspaceScript` writes one). The site lists them in `workspaces/index.js`, which sets `window.factoryClockWorkspaceIndex` to `{ name, range, file }` entries (`workspaceIndexScript` writes it), so the picker can list every workspace by name and range before any is loaded. When one is picked, the page adds its script tag, reads it back with `readRegisteredWorkspace`, and fills the listed entry (`addListed`, then `fill`, which refuses a package whose name or range isn't the one the index promised). The scrape script writes these files.
+
+**Live packages stay out of the repository.** The scrape script writes a folder holding `index.js` and one `<file>.js` per workspace (its index entries name `workspaces/<file>.js`). `scripts/site.js` copies that folder's top-level `.js` files into `site/workspaces/`, and writes a `<script src="workspaces/index.js">` tag into the page, **only when the environment variable `FC_WORKSPACES` names the folder** (an absolute path, or relative to the repository): `FC_WORKSPACES=../my-scrape npm run build`. A folder without `index.js` fails the build. Without the variable nothing is copied and no tag is written, so the picker lists only the built-in workspaces; a normal build, and the public Pages deploy, which doesn't set it, can't carry real project data. The copying is in `scripts/siteWorkspaces.js`, tested against a temporary folder.
 
 The generated workspace is the exception: it's made in the bundle by seeded code, so it's built there with `syntheticWorkspacePackage` rather than shipped as a file, and goes into the store through the same format. This repository's own data isn't packaged.
+
+### The workspace picker
+
+Decided 2026-11-14 (bqx.39): the picker replaces the loader's buttons (generated sessions, example traces) as the way data reaches the page. It sits under the explorer, where the loader was, and lists every workspace in the store (`list()`: grouped by name, newest first) as a button showing its name and its range in the visitor's locale ("Oct 3 – Nov 2, 2026"), plus its session count once its package is in hand and "your files" for one the visitor loaded. The selected one has `aria-current`, and the note of its package (what's in it, what was removed) is shown under the list. Built-in and listed-but-not-loaded workspaces look the same.
+
+**One at a time.** Exactly one workspace is selected, and it's the data for every view: selecting one mounts the explorer over its sessions, code, and plans (a `WorkspaceSet` made from its package), through the same mount that applies the starting pick, behind the loading screen. A listed site package is loaded on pick: the page adds its script tag, waits for it, reads it back with `readRegisteredWorkspace`, and fills the entry. A script that doesn't load, or a package that doesn't register or check, is a plain error under the list ("… could not be loaded: …. Still showing …"), and the current workspace stays.
+
+**What's listed.** The generated workspace ("Example monorepo (generated)"), the default on a first visit. The example traces, when the build has them (`hosts/web/demo/traces.js`), as a workspace of their own, "Example traces (redacted)", sessions only, since they come from two projects and have no code or plans that belong with them. And the site's packages, when the build listed some (`FC_WORKSPACES`, above).
+
+**Your own files.** Under the list, *Choose files* and *Choose a folder* (a browser opens files or a folder, not both, so it's two choosers), and a drop anywhere in that box. Files are still read only in the browser, with the loader described above, and become a workspace marked loaded, which is selected. Loose files: each `.workspace.json` (a package, checked as any is) is its own workspace, and the events, code and plan files, and beads exports among them make one more, named after the first of those files (`2026-11-01.jsonl` becomes `2026-11-01`). A folder: the adapters' code and plans and the events in its JSONL files are one workspace named after the folder. The folder's switches (adapters on and off, keep plan descriptions, follow script tags) still apply: changing one reads the folder again and replaces its workspace in the list, since the range can change with what's read. The switches show only while the folder's workspace is selected. Names are names: an extension and any folders before the last are dropped, at most 120 characters.
+
+**Saved.** The selected workspace's id is kept in the page state (`workspace`, beside the explorer's), so a reload reopens a built-in or listed one. One read from files isn't saved, since it's gone after a reload and its name is the visitor's; the page opens on the default then, saying nothing. A saved id this build no longer has falls back to the default the same way.
+
+The picker's logic (formatting, the starting workspace, listing the index, names from files, the traces as a workspace) is in [`src/web/workspacePicker.ts`](../src/web/workspacePicker.ts), with unit tests; the drawing and file reading are in `src/web/page.ts`.
 
 ## The explorer
 
@@ -608,7 +624,7 @@ Confirmed in review with the owner on 2026-11-13. Rows marked *changed* differ f
 | Existing views and languages | All kept, unchanged; the design adds and never retires (the owner, 2026-11-13) |
 | Fusing design languages | **Not decided.** The spike (step 22) shows two fusions working before anything is built. New heroes keep their four slots in separate blocks meanwhile, which costs nothing |
 | Fonts | System stacks, as before |
-| Workspaces | *Added 2026-11-14:* one workspace (a project's sessions, code, and plans) at a time; identified by name and time range; built-in and loaded ones in one store; site packages are scripts loaded when picked ("Workspace packages and the store") |
+| Workspaces | *Added 2026-11-14:* one workspace (a project's sessions, code, and plans) at a time; identified by name and time range; built-in and loaded ones in one store; site packages are scripts loaded when picked ("Workspace packages and the store"); a picker lists them, one selected feeds every view, and live packages reach the site only through `FC_WORKSPACES` ("The workspace picker") |
 
 ## Open questions
 

@@ -2,7 +2,7 @@
 
 Factory Clock is a set of visualizations for coding-agent sessions. It draws each session 32 ways: timelines, trees, graphs, distributions, and five "hero" views with a look of their own. The explorer puts one on a stage, with a shelf of cards under it to move between them (or two side by side, to compare). A small panel called the puck filters the shelf by tags.
 
-It runs as a static web page: <https://dchristianson.github.io/factory-clock/>. The page shows generated example sessions. You can also load your own event files. Nothing is installed, and the files you load never leave your browser. The published page counts visits with Google Analytics.
+It runs as a static web page: <https://dchristianson.github.io/factory-clock/>. Under the explorer, a workspace picker lists the workspaces the page has, each a project's sessions, code, and plans, by name and time range. One is selected at a time, and every view draws it; the page starts on a generated example. You can also choose your own files, which become a workspace. Nothing is installed, and the files you choose never leave your browser. The published page counts visits with Google Analytics.
 
 Factory Clock started inside [Snagboat](https://github.com/DChristianson/snagboat), a VS Code extension that records Claude Code and GitHub Copilot sessions. It moved to this repository in November 2026, keeping the git history of its folder in Snagboat (`packages/viz`). Earlier history, from before that folder existed, stays in Snagboat. Factory Clock reads the event files Snagboat writes.
 
@@ -40,7 +40,15 @@ npm run build    # type-check, bundle, and assemble the page in site/
 npm test         # the unit tests
 ```
 
-Open `site/index.html` in a browser, or serve the `site/` folder with any static file server. The page starts with generated example sessions. To see your own, choose or drop Snagboat's daily event files (`events/YYYY-MM-DD.jsonl`) on the page.
+Open `site/index.html` in a browser, or serve the `site/` folder with any static file server. The page starts on the generated example workspace. To see your own, choose or drop Snagboat's daily event files (`events/YYYY-MM-DD.jsonl`), a project folder, or a `.workspace.json` package under the picker.
+
+To list workspace packages made by the scrape script on the page, name their folder (the one holding `index.js`) in `FC_WORKSPACES` when you build, as an absolute path or relative to the repository:
+
+```bash
+FC_WORKSPACES=../my-workspaces npm run build
+```
+
+The build copies that folder's `.js` files into `site/workspaces/` and adds `workspaces/index.js` to the page. Without the variable it copies nothing, and the page lists only its built-in workspaces. The Pages workflow doesn't set it, so the public page never carries real project data. Packages are never committed to this repository.
 
 The build script is [`scripts/site.js`](scripts/site.js). It bundles [`src/main.ts`](src/main.ts) into `site/factory-clock.js` with esbuild, copies the page's scripts and stylesheets into `site/`, and writes a script tag for every file in `viz/`. A new visualizer needs no edit to the page.
 
@@ -60,7 +68,7 @@ The page's script tags set three globals, in this order.
 | `window.factoryClock` | `viz/registry.js` | The registry the visualizers call `register` on |
 | `window.factoryClockExplore` | `explore.js` | The explorer, mounted by the page with a source object that lists and loads sessions |
 
-The page's bundle, `factory-clock.js`, loads last. It holds the loaded events in memory, builds the session views, and mounts the explorer. The visualizers don't know which page they run in. The explorer hands them the sessions.
+The page's bundle, `factory-clock.js`, loads last. It holds the workspaces in memory, draws the picker, builds the session views of the selected one, and mounts the explorer over it. The visualizers don't know which page they run in. The explorer hands them the sessions.
 
 ## Input
 
@@ -99,10 +107,10 @@ The files you load never leave your browser. The published page sends one page v
 | `src/main.ts` | The page's bundle entry |
 | `src/catalog.ts` | The catalog and the tag taxonomy |
 | `src/explorerModel.ts` | The explorer's state |
-| `src/web/` | The page's code: example sessions, the JSONL reader, an in-memory session source |
+| `src/web/` | The page's code: example workspace, the JSONL reader, the loader, the workspace store and picker, an in-memory session source |
 | `src/schema/` | The copy of Snagboat's event types and session-view builder |
 | `src/test/` | The unit tests, run by `scripts/runUnit.js` |
-| `scripts/site.js` | Builds the page in `site/` |
+| `scripts/site.js` | Builds the page in `site/`, with `scripts/siteWorkspaces.js` for `FC_WORKSPACES` |
 | `docs/` | The visualizer contract and the explorer's design |
 
 ## License

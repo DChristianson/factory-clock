@@ -26,16 +26,18 @@
       <p class="stage-loading-text">Loading the sessions and drawing the first view…</p>
     </div>
   </div>
-  <section class="below-explorer" aria-label="About this page and loading your own sessions">
-    <p id="examples-note" class="examples-note small"></p>
-    <p>Factory Clock is a set of visualizations of coding-agent sessions, with a stage and a shelf of cards to move between them. Every visualizer draws the same sessions its own way. Pick which sessions above, under <strong>Sessions</strong>. It reads the event logs of <a href="https://github.com/DChristianson/snagboat">Snagboat</a>, a VS Code extension that watches Claude Code and GitHub Copilot sessions.</p>
-    <section class="loader" aria-label="Load your own sessions or project">
+  <section class="below-explorer" aria-label="About this page, the workspaces, and loading your own files">
+    <section class="workspaces" aria-labelledby="workspaces-head">
+      <h2 id="workspaces-head" class="workspaces-head">Workspace</h2>
+      <p class="muted small">A workspace is one project's sessions, code, and plans. Every view draws the one selected.</p>
+      <ul id="workspace-list" class="workspace-list" aria-labelledby="workspaces-head"></ul>
+      <p id="workspace-note" class="workspace-note small"></p>
+      <p id="workspace-error" class="workspace-error small" role="alert"></p>
       <div id="drop" class="drop">
-        <p><label>Load your own sessions: <input id="files" type="file" multiple accept=".jsonl,.json,application/jsonl,application/x-ndjson,application/json,text/plain"></label> or drop the daily files Snagboat writes (<code>events/YYYY-MM-DD.jsonl</code>) here.</p>
-        <p><label>Or a project: <input id="folder" type="file" webkitdirectory multiple></label> or drop its folder here. Its code (npm and TypeScript) and plans (a beads export, and planning Markdown such as design docs with a Steps or Plan section) are read into the explorer beside the sessions.</p>
-        <p class="muted small">Files are read in this browser and nothing is sent anywhere: the page's security policy forbids network requests. A project folder is read without <code>.git</code>, <code>node_modules</code>, build output, or binary files, at most 20,000 files of up to 2 MB each. In VS Code, <strong>Snagboat: Reveal Event Log Folder</strong> opens the folder the event files are in.</p>
+        <p>Or your own: <label class="choose">Choose files <input id="files" type="file" multiple accept=".jsonl,.json,application/jsonl,application/x-ndjson,application/json,text/plain"></label> <label class="choose">Choose a folder <input id="folder" type="file" webkitdirectory multiple></label> or drop them here. They become a workspace in the list.</p>
+        <p class="muted small">Snagboat's daily event files (<code>events/YYYY-MM-DD.jsonl</code>; in VS Code, <strong>Snagboat: Reveal Event Log Folder</strong> opens their folder), code and plan files, a beads export, a <code>.workspace.json</code> package, or a project folder, whose code (npm and TypeScript), plans (a beads export, and planning Markdown such as design docs with a Steps or Plan section), and any event files are read together. Files are read in this browser and nothing is sent anywhere: the page's security policy forbids network requests. A folder is read without <code>.git</code>, <code>node_modules</code>, build output, or binary files, at most 20,000 files of up to 2 MB each.</p>
       </div>
-      <p class="data-row"><span id="data-note" class="muted small" aria-live="polite"></span><button id="traces" type="button" hidden>Use example traces</button><button id="examples" type="button" hidden>Use generated sessions</button></p>
+      <p class="data-row"><span id="data-note" class="muted small" aria-live="polite"></span></p>
       <fieldset id="project" class="project" hidden>
         <legend id="project-name">Project</legend>
         <ul id="project-found" class="project-found"></ul>
@@ -45,6 +47,7 @@
         </p>
       </fieldset>
     </section>
+    <p>Factory Clock is a set of visualizations of coding-agent sessions, with a stage and a shelf of cards to move between them. Every visualizer draws the same workspace its own way. Pick which sessions above, under <strong>Sessions</strong>. It reads the event logs of <a href="https://github.com/DChristianson/snagboat">Snagboat</a>, a VS Code extension that watches Claude Code and GitHub Copilot sessions.</p>
   </section>
 </main>
 <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
@@ -52,6 +55,7 @@
 <!-- viz-scripts: scripts/site.js writes a tag per file under viz/ here, the registry first -->
 <script src="explore.js"></script>
 <!-- demo-traces: scripts/site.js writes a tag for demo-traces.js here when hosts/web/demo/traces.js exists -->
+<!-- workspaces-index: scripts/site.js writes a tag for workspaces/index.js here when FC_WORKSPACES names a folder of workspace packages -->
 <script src="factory-clock.js"></script>
 <script src="analytics.js"></script>
 </body>
