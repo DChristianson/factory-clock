@@ -4,8 +4,7 @@ import { EventSet, FindingsFor } from './eventSet';
 import { ProjectRead, Picks, Subject, UnitSummary, WorkspaceSet, isSkippedDir, looksBinary, planWalk, readProject, readSingleFiles } from './loader';
 import { startingPick } from './pick';
 import { readDemoTraces } from './traces';
-import { syntheticEvents } from './synthetic';
-import { syntheticCodeGraph, syntheticPlanGraph } from './syntheticWorkspace';
+import { WorkspaceStore, syntheticWorkspacePackage } from './workspaceStore';
 
 /**
  * The web page (docs/visualization-explorer.md, "A web demo on
@@ -195,6 +194,9 @@ export function startPage(findingsFor?: FindingsFor): void {
   const ctx = { ...kit, tooltip, ...kit.tipFor(tooltip), shapeFor: shapeOfWorkspace, guideShelf };
   let tab: ExploreTab | null = null;
   let set = new WorkspaceSet(new EventSet([], findingsFor));
+  // The page's workspaces (docs/workspace-explorer.md, "Workspace packages and the store"). Only the generated one goes through it so far.
+  const workspaces = new WorkspaceStore();
+  const generated = workspaces.add(syntheticWorkspacePackage(), 'built-in').entry;
   /** The last folder read, kept so the switches can read it again. */
   let project: { name: string; files: ProjectFile[]; off: Set<string> } | null = null;
 
@@ -242,7 +244,10 @@ export function startPage(findingsFor?: FindingsFor): void {
     project = null;
     projectBox.hidden = true;
     if (useTraces && traces) mountExplorer(new WorkspaceSet(new EventSet(traces.events, findingsFor)));
-    else mountExplorer(new WorkspaceSet(new EventSet(syntheticEvents(), findingsFor), [syntheticCodeGraph()], [syntheticPlanGraph()]));
+    else {
+      const pkg = workspaces.get(generated.id)!.package!;
+      mountExplorer(new WorkspaceSet(new EventSet(pkg.events, findingsFor), pkg.code, pkg.plans));
+    }
   }
 
   /** After any load, the built-in sets are offered again. */
