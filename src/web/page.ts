@@ -1,5 +1,5 @@
 import { CATALOG } from '../catalog';
-import { ExploreSessionList, ExplorerState } from '../explorerModel';
+import { ExploreSessionList, ExplorerState, guideShelf } from '../explorerModel';
 import { ProjectFile, Workspace, shapeOfWorkspace } from '../model';
 import { creditRows } from './credits';
 import { EventSet, FindingsFor } from './eventSet';
@@ -225,8 +225,8 @@ export function startPage(findingsFor?: FindingsFor): void {
   const hintGlobals = byId<HTMLInputElement>('hint-globals');
 
   const kit = globals.factoryClockKit;
-  // shapeFor(workspace, subject, options) builds options.shape for the Shape views (explore.js).
-  const ctx = { ...kit, tooltip, ...kit.tipFor(tooltip), shapeFor: shapeOfWorkspace };
+  // shapeFor(workspace, subject, options) builds options.shape for the Shape views (explore.js); guideShelf orders the shelf (the puck's guide).
+  const ctx = { ...kit, tooltip, ...kit.tipFor(tooltip), shapeFor: shapeOfWorkspace, guideShelf };
   let tab: ExploreTab | null = null;
   let set = new WorkspaceSet(new EventSet([], findingsFor));
   /** The last folder read, kept so the switches can read it again. */

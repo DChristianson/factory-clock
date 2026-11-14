@@ -1,7 +1,7 @@
 // The explorer: a stage with one view on it, a shelf of cards (one per view
 // the filters allow) under it, pickers for sessions and the project, and a
 // puck that names the view on stage and filters the shelf by its tags. See
-// docs/workspace-explorer.md, "Stage and shelf". It sees only
+// docs/workspace-explorer.md, "Stage and shelf" and "The puck as a guide". It sees only
 // ctx (the visualization kit and the tooltip) and a source object, which the
 // web page (src/web/page.ts) gives it.
 // Plain DOM; all data is written with textContent, never innerHTML.
@@ -25,13 +25,17 @@
 //   onWorkspace(cb)      optional: cb(Workspace) whenever any subject's picks change
 //
 // ctx: the helpers from vizkit.js plus tooltip, showTip(evt, rows), hideTip(), and optionally
-// shapeFor(workspace, subject) -> Shape | null (src/model/shape.ts shapeOfWorkspace). The tab adds
+// shapeFor(workspace, subject) -> Shape | null (src/model/shape.ts shapeOfWorkspace) and
+// guideShelf(catalog, filters) -> entries (src/explorerModel.ts: the views the filters allow, in the
+// guide's order; without it, the filters alone in catalog order). The tab adds
 // select(selection) for each visualizer it mounts (see viz/registry.js).
 //
 // Saved state: { picked: string[], current: visualizer id, compare: visualizer id | null, filters: { facet: [values] }, replay: { speed, loop },
 // subjects: { [visualizer id]: 'sessions' | 'code' | 'plans' | 'workspace' },
 // collapsed: boolean, corner: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
-// selection: { sessionId?, turnId?, range?, focusId? } | null }.
+// selection: { sessionId?, turnId?, range?, focusId? } | null,
+// puckTab: 'here' | 'ask' | 'map', tourPace: seconds per view, asked: true once the first visit has opened Ask }.
+// The guide's answers are the filters (subject, category, purpose, language) and replay.stills (Motion).
 (function () {
   // The most sessions the picker allows; matches EXPLORE_SESSION_CAP in src/catalog.ts.
   const CAP = 8;
@@ -46,7 +50,29 @@
   const SUBJECT_GLYPH = { sessions: '◷', code: '⌗', plans: '☰', workspace: '◫' };
   const CATEGORY_ORDER = ['temporal', 'actor', 'conversational', 'dependency', 'quantitative', 'state', 'semantic'];
   const DRAG_THRESHOLD = 4; // px of movement before a press on the puck's head counts as a drag
+  // The puck's three bodies (docs/workspace-explorer.md, "The puck as a guide").
+  const PUCK_TABS = [['here', 'Here'], ['ask', 'Ask'], ['map', 'Map']];
+  // Ask's words for the category values (the taxonomy's own question is the chip's title).
+  const CATEGORY_ASK = { temporal: 'when?', actor: 'who?', conversational: 'what was said?', dependency: 'what depends?', quantitative: 'how much?', state: 'what state?', semantic: 'about what?' };
+  const PURPOSE_ASK = { informative: 'understanding', expressive: 'impressing' };
+  // Tour pace, seconds per view; the tour reads it (hero views get their replay's length instead).
+  const TOUR_PACES = [10, 20, 40, 60];
+  const DEFAULT_PACE = 20;
+  // The Map's grid, in viewBox units: the row labels' column, the column labels' band, a cell's width, a dot's radius and pitch.
+  const MAP_LABEL_W = 70;
+  const MAP_HEAD_H = 58;
+  const MAP_CELL_W = 40;
+  const MAP_RIGHT = 30; // room for the last column's slanted label
+  const MAP_DOT_R = 3;
+  const MAP_PITCH = 9;
+  const MAP_PAD = 4;
+  const MAP_LANG_HUES = 7; // .puck-map .lang-1 … lang-7 in viz.css; standard is lang-0
   let mounted = null;
+
+  // The shelf without ctx.guideShelf: the filters alone (any value within a facet, every facet), in catalog order.
+  function filterShelf(catalog, filters) {
+    return catalog.filter((e) => Object.entries(filters).every(([facet, vals]) => !vals || !vals.length || vals.some((v) => (e.tags[facet] || []).includes(v))));
+  }
 
   // A credit's people as the After line cites them; matches creditName in src/catalog.ts, whose unit tests cover it.
   function creditName(by) {
@@ -60,13 +86,19 @@
     const viz = window.factoryClock;
     const { el, compact, fmt, clip, short, duration, agentName, modelShort, ms } = ctx;
     const saved = source.getState() || {};
+    // The first visit (nothing saved about the puck or its answers) opens Ask, brief, once.
+    const firstVisit = saved.asked === undefined && saved.collapsed === undefined && !(saved.filters && Object.values(saved.filters).some((v) => Array.isArray(v) && v.length));
     const st = {
       picked: Array.isArray(saved.picked) ? saved.picked.slice(0, CAP) : null, // null until the first show pre-checks the open session
       currentId: typeof saved.current === 'string' ? saved.current : null,
       compareId: typeof saved.compare === 'string' ? saved.compare : null, // the view pinned on the stage's left while comparing
       workspace: null, // the Workspace for every subject's picks, when the source serves one
       filters: saved.filters && typeof saved.filters === 'object' ? saved.filters : {},
-      collapsed: saved.collapsed !== false, // starts collapsed
+      collapsed: firstVisit ? false : saved.collapsed !== false, // starts collapsed, but for the first visit
+      tab: firstVisit ? 'ask' : PUCK_TABS.some(([k]) => k === saved.puckTab) ? saved.puckTab : 'here',
+      askBrief: firstVisit, // Ask shows only its first two questions until asked for more
+      pace: TOUR_PACES.includes(saved.tourPace) ? saved.tourPace : DEFAULT_PACE,
+      order: [], // the allowed view ids, in the guide's order
       corner: CORNERS.includes(saved.corner) ? saved.corner : 'bottom-right',
       selection: saved.selection && typeof saved.selection === 'object' ? saved.selection : null,
       list: null, // { sessions, headlines }
@@ -78,6 +110,7 @@
       subjects: saved.subjects && typeof saved.subjects === 'object' ? saved.subjects : {}, // the subject picked on a view that draws several, by view id
     };
     const save = (partial) => source.setState(partial);
+    if (firstVisit) save({ asked: true });
     // The hero views' playback settings (speed, loop) are shared by every replay and remembered with the tab.
     if (saved.replay && typeof ctx.setReplayPrefs === 'function') ctx.setReplayPrefs(saved.replay);
     const stopReplayPrefs = typeof ctx.onReplayPrefs === 'function' ? ctx.onReplayPrefs((prefs) => save({ replay: prefs })) : () => {};
@@ -143,21 +176,86 @@
       save({ collapsed: st.collapsed });
       renderCollapsed();
     });
+
+    // Here: the view on stage, why to look at it, what it's after, what's next, and its tags as chips that filter.
     const puckDesc = el('p', { class: 'muted small puck-desc' });
+    const puckWhy = el('p', { class: 'small puck-why', hidden: true });
     // The work the view draws on (entry.credits), one name per credit, linked when it has a url.
     const puckAfter = el('p', { class: 'muted small puck-after', hidden: true });
+    const puckNext = el('p', { class: 'small puck-next', hidden: true });
     const facets = el('div');
     const filterNote = el('span', { class: 'muted small' });
-    const clearBtn = el('button', { class: 'link', text: 'Clear' });
-    clearBtn.addEventListener('click', () => {
-      st.filters = {};
-      save({ filters: st.filters });
-      applyFilters();
+    const clearBtn = el('button', { class: 'link', text: 'Clear', 'data-key': 'here:clear' });
+    clearBtn.addEventListener('click', () => setFilters({}));
+    const hereBody = el('div', { class: 'puck-panel puck-here' }, [puckDesc, puckWhy, puckAfter, puckNext, facets, el('div', { class: 'puck-foot' }, [filterNote, el('span', { class: 'spacer' }), clearBtn])]);
+
+    // Ask: the preferences as questions; the answers are the filters (and the replay's stills, and the tour's pace).
+    const askQuestions = el('div', { class: 'ask-questions' });
+    const askMore = el('button', { class: 'link small ask-more', text: 'More questions: For, Look, Motion, Tour pace', 'data-key': 'ask:more' });
+    askMore.addEventListener('click', () => {
+      st.askBrief = false;
+      renderPuck();
     });
+    const askCount = el('span', { class: 'small ask-count', 'aria-live': 'polite' });
+    const askClear = el('button', { class: 'link', text: 'Clear', title: 'Clear every answer', 'data-key': 'ask:clear' });
+    askClear.addEventListener('click', () => {
+      st.pace = DEFAULT_PACE;
+      save({ tourPace: st.pace });
+      if (typeof ctx.setReplayPrefs === 'function') ctx.setReplayPrefs({ stills: false });
+      setFilters({});
+    });
+    const askBody = el('div', { class: 'puck-panel puck-ask' }, [askQuestions, askMore, el('div', { class: 'puck-foot' }, [askCount, el('span', { class: 'spacer' }), askClear])]);
+
+    // Map: the catalog as a grid of subject by category, a dot per view.
+    const mapHost = el('div', { class: 'map-host' });
+    const mapCaption = el('p', { class: 'muted small map-caption', 'aria-live': 'polite' });
+    const mapKey = el('div', { class: 'map-key small muted' });
+    const mapBody = el('div', { class: 'puck-panel puck-map' }, [mapHost, mapCaption, mapKey]);
+
+    const panels = { here: hereBody, ask: askBody, map: mapBody };
+    const tabBtns = {};
+    const tabRow = el(
+      'div',
+      { class: 'puck-tabs', role: 'tablist', 'aria-label': 'Guide' },
+      PUCK_TABS.map(([k, label], i) => {
+        const b = el('button', { class: 'puck-tab', role: 'tab', id: `puck-tab-${k}`, 'aria-controls': `puck-panel-${k}`, text: label });
+        panels[k].id = `puck-panel-${k}`;
+        panels[k].setAttribute('role', 'tabpanel');
+        panels[k].setAttribute('aria-labelledby', `puck-tab-${k}`);
+        b.addEventListener('click', () => setTab(k));
+        // The tab row is one stop: the arrow keys (and Home, End) move along it.
+        b.addEventListener('keydown', (e) => {
+          const to = { ArrowLeft: i - 1, ArrowRight: i + 1, Home: 0, End: PUCK_TABS.length - 1 }[e.key];
+          if (to === undefined) return;
+          e.preventDefault();
+          const [next] = PUCK_TABS[(to + PUCK_TABS.length) % PUCK_TABS.length];
+          setTab(next);
+          tabBtns[next].focus();
+        });
+        tabBtns[k] = b;
+        return b;
+      })
+    );
+    function setTab(k) {
+      st.tab = k;
+      save({ puckTab: k });
+      renderTabs();
+      renderPuck();
+    }
+    function renderTabs() {
+      for (const [k] of PUCK_TABS) {
+        const on = k === st.tab;
+        tabBtns[k].classList.toggle('on', on);
+        tabBtns[k].setAttribute('aria-selected', String(on));
+        tabBtns[k].setAttribute('tabindex', on ? '0' : '-1');
+        panels[k].hidden = !on;
+      }
+    }
+
     const mismatchNote = el('p', { class: 'muted small', hidden: true });
-    const puckBody = el('div', { class: 'puck-body' }, [puckDesc, puckAfter, facets, el('div', { class: 'puck-foot' }, [filterNote, el('span', { class: 'spacer' }), clearBtn]), mismatchNote]);
+    const puckBody = el('div', { class: 'puck-body' }, [hereBody, askBody, mapBody, mismatchNote]);
     const puckHead = el('div', { class: 'puck-head' }, [puckTitle, puckPos, collapseBtn]);
-    const puck = el('aside', { class: 'puck', 'aria-label': 'Current visualizer and tag filters' }, [puckHead, puckBody]);
+    const puck = el('aside', { class: 'puck', 'aria-label': 'Guide: the view on stage, what you want to see, and a map of the views' }, [puckHead, tabRow, puckBody]);
     function renderCollapsed() {
       puck.classList.toggle('collapsed', st.collapsed);
       const label = st.collapsed ? 'Expand' : 'Collapse';
@@ -166,6 +264,7 @@
       collapseBtn.setAttribute('aria-expanded', String(!st.collapsed));
     }
     renderCollapsed();
+    renderTabs();
 
     // The puck sits in one of the window's corners. The explorer hears which, so its dock can stand clear.
     function placePuck(corner) {
@@ -243,7 +342,7 @@
     // Replaces whatever the page put here before mounting (the web page's loading screen).
     root.replaceChildren(
       explorer,
-      el('div', { class: 'below-carousel' }, [el('p', { class: 'muted small', text: 'Experimental: every view draws the same loaded data its own way. The puck names the one on stage and filters the shelf by its tags.' }), picker, projectHost]),
+      el('div', { class: 'below-carousel' }, [el('p', { class: 'muted small', text: 'Experimental: every view draws the same loaded data its own way. The puck names the one on stage, asks what you want to see, and orders the shelf by your answers.' }), picker, projectHost]),
       puck
     );
 
@@ -364,10 +463,10 @@
     // [{ entry, slide, host, card, allowed, parts: [{ host, instance, sessionIds }] }] in catalog order
     const slides = [];
 
-    function matches(entry) {
-      return Object.entries(st.filters).every(([facet, vals]) => !vals.length || vals.some((v) => (entry.tags[facet] || []).includes(v)));
-    }
-    const allowed = () => slides.filter((s) => s.allowed);
+    // The guide's recommendation is the shelf's order: the allowed views, as ctx.guideShelf orders them.
+    const shelfOrder = typeof ctx.guideShelf === 'function' ? ctx.guideShelf : filterShelf;
+    const slideById = (id) => slides.find((s) => s.entry.id === id) || null;
+    const allowed = () => st.order.map(slideById).filter(Boolean);
     const current = () => slides.find((s) => s.entry.id === st.currentId) || null;
     const onStage = (s) => s.allowed && (s.entry.id === st.currentId || s.entry.id === st.compareId);
 
@@ -413,11 +512,15 @@
     }
 
     function applyFilters() {
+      st.order = shelfOrder(st.catalog, st.filters).map((e) => e.id);
+      const ok = new Set(st.order);
       for (const s of slides) {
-        s.allowed = matches(s.entry);
+        s.allowed = ok.has(s.entry.id);
         s.card.hidden = !s.allowed;
       }
       const vis = allowed();
+      // The cards in the guide's order; the hidden ones after them, in catalog order.
+      shelf.replaceChildren(...vis.map((s) => s.card), ...slides.filter((s) => !s.allowed).map((s) => s.card));
       if (vis.length) {
         const cur = current();
         if (!cur || !cur.allowed) {
@@ -447,6 +550,17 @@
       const pos = vis.findIndex((s) => s.entry.id === st.currentId);
       const next = vis[pos + dir];
       if (next) goTo(next.entry.id);
+    }
+
+    function setFilters(filters) {
+      st.filters = filters;
+      save({ filters: st.filters });
+      applyFilters();
+    }
+    // A chip, in Here or Ask: picking a value adds it to the end of its facet's picks (their order is the shelf's subject order).
+    function toggleFilter(facet, v) {
+      const f = st.filters[facet] || [];
+      setFilters({ ...st.filters, [facet]: f.includes(v) ? f.filter((x) => x !== v) : [...f, v] });
     }
 
     function setCompare(id) {
@@ -658,12 +772,54 @@
     }
 
     // ---------- puck ----------
+    // Every body is rebuilt on each change; the control that had focus gets it back by its data-key.
+    function focusedKey() {
+      const a = typeof document !== 'undefined' ? document.activeElement : null;
+      return a && puck.contains(a) && typeof a.getAttribute === 'function' ? a.getAttribute('data-key') : null;
+    }
+    function refocus(key) {
+      if (!key) return;
+      const find = (n) => {
+        for (const c of n.children || []) {
+          if (typeof c.getAttribute === 'function' && c.getAttribute('data-key') === key) return c;
+          const hit = find(c);
+          if (hit) return hit;
+        }
+        return null;
+      };
+      const hit = find(puck);
+      if (hit && typeof hit.focus === 'function') hit.focus();
+    }
+    // A chip: a button that says whether it's pressed, with the value's meaning as its title.
+    function chip(text, { on, has, title, key, onClick }) {
+      const c = el('button', { class: `tag${has ? ' has' : ''}${on ? ' on' : ''}`, text, 'aria-pressed': String(!!on), title, 'data-key': key });
+      c.addEventListener('click', onClick);
+      return c;
+    }
+
     function renderPuck() {
+      const key = focusedKey();
       const cur = current();
       const entry = cur && cur.allowed ? cur.entry : null;
       puckTitle.textContent = entry ? entry.title : st.catalog.length ? 'Nothing matches' : 'Explore';
       puckPos.textContent = entry ? `${slides.indexOf(cur) + 1}/${slides.length}` : '';
+      renderHere(entry);
+      renderAsk();
+      renderMap(entry);
+      // Catalog and registry out of step: say so here rather than drawing nothing silently.
+      const registered = new Set(viz.ids());
+      const unregistered = st.catalog.filter((e) => !registered.has(e.id)).map((e) => e.id);
+      const uncataloged = viz.ids().filter((id) => !st.catalog.some((e) => e.id === id));
+      const problems = [...(unregistered.length ? [`no renderer registered for ${unregistered.join(', ')}`] : []), ...(uncataloged.length ? [`registered but not in the catalog: ${uncataloged.join(', ')}`] : [])];
+      mismatchNote.hidden = problems.length === 0;
+      mismatchNote.textContent = problems.length ? `Catalog mismatch: ${problems.join('; ')}.` : '';
+      refocus(key);
+    }
+
+    function renderHere(entry) {
       puckDesc.textContent = entry ? entry.description : st.catalog.length ? 'Clear a filter to see visualizers again.' : 'Waiting for the catalog…';
+      puckWhy.hidden = !(entry && entry.why);
+      puckWhy.replaceChildren(...(entry && entry.why ? [el('span', { class: 'puck-label', text: 'Why this view' }), entry.why] : []));
       const credits = entry && Array.isArray(entry.credits) ? entry.credits : [];
       puckAfter.hidden = credits.length === 0;
       puckAfter.replaceChildren(
@@ -675,6 +831,16 @@
           return i ? [' · ', name] : [name];
         })
       );
+      // Next: the following card on the shelf, in the guide's order, so the shelf reads as a path.
+      const vis = allowed().filter((s) => s.entry.id !== st.compareId);
+      const pos = entry ? vis.findIndex((s) => s.entry.id === entry.id) : -1;
+      const next = pos >= 0 ? vis[pos + 1] : null;
+      puckNext.hidden = !entry;
+      if (next) {
+        const go = el('button', { class: 'link puck-next-go', text: next.entry.title, title: `Put ${next.entry.title} on the stage`, 'data-key': 'here:next' });
+        go.addEventListener('click', () => goTo(next.entry.id));
+        puckNext.replaceChildren(el('span', { class: 'puck-label', text: 'Next' }), go, ...(next.entry.why ? [el('span', { class: 'muted', text: ` · ${next.entry.why}` })] : []));
+      } else puckNext.replaceChildren(el('span', { class: 'puck-label', text: 'Next' }), el('span', { class: 'muted', text: 'This is the last view on the shelf.' }));
       const tax = st.taxonomy || {};
       facets.replaceChildren(
         ...Object.entries(tax).map(([facet, def]) =>
@@ -686,19 +852,13 @@
               Object.entries(def.values).map(([v, meaning]) => {
                 const has = !!entry && (entry.tags[facet] || []).includes(v);
                 const on = (st.filters[facet] || []).includes(v);
-                const chip = el('button', {
-                  class: `tag${has ? ' has' : ''}${on ? ' on' : ''}`,
-                  text: v,
-                  'aria-pressed': String(on),
+                return chip(v, {
+                  on,
+                  has,
+                  key: `here:${facet}:${v}`,
                   title: `${meaning}${on ? ' (filtering)' : has ? ` (${entry.title} is tagged; click to filter)` : ' (click to filter)'}`,
+                  onClick: () => toggleFilter(facet, v),
                 });
-                chip.addEventListener('click', () => {
-                  const f = st.filters[facet] || [];
-                  st.filters = { ...st.filters, [facet]: on ? f.filter((x) => x !== v) : [...f, v] };
-                  save({ filters: st.filters });
-                  applyFilters();
-                });
-                return chip;
               })
             ),
           ])
@@ -707,13 +867,208 @@
       const n = Object.values(st.filters).reduce((a, v) => a + v.length, 0);
       filterNote.textContent = n ? `${n} filter${n > 1 ? 's' : ''}: OR within a facet, AND across` : 'No filters. Outlined chips are this visualizer’s tags.';
       clearBtn.hidden = n === 0;
-      // Catalog and registry out of step: say so here rather than drawing nothing silently.
-      const registered = new Set(viz.ids());
-      const unregistered = st.catalog.filter((e) => !registered.has(e.id)).map((e) => e.id);
-      const uncataloged = viz.ids().filter((id) => !st.catalog.some((e) => e.id === id));
-      const problems = [...(unregistered.length ? [`no renderer registered for ${unregistered.join(', ')}`] : []), ...(uncataloged.length ? [`registered but not in the catalog: ${uncataloged.join(', ')}`] : [])];
-      mismatchNote.hidden = problems.length === 0;
-      mismatchNote.textContent = problems.length ? `Catalog mismatch: ${problems.join('; ')}.` : '';
+    }
+
+    function renderAsk() {
+      const tax = st.taxonomy;
+      if (!tax) {
+        askQuestions.replaceChildren(el('p', { class: 'muted small', text: 'Waiting for the catalog…' }));
+        askMore.hidden = true;
+        askCount.textContent = '';
+        askClear.hidden = true;
+        return;
+      }
+      const picks = (facet) => st.filters[facet] || [];
+      const facetChip = (facet, v, text) => chip(text, { on: picks(facet).includes(v), key: `ask:${facet}:${v}`, title: (tax[facet] && tax[facet].values[v]) || v, onClick: () => toggleFilter(facet, v) });
+      const question = (label, chips, hint) =>
+        el('div', { class: 'ask-q', role: 'group', 'aria-label': label }, [el('span', { class: 'puck-label', text: label }), el('div', { class: 'chips' }, chips), hint ? el('span', { class: 'muted small ask-hint', text: hint }) : null]);
+      const valuesOf = (facet) => Object.keys(tax[facet] ? tax[facet].values : {});
+      const loaded = loadedSubjects();
+      const notLoaded = valuesOf('subject').filter((v) => !loaded.includes(v));
+      const lookingAt = question(
+        'Looking at',
+        valuesOf('subject').map((v) => {
+          const c = facetChip('subject', v, v);
+          if (!loaded.includes(v)) {
+            c.classList.add('dim');
+            c.title = `${c.title}. Not loaded: load a file (Sessions and project ↓)${v === 'workspace' ? '; the workspace needs two of sessions, code, and plans' : ''}.`;
+          }
+          return c;
+        }),
+        notLoaded.length ? `Dimmed: not loaded; load a file to draw ${notLoaded.join(', ')}.` : picks('subject').length > 1 ? 'The shelf puts them in the order picked.' : ''
+      );
+      const asking = question('Asking', valuesOf('category').map((v) => facetChip('category', v, CATEGORY_ASK[v] || v)));
+      const qs = [lookingAt, asking];
+      const prefs = typeof ctx.getReplayPrefs === 'function' ? ctx.getReplayPrefs() : {};
+      if (!st.askBrief) {
+        const purpose = picks('purpose');
+        qs.push(
+          question(
+            'For',
+            valuesOf('purpose').map((v) => facetChip('purpose', v, PURPOSE_ASK[v] || v)),
+            purpose.includes('expressive') && !purpose.includes('informative') ? 'Impressing: the shelf leads with the hero views.' : purpose.length ? '' : 'Neither picked means both.'
+          )
+        );
+        const any = chip('any', { on: !picks('language').length, key: 'ask:language:any', title: 'Every look', onClick: () => setFilters({ ...st.filters, language: [] }) });
+        qs.push(question('Look', [any, ...valuesOf('language').map((v) => facetChip('language', v, v === 'standard' ? 'shared' : v))]));
+        const sysReduced = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const setStills = (on) => {
+          if (typeof ctx.setReplayPrefs === 'function') ctx.setReplayPrefs({ stills: on });
+          renderPuck();
+        };
+        qs.push(
+          question(
+            'Motion',
+            [
+              chip('on', { on: !prefs.stills, key: 'ask:motion:on', title: 'Replays play when a view comes on stage', onClick: () => setStills(false) }),
+              chip('stills', { on: !!prefs.stills, key: 'ask:motion:stills', title: 'Replays rest on their final frame, as with reduced motion; Play still plays', onClick: () => setStills(true) }),
+            ],
+            sysReduced ? 'Your system asks for reduced motion, so replays rest on their final frame either way.' : ''
+          )
+        );
+        qs.push(
+          question(
+            'Tour pace',
+            TOUR_PACES.map((n) =>
+              chip(`${n}s`, {
+                on: st.pace === n,
+                key: `ask:pace:${n}`,
+                title: `${n} seconds per view on the tour (hero views get their replay's length)`,
+                onClick: () => {
+                  st.pace = n;
+                  save({ tourPace: n });
+                  renderPuck();
+                },
+              })
+            )
+          )
+        );
+      }
+      askQuestions.replaceChildren(...qs);
+      askMore.hidden = !st.askBrief;
+      askCount.textContent = st.catalog.length ? `${allowed().length} of ${slides.length} views remain` : '';
+      askClear.hidden = Object.values(st.filters).every((v) => !v.length) && st.pace === DEFAULT_PACE && !prefs.stills;
+    }
+
+    // The Map: rows are subjects, columns categories; a view is a dot in every cell its tags name,
+    // colored by its language, lit when the filters allow it, ringed when it's a hero, marked when on stage.
+    const MAP_CAPTION = 'A dot per view in each cell its tags name, colored by look. Lit: the filters allow it. Ringed: a hero view. Marked: on stage. Empty cells: no view yet.';
+    const langClass = (langs, v) => {
+      const i = langs.indexOf(v);
+      return `lang-${i <= 0 ? 0 : ((i - 1) % MAP_LANG_HUES) + 1}`;
+    };
+    function renderMap(entry) {
+      const tax = st.taxonomy;
+      if (!tax || !tax.subject || !tax.category || !st.catalog.length) {
+        mapHost.replaceChildren(el('p', { class: 'muted small', text: 'Waiting for the catalog…' }));
+        mapCaption.textContent = '';
+        mapKey.replaceChildren();
+        return;
+      }
+      const { svg, svgText } = ctx;
+      const rows = Object.keys(tax.subject.values);
+      const cols = Object.keys(tax.category.values);
+      const langs = Object.keys(tax.language ? tax.language.values : {});
+      const ok = new Set(st.order);
+      const cells = rows.map((r) => cols.map((c) => st.catalog.filter((e) => (e.tags.subject || ['sessions']).includes(r) && (e.tags.category || []).includes(c))));
+      // Dots per line in a cell, and each row's height from its fullest cell.
+      const perLine = Math.max(1, Math.floor((MAP_CELL_W - 2 * MAP_PAD - 2 * MAP_DOT_R) / MAP_PITCH) + 1);
+      const inset = (MAP_CELL_W - (perLine - 1) * MAP_PITCH - 2 * MAP_DOT_R) / 2; // the dots centered across a cell
+      const rowH = cells.map((line) => Math.max(18, Math.ceil(Math.max(1, ...line.map((x) => x.length)) / perLine) * MAP_PITCH + 2 * MAP_PAD - (MAP_PITCH - 2 * MAP_DOT_R)));
+      const W = MAP_LABEL_W + cols.length * MAP_CELL_W + MAP_RIGHT;
+      const H = MAP_HEAD_H + rowH.reduce((a, h) => a + h + 2, 0);
+      const root = svg('svg', { class: 'map-svg', viewBox: `0 0 ${W} ${H}`, role: 'group', 'aria-label': 'The views as a map: subjects by categories. Arrow keys move between views; Enter puts one on the stage.' });
+      cols.forEach((c, j) => {
+        const x = MAP_LABEL_W + j * MAP_CELL_W + MAP_CELL_W / 2 - 2;
+        const t = svgText({ class: 'map-col', x, y: MAP_HEAD_H - 6, transform: `rotate(-45 ${x} ${MAP_HEAD_H - 6})` }, c);
+        const tip = svg('title', {});
+        tip.textContent = tax.category.values[c];
+        t.append(tip);
+        root.append(t);
+      });
+      const dots = []; // { g, entry, row, col }, in reading order
+      let y = MAP_HEAD_H;
+      rows.forEach((r, i) => {
+        root.append(svgText({ class: 'map-row', x: MAP_LABEL_W - 6, y: y + 12.5 }, r));
+        cols.forEach((c, j) => {
+          const x0 = MAP_LABEL_W + j * MAP_CELL_W;
+          const list = cells[i][j];
+          root.append(svg('rect', { class: `map-cell${list.length ? '' : ' empty'}`, x: x0 + 1, y, width: MAP_CELL_W - 2, height: rowH[i], rx: 2 }));
+          list.forEach((e, k) => {
+            const cx = x0 + inset + MAP_DOT_R + (k % perLine) * MAP_PITCH;
+            const cy = y + MAP_PAD + MAP_DOT_R + Math.floor(k / perLine) * MAP_PITCH;
+            const lit = ok.has(e.id);
+            const isCur = !!entry && e.id === entry.id;
+            const g = svg('g', {
+              class: `map-dot ${langClass(langs, (e.tags.language || [])[0])}${lit ? ' lit' : ''}${e.hero ? ' hero' : ''}${isCur ? ' current' : ''}`,
+              role: 'button',
+              tabindex: -1,
+              'data-key': `map:${e.id}:${r}:${c}`,
+              'aria-label': `${e.title}, ${r}, ${c}${e.hero ? ', hero view' : ''}${isCur ? ', on stage' : lit ? '' : ', filtered out'}`,
+            });
+            g.append(svg('circle', { class: 'map-hit', cx, cy, r: MAP_PITCH / 2 }), svg('circle', { class: 'map-fill', cx, cy, r: MAP_DOT_R }));
+            if (e.hero) g.append(svg('circle', { class: 'map-hero-ring', cx, cy, r: MAP_DOT_R + 1.6 }));
+            if (isCur) g.append(svg('circle', { class: 'map-current-ring', cx, cy, r: MAP_DOT_R + 3.4 }));
+            dots.push({ g, entry: e, row: i, col: j });
+            root.append(g);
+          });
+        });
+        y += rowH[i] + 2;
+      });
+      // One tab stop: the stage's view's first dot (else the first); the arrow keys rove from there.
+      const home = dots.find((d) => entry && d.entry.id === entry.id) || dots[0];
+      if (home) home.g.setAttribute('tabindex', '0');
+      const caption = (d) => {
+        mapCaption.textContent = d ? `${d.entry.title}${d.entry.hero ? ' (hero)' : ''}: ${d.entry.why || d.entry.description}${ok.has(d.entry.id) ? '' : ' Filtered out: opening it drops the filters that hide it.'}` : MAP_CAPTION;
+      };
+      const moveTo = (d) => {
+        if (!d) return;
+        for (const x of dots) x.g.setAttribute('tabindex', x === d ? '0' : '-1');
+        d.g.focus();
+      };
+      dots.forEach((d, n) => {
+        d.g.addEventListener('click', () => openFromMap(d.entry));
+        d.g.addEventListener('mouseenter', () => caption(d));
+        d.g.addEventListener('mouseleave', () => caption(null));
+        d.g.addEventListener('focus', () => caption(d));
+        d.g.addEventListener('blur', () => caption(null));
+        d.g.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openFromMap(d.entry);
+            return;
+          }
+          let to = null;
+          if (e.key === 'ArrowRight') to = dots[n + 1];
+          else if (e.key === 'ArrowLeft') to = dots[n - 1];
+          else if (e.key === 'Home') to = dots[0];
+          else if (e.key === 'End') to = dots[dots.length - 1];
+          else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            // The nearest column in the next row, down or up, that has any dot.
+            const dir = e.key === 'ArrowDown' ? 1 : -1;
+            for (let row = d.row + dir; row >= 0 && row < rows.length && !to; row += dir) {
+              const there = dots.filter((x) => x.row === row);
+              if (there.length) to = there.reduce((best, x) => (Math.abs(x.col - d.col) < Math.abs(best.col - d.col) ? x : best), there[0]);
+            }
+          } else return;
+          e.preventDefault();
+          moveTo(to);
+        });
+      });
+      mapHost.replaceChildren(root);
+      caption(null);
+      mapKey.replaceChildren(...langs.map((v) => el('span', { class: 'map-key-item', title: tax.language.values[v] }, [el('i', { class: `map-swatch ${langClass(langs, v)}`, 'aria-hidden': 'true' }), v === 'standard' ? 'shared' : v])));
+    }
+    // A dot opens its view; one the filters hide first drops the filters that hide it (only those facets).
+    function openFromMap(entry) {
+      if (!st.order.includes(entry.id)) {
+        const kept = {};
+        for (const [facet, vals] of Object.entries(st.filters)) if (!vals.length || vals.some((v) => (entry.tags[facet] || []).includes(v))) kept[facet] = vals;
+        st.currentId = entry.id; // so applyFilters keeps it rather than moving to a neighbor
+        save({ current: entry.id });
+        setFilters(kept);
+      }
+      goTo(entry.id);
     }
 
     // ---------- wiring ----------

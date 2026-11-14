@@ -369,8 +369,9 @@
   const isReplaySetting = (v) => REPLAY_CHOICES.some(([k]) => k === String(v));
 
   // Playback settings shared by every replay on the page, so the hero views move together; the Explore tab
-  // remembers them (explore.js saves them with its state). speed is a menu key ('fit:30' or '60'); loop restarts at the end.
-  const replayPrefs = { speed: 'fit:30', loop: false };
+  // remembers them (explore.js saves them with its state). speed is a menu key ('fit:30' or '60'); loop restarts at the end;
+  // stills (the puck's Motion: stills) treats every clock as reduced motion does: it rests on its final frame and never autoplays.
+  const replayPrefs = { speed: 'fit:30', loop: false, stills: false };
   const prefListeners = new Set();
   function getReplayPrefs() {
     return { ...replayPrefs };
@@ -384,6 +385,10 @@
     }
     if (partial.loop !== undefined && !!partial.loop !== replayPrefs.loop) {
       replayPrefs.loop = !!partial.loop;
+      changed = true;
+    }
+    if (partial.stills !== undefined && !!partial.stills !== replayPrefs.stills) {
+      replayPrefs.stills = !!partial.stills;
       changed = true;
     }
     if (changed) for (const cb of [...prefListeners]) cb(getReplayPrefs());
@@ -448,13 +453,16 @@
    * every clock). A fit setting turns into the multiple that plays the whole span in that many seconds.
    *
    * Live means at the end of a session that's still recent; scrubbing back leaves live until the
-   * clock returns to the end. With reduced motion, the clock opens at the end and never autoplays.
+   * clock returns to the end. With reduced motion, the clock opens at the end and never autoplays;
+   * the shared stills setting does the same (clock.reduced is either), and turning it on stops a
+   * playing clock on its final frame.
    */
   function createReplay(opts) {
     const now = opts.now || (() => Date.now());
     const raf = opts.raf || ((fn) => window.requestAnimationFrame(fn));
     const caf = opts.caf || ((id) => window.cancelAnimationFrame(id));
-    const reduced = opts.reducedMotion !== undefined ? !!opts.reducedMotion : typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const sysReduced = opts.reducedMotion !== undefined ? !!opts.reducedMotion : typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = sysReduced || replayPrefs.stills;
     let frame = null;
     let last = null; // the wall time of the last tick
     let active = false;
@@ -489,7 +497,7 @@
         if (!opened) {
           opened = true;
           // A live session, or reduced motion, opens on what's there now.
-          if (reduced || clock.recent()) {
+          if (clock.reduced || clock.recent()) {
             autoplay = false;
             place(clock.end);
           } else place(clock.start);
@@ -558,6 +566,15 @@
       clock.setting = prefs.speed;
       clock.loop = prefs.loop;
       applySpeed();
+      const nowReduced = sysReduced || prefs.stills;
+      if (nowReduced && !clock.reduced) {
+        // Stills from here on: no autoplay, and a playing clock rests on its final frame.
+        autoplay = false;
+        clock.playing = false;
+        unschedule();
+        place(clock.end);
+      }
+      clock.reduced = nowReduced;
       render();
     });
     function place(t) {

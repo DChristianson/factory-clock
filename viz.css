@@ -971,6 +971,58 @@ rect.pog-file { opacity: 1; }
 .tag.on { color: var(--fc-pressed-ink); background: var(--fc-pressed-bg); border-color: var(--fc-pressed-bg); }
 .tag:hover { background: var(--fc-button-hover, var(--fc-toolbar-hover)); }
 .tag.on:hover { background: var(--fc-pressed-hover, var(--fc-pressed-bg)); }
+.tag.dim { opacity: 0.6; border-style: dashed; }
+/* The puck as a guide: a tab row under the head picks one of three bodies, Here, Ask, and Map (explore.js). */
+.puck-tabs { flex: none; display: flex; gap: 16px; margin-bottom: 8px; border-bottom: 1px solid var(--fc-rule); }
+.puck.collapsed .puck-tabs { display: none; }
+.puck-tab {
+  margin: 0 0 -1px;
+  padding: 2px 0 4px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: var(--fc-ink-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.puck-tab:hover { color: var(--fc-ink); background: none; }
+.puck-tab.on { color: var(--fc-link); border-bottom-color: var(--fc-link); font-weight: 600; }
+.puck-tab:focus-visible { outline: 1px solid var(--fc-link); outline-offset: 2px; }
+.puck-label { display: block; color: var(--fc-ink-muted); font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.05em; }
+.puck-why, .puck-next { margin: 0 0 6px; }
+.puck-next .puck-next-go { font-size: inherit; }
+.ask-q { margin-top: 8px; }
+.ask-q:first-child { margin-top: 0; }
+.ask-q .puck-label { margin-bottom: 3px; }
+.ask-hint { display: block; margin-top: 3px; }
+.ask-more { margin-top: 8px; }
+.ask-count { color: var(--fc-link); }
+/* The Map: subjects by categories, a dot per view; the dot's hue is its language. */
+.map-svg { display: block; width: 100%; height: auto; font-family: var(--fc-mono); }
+.map-col { fill: var(--fc-ink-muted); font-size: 8.5px; }
+.map-row { fill: var(--fc-ink-muted); font-size: 9.5px; text-anchor: end; }
+.map-cell { fill: var(--fc-hover); }
+.map-cell.empty { fill: none; stroke: var(--fc-rule); stroke-dasharray: 2 2; }
+.map-dot { cursor: pointer; outline: none; }
+.map-dot .map-hit { fill: transparent; }
+.map-dot:not(.lit) .map-fill { opacity: 0.28; }
+.map-dot:not(.lit) .map-hero-ring { opacity: 0.4; }
+.map-hero-ring { fill: none; stroke: var(--fc-ink); stroke-width: 0.8; pointer-events: none; }
+.map-current-ring { fill: none; stroke: var(--fc-link); stroke-width: 1.6; pointer-events: none; }
+.map-dot:hover .map-hit, .map-dot:focus-visible .map-hit { fill: var(--fc-selection-soft); stroke: var(--fc-link); stroke-width: 1; }
+.map-dot.lang-0 .map-fill, .map-swatch.lang-0 { fill: var(--fc-ink-muted); background: var(--fc-ink-muted); }
+.map-dot.lang-1 .map-fill, .map-swatch.lang-1 { fill: var(--fc-cat-1); background: var(--fc-cat-1); }
+.map-dot.lang-2 .map-fill, .map-swatch.lang-2 { fill: var(--fc-cat-2); background: var(--fc-cat-2); }
+.map-dot.lang-3 .map-fill, .map-swatch.lang-3 { fill: var(--fc-cat-3); background: var(--fc-cat-3); }
+.map-dot.lang-4 .map-fill, .map-swatch.lang-4 { fill: var(--fc-cat-4); background: var(--fc-cat-4); }
+.map-dot.lang-5 .map-fill, .map-swatch.lang-5 { fill: var(--fc-cat-5); background: var(--fc-cat-5); }
+.map-dot.lang-6 .map-fill, .map-swatch.lang-6 { fill: var(--fc-series-1); background: var(--fc-series-1); }
+.map-dot.lang-7 .map-fill, .map-swatch.lang-7 { fill: var(--fc-ink); background: var(--fc-ink); }
+.map-caption { min-height: 2.6em; margin: 6px 0 4px; }
+.map-key { display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.map-key-item { white-space: nowrap; }
+.map-swatch { display: inline-block; width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; vertical-align: middle; }
 /* The shared replay bar (shared.js replayBar). A hero view restyles it under its own scoped class. */
 .replay-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 6px; }
 .replay-bar .replay-scrub { flex: 1 1 160px; min-width: 120px; }
