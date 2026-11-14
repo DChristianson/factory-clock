@@ -42,7 +42,7 @@
       const { el, svg, svgText, fmt, compact, short, secondsText, formatTime, arcPath, callTokens, modeButtons, showTip, hideTip } = ctx;
       const prefix = `fc${++charts}`;
       const frame = el('div', { class: 'hero-clock' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(frame, note);
       let views = [];
       let viewKey = '';

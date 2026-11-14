@@ -57,7 +57,7 @@
         mode = m;
         draw();
       });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(frame, note);
       const fit = ctx.fitter(host); // the plate fills the slide's height
 

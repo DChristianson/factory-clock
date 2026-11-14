@@ -56,7 +56,7 @@
       const { el, svg, svgText, fmt, compact, clip, fit: fitText, hashId, forceLayout, sessionName, interact } = ctx;
       const prefix = `skyline${++charts}`;
       const frame = el('div', { class: 'hero-skyline' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(frame, note);
       const fitter = ctx.fitter(host);
       let workspace = null;

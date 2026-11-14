@@ -90,7 +90,7 @@
       const controls = el('div', { class: 'controls', role: 'group', 'aria-label': 'Group tokens by' }, [el('span', { class: 'muted small', text: 'Group' }), byTurnBtn, byCategoryBtn]);
       const chartHost = el('div');
       const legend = el('div', { class: 'legend small treemap-legend' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(controls, chartHost, legend, note);
 
       const sessionLabel = (s) => (s.name ? clip(s.name, 60) : short(s.sessionId));

@@ -163,7 +163,7 @@
       const { el, svg, fmt, clip, short, showTip, hideTip } = ctx;
       const chartHost = el('div');
       const legend = el('div', { class: 'legend small terms-legend' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       const listHost = el('div', { class: 'terms-list' });
       host.replaceChildren(chartHost, legend, note, listHost);
       let views = null;

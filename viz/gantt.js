@@ -39,7 +39,7 @@
       const controls = el('div', { class: 'controls', role: 'group', 'aria-label': 'Arrange by' }, [el('span', { class: 'muted small', text: 'Arrange' }), ganttBtn, waterfallBtn]);
       const chartHost = el('div');
       const legend = el('div', { class: 'legend small gantt-legend' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(controls, chartHost, legend, note);
 
       const selectedTurn = () => {

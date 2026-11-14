@@ -237,11 +237,14 @@
     });
     return el('div', { class: 'controls', role: 'group', 'aria-label': label }, [el('span', { class: 'muted small', text: label }), ...buttons.map(([, b]) => b)]);
   }
-  /** Lays out a slide: controls, chart, legend, note. empty(message) shows a message in place of all three. */
+  /**
+   * Lays out a slide: controls, chart, legend, note. empty(message) shows a message in place of all three.
+   * The note carries the viz-note class, so the explorer moves it into its slide's title panel.
+   */
   function vizPanel(host, controls) {
     const chart = el('div');
     const legend = el('div', { class: 'legend small viz-legend' });
-    const note = el('p', { class: 'muted small' });
+    const note = el('p', { class: 'muted small viz-note' });
     host.replaceChildren(...controls, chart, legend, note);
     const empty = (message) => {
       chart.replaceChildren(...(message ? [el('p', { class: 'muted', text: message })] : []));
@@ -278,7 +281,10 @@
    * explorer's slide below the host's top (for a stacked session, one slide's height less its
    * heading). null outside the explorer (the Sessions tab), where a view keeps its own height.
    */
-  const FIT_SLACK = 14; // the note's bottom margin, which a host's scrollHeight doesn't count
+  // Rounding: a view's parts have fractional heights, and scrollHeight is a whole number. (A view's note,
+  // which used to sit under the drawing, now lives in the slide's title panel; .viz-host is a flow-root,
+  // so its last child's margin is in its scrollHeight.)
+  const FIT_SLACK = 2;
   function fitHeight(host) {
     const slideHost = host && host.closest && host.closest('.slide-host');
     if (!slideHost || !slideHost.clientHeight) return null;
@@ -292,7 +298,7 @@
   }
 
   /**
-   * Sizes a view's drawing so the whole view (its controls, legend, and note too) fits the slide.
+   * Sizes a view's drawing so the whole view (its controls and legend too) fits the slide.
    *   const fit = fitter(host);
    *   in draw():  const h = fit.height(fallback, min);  ...draw at h...;  fit.settle(h, draw);
    * height() is the slide's room less what surrounded the drawing last time (the fallback outside

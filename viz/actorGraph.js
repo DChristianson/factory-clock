@@ -43,7 +43,7 @@
       const { el, svg, compact, fmt, clip, fit, short, ms, agentName, modelShort, showTip, hideTip, interact, svgText, settledLayout, shapeClass, shapeLegend, shapeSelection, shapeTip, shapeKindText, shapeNote } = ctx;
       const chartHost = el('div');
       const legend = el('div', { class: 'legend small actor-legend' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(chartHost, legend, note);
       const fitH = ctx.fitter(host); // the graph fills the slide's height
       let views = [];

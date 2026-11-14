@@ -26,7 +26,7 @@
     mount(host, ctx) {
       const { el, svg, compact, fmt, clip, fit, short, formatTime, modelShort, ms, showTip, hideTip } = ctx;
       const legend = el('div', { class: 'legend small eg-legend' });
-      const note = el('p', { class: 'muted small eg-note' });
+      const note = el('p', { class: 'muted small eg-note viz-note' });
       const chartHost = el('div');
       // The legend comes first: the graph can be much taller than the slide.
       host.replaceChildren(legend, note, chartHost);

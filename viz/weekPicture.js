@@ -41,7 +41,7 @@
       const controls = el('div', { class: 'controls' }, [prevBtn, nextBtn, label]);
       const chartHost = el('div', { class: 'week-layout' });
       const legend = el('div', { class: 'legend small week-legend' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(controls, chartHost, legend, note);
 
       const sessionLabel = (s) => (s.name ? clip(s.name, 60) : short(s.sessionId));

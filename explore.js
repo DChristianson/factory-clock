@@ -492,34 +492,12 @@
       return c;
     }
 
-    // ---------- a slide's credits ----------
-    // The work the view draws on (entry.credits), at the foot of its slide: one line of names at a fixed
-    // height, always shown, that opens to every credit in full (work, by, year, relation, note, link).
-    // The full list lies over the bottom of the drawing rather than pushing it, so the view keeps its
-    // fitted height while it's open; it closes when its slide leaves the stage.
-    function slideCredits(entry) {
-      const list = Array.isArray(entry.credits) ? entry.credits : [];
-      const foot = el('div', { class: 'slide-credits' });
-      if (!list.length) return { foot, setOpen() {} };
-      const cites = list.map((c) => (c.year === undefined ? creditName(c.by) : `${creditName(c.by)} ${c.year}`));
-      const panelId = `slide-credits-${entry.id}`;
-      const toggle = el('button', { class: 'link slide-credits-toggle', 'aria-expanded': 'false', 'aria-controls': panelId, title: `After ${cites.join(' · ')}` }, [
-        el('span', { class: 'slide-credits-label', text: 'After ' }),
-        cites.join(' · '),
-      ]);
-      const panel = el('div', { class: 'slide-credits-panel', id: panelId, role: 'region', 'aria-label': `Credits for ${entry.title}`, hidden: true }, [
-        el('ul', { class: 'slide-credits-list' }, list.map((c, i) => {
-          const work = el('cite', { text: c.work });
-          const by = c.by.replace(/\s*\([^()]+\)\s*$/, ''); // "Karen Spärck Jones (Spärck Jones)": the brackets give the short form only
-          return el('li', {}, [
-            el('span', { class: 'slide-credit-head' }, [el('strong', { text: cites[i] }), el('span', { class: 'muted', text: ` · ${c.relation}` })]),
-            el('span', { class: 'slide-credit-work' }, [c.url ? el('a', { href: c.url, target: '_blank', rel: 'noopener' }, [work]) : work, `, ${by}${c.year === undefined ? '' : `, ${c.year}`}`]),
-            c.note ? el('span', { class: 'muted slide-credit-note', text: c.note }) : null,
-          ]);
-        })),
-      ]);
-      // While open, the panel closes on Escape anywhere on the page (a clicked button doesn't take focus in
-      // every browser, so a listener on the button alone can miss it), on a press outside it, or on its ×.
+    // ---------- a slide's panels ----------
+    // A panel a button opens over the slide (its note under the title, its credits at its foot). While open it
+    // closes on Escape anywhere on the page (a clicked button doesn't take focus in every browser, so a listener
+    // on the button alone can miss it), on a press outside it, or on its ×; the page listeners are there only
+    // while it's open. onOpen runs as it opens, so a slide can close its other panel.
+    function dropPanel({ toggle, panel, frame, closeLabel, onOpen }) {
       const onKey = (e) => {
         if (e.key !== 'Escape') return;
         e.stopPropagation();
@@ -533,30 +511,94 @@
         if (open === !panel.hidden) return;
         panel.hidden = !open;
         toggle.setAttribute('aria-expanded', String(open));
-        foot.classList.toggle('open', open);
+        frame.classList.toggle('open', open);
         if (open) {
           document.addEventListener('keydown', onKey, true);
           document.addEventListener('pointerdown', onPress, true);
+          if (onOpen) onOpen();
         } else {
           document.removeEventListener('keydown', onKey, true);
           document.removeEventListener('pointerdown', onPress, true);
         }
       };
       toggle.addEventListener('click', () => setOpen(panel.hidden));
-      const close = el('button', { class: 'slide-credits-close', 'aria-label': `Close the credits for ${entry.title}`, title: 'Close', text: '×' });
+      const close = el('button', { class: 'slide-panel-close', 'aria-label': closeLabel, title: 'Close', text: '×' });
       close.addEventListener('click', () => {
         setOpen(false);
         toggle.focus();
       });
       panel.prepend(close);
+      return { setOpen, isOpen: () => !panel.hidden };
+    }
+
+    // ---------- a slide's credits ----------
+    // The work the view draws on (entry.credits), at the foot of its slide: one line of names at a fixed
+    // height, always shown, that opens to every credit in full (work, by, year, relation, note, link).
+    // The full list lies over the bottom of the drawing rather than pushing it, so the view keeps its
+    // fitted height while it's open; it closes when its slide leaves the stage.
+    function slideCredits(entry, onOpen) {
+      const list = Array.isArray(entry.credits) ? entry.credits : [];
+      const foot = el('div', { class: 'slide-credits' });
+      if (!list.length) return { foot, setOpen() {}, isOpen: () => false };
+      const cites = list.map((c) => (c.year === undefined ? creditName(c.by) : `${creditName(c.by)} ${c.year}`));
+      const panelId = `slide-credits-${entry.id}`;
+      const toggle = el('button', { class: 'link slide-credits-toggle', 'aria-expanded': 'false', 'aria-controls': panelId, title: `After ${cites.join(' · ')}` }, [
+        el('span', { class: 'slide-credits-label', text: 'After ' }),
+        cites.join(' · '),
+      ]);
+      const panel = el('div', { class: 'slide-panel slide-credits-panel', id: panelId, role: 'region', 'aria-label': `Credits for ${entry.title}`, hidden: true }, [
+        el('ul', { class: 'slide-credits-list' }, list.map((c, i) => {
+          const work = el('cite', { text: c.work });
+          const by = c.by.replace(/\s*\([^()]+\)\s*$/, ''); // "Karen Spärck Jones (Spärck Jones)": the brackets give the short form only
+          return el('li', {}, [
+            el('span', { class: 'slide-credit-head' }, [el('strong', { text: cites[i] }), el('span', { class: 'muted', text: ` · ${c.relation}` })]),
+            el('span', { class: 'slide-credit-work' }, [c.url ? el('a', { href: c.url, target: '_blank', rel: 'noopener' }, [work]) : work, `, ${by}${c.year === undefined ? '' : `, ${c.year}`}`]),
+            c.note ? el('span', { class: 'muted slide-credit-note', text: c.note }) : null,
+          ]);
+        })),
+      ]);
       foot.append(toggle, panel);
-      return { foot, setOpen };
+      return { foot, ...dropPanel({ toggle, panel, frame: foot, closeLabel: `Close the credits for ${entry.title}`, onOpen }) };
+    }
+
+    // ---------- a slide's note ----------
+    // The slide's title is a button that opens a panel under the head: the catalog description, then the
+    // view's note (every element it marks viz-note), which the explorer moves here out of the drawing so the
+    // drawing gets that room. The view keeps its reference to the note and keeps writing it, so it stays live.
+    // Like the credits, the panel lies over the drawing (its top), so the view keeps its fitted height.
+    function slideNote(entry, onOpen) {
+      const panelId = `slide-note-${entry.id}`;
+      const title = el('button', { class: 'link slide-title', 'aria-expanded': 'false', 'aria-controls': panelId, title: `About ${entry.title}` }, [entry.title]);
+      const notes = el('div', { class: 'slide-notes' });
+      const panel = el('div', { class: 'slide-panel slide-note-panel', id: panelId, role: 'region', 'aria-label': `About ${entry.title}`, hidden: true }, [
+        el('p', { class: 'slide-note-desc', text: entry.description }),
+        notes,
+      ]);
+      const head = el('div', { class: 'slide-head' });
+      return { head, title, panel, notes, ...dropPanel({ toggle: title, panel, frame: head, closeLabel: `Close the note on ${entry.title}`, onOpen }) };
+    }
+
+    // Moves every note a slide's views marked (.viz-note) out of their drawings into the slide's note panel, in
+    // order, under the session's name for a stacked view. It runs after each mount and update (no view makes a
+    // new note after mount today, but one that did would have it moved here on its next update); a part that
+    // marks nothing new keeps the notes it had.
+    function collectNotes(s) {
+      for (const p of s.parts) {
+        const found = Array.from(p.host.querySelectorAll('.viz-note'));
+        if (found.length) p.notes = found;
+      }
+      s.note.notes.replaceChildren(
+        ...s.parts
+          .filter((p) => p.notes && p.notes.length)
+          .map((p) => el('div', { class: 'slide-note-group' }, [...(p.label ? [el('span', { class: 'slide-note-session', text: p.label })] : []), ...p.notes]))
+      );
     }
 
     function buildSlides() {
       for (const s of slides) {
         destroyParts(s);
         s.credits.setOpen(false);
+        s.note.setOpen(false);
       }
       slides.length = 0;
       stage.replaceChildren();
@@ -564,15 +606,14 @@
       st.catalog.forEach((entry, i) => {
         const host = el('div', { class: 'slide-host' });
         const subjectHost = el('div', { class: 'slide-subject' });
-        const credits = slideCredits(entry);
-        const slide = el('article', { class: 'slide', 'aria-label': entry.title, hidden: true }, [
-          // One line at a fixed height whatever the view (the description clips), so every slide gives its view the same room.
-          el('div', { class: 'slide-head' }, [el('span', { class: 'muted small slide-pos', text: `${i + 1}/${st.catalog.length}` }), el('strong', { class: 'slide-title', text: entry.title, title: entry.title }), el('span', { class: 'muted small slide-desc', text: entry.description, title: entry.description }), subjectHost]),
-          host,
-          credits.foot,
-        ]);
+        // Opening either of a slide's panels closes the other.
+        const note = slideNote(entry, () => credits.setOpen(false));
+        const credits = slideCredits(entry, () => note.setOpen(false));
+        // One line at a fixed height whatever the view (the title clips), so every slide gives its view the same room.
+        note.head.append(el('span', { class: 'muted small slide-pos', text: `${i + 1}/${st.catalog.length}` }), note.title, el('span', { class: 'spacer' }), subjectHost, note.panel);
+        const slide = el('article', { class: 'slide', 'aria-label': entry.title, hidden: true }, [note.head, host, credits.foot]);
         const c = card(entry);
-        slides.push({ entry, slide, host, subjectHost, card: c, allowed: true, parts: [], subjectKey: null, credits });
+        slides.push({ entry, slide, host, subjectHost, card: c, allowed: true, parts: [], subjectKey: null, credits, note });
         stage.append(slide);
         shelf.append(c);
       });
@@ -671,7 +712,11 @@
         s.slide.hidden = !(shown || near);
         s.slide.classList.toggle('offstage', near);
         s.slide.classList.toggle('pinned', shown && s.entry.id === st.compareId);
-        if (!shown) s.credits.setOpen(false); // flipped away: it comes back closed
+        if (!shown) {
+          // Flipped away: it comes back closed.
+          s.credits.setOpen(false);
+          s.note.setOpen(false);
+        }
         if (shown || near) updateSlide(s);
         else destroyParts(s);
         // Its width may have changed (off stage, or the other half of a comparison).
@@ -725,6 +770,7 @@
       for (const p of s.parts) p.instance.destroy();
       s.parts = [];
       s.host.replaceChildren();
+      s.note.notes.replaceChildren();
     }
 
     // A session-level visualizer gets one instance per loaded session, stacked
@@ -811,6 +857,7 @@
       }
       const shape = subject === 'workspace' ? null : shapeOf(subject);
       s.parts[0].instance.update(st.sessions, st.selection, { subject, workspace: st.workspace, ...(shape ? { shape } : {}) });
+      collectNotes(s);
     }
 
     /** Sessions, as every view has always drawn them: stacked one per session unless the view is project-level. */
@@ -828,10 +875,11 @@
             ? el('div', { class: 'stacked' }, [el('div', { class: 'stack-head' }, [el('strong', { text: sessionLabel(g[0].summary) }), el('span', { class: 'muted small', text: ` ${agentName(g[0].summary.agent)} · ${fmt(g[0].summary.prompts)} prompts · ${compact(g[0].summary.tokens)} tokens` })]), host])
             : host;
           s.host.append(part);
-          return { host, sessionIds: wantedIds[i], instance: def.mount(host, { ...ctx, select }) };
+          return { host, sessionIds: wantedIds[i], label: stacked ? sessionLabel(g[0].summary) : null, instance: def.mount(host, { ...ctx, select }) };
         });
       }
       s.parts.forEach((p, i) => p.instance.update(groups[i], st.selection, {}));
+      collectNotes(s);
     }
 
     // ---------- shared selection ----------
@@ -1230,6 +1278,7 @@
         for (const s of slides) {
           destroyParts(s);
           s.credits.setOpen(false); // drops its page listeners if open
+          s.note.setOpen(false);
         }
         root.replaceChildren();
         if (mounted === tab) mounted = null;

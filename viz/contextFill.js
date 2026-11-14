@@ -18,7 +18,7 @@
       const { el, svg, compact, fmt, niceMax, clip, short, formatTime, ms, modelShort, showTip, hideTip } = ctx;
       const chartHost = el('div');
       const legend = el('div', { class: 'legend small fill-legend' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(chartHost, legend, note);
       let views = [];
       let selection = null;

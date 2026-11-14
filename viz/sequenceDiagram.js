@@ -32,7 +32,7 @@
       const { el, svg, compact, fmt, clip, fit, formatTime, ms, modelShort, showTip, hideTip } = ctx;
       const legend = el('div', { class: 'legend small seq-legend' });
       const chartHost = el('div', { class: 'seq-wrap' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(legend, chartHost, note);
       let view = null;
       let selection = null;

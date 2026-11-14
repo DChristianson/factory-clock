@@ -29,7 +29,7 @@
 
       const chartHost = el('div');
       const legend = el('div', { class: 'legend small ribbon-legend' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       const turnsHost = el('div');
       host.replaceChildren(chartHost, legend, note, turnsHost);
       const fitH = ctx.fitter(host); // the ribbons fill the slide's height; a pinned ribbon's turn list runs on below

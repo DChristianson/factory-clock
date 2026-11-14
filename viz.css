@@ -833,28 +833,22 @@ rect.pog-file { opacity: 1; }
 .slide.pinned { order: -1; }
 .stage.comparing .slide:not(.offstage) { border-color: var(--fc-ink-muted); }
 /* One line at a fixed height for every view, so the slide host below it (and so every view's fitted height) is the same from view
-   to view: the description gives way first, clipped, then the title; the Draw switch keeps its place. */
-.slide-head { flex: none; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; height: 1.8em; margin-bottom: 8px; white-space: nowrap; min-width: 0; }
+   to view: the title gives way, clipped; the Draw switch keeps its place. The title is a button that opens the note panel. */
+.slide-head { flex: none; position: relative; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; height: 1.8em; margin-bottom: 8px; white-space: nowrap; min-width: 0; }
 .slide-head > * { flex: none; }
-.slide-head > .slide-title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.slide-head > .slide-desc { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.slide-head > .spacer { flex: 1 1 0; min-width: 0; }
+button.link.slide-title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; word-break: normal; color: var(--fc-ink); font-weight: 600; }
+.slide-title::before { content: "▸ "; color: var(--fc-ink-muted); font-weight: normal; }
+.slide-head.open .slide-title::before { content: "▾ "; }
+.slide-title:focus-visible { outline: 1px solid var(--fc-accent); outline-offset: 1px; }
 /* The stage's height is set to fit the window (fitStage in explore.js); a taller drawing scrolls here. */
 .slide-host { flex: 1; min-height: 0; width: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-gutter: stable; }
-/* A slide's credits (slideCredits in explore.js): one line at its foot, a fixed height for every view like the head, in the
-   slide's frame rather than the view's drawing, so the page's colors hold on a hero view too. The names clip on a narrow
-   screen (the button's title has them all); opened, the full list lies over the bottom of the drawing, not pushing it, so
-   the view keeps its fitted height. */
-.slide-credits { flex: none; position: relative; display: flex; align-items: center; height: 1.6em; margin-top: 6px; border-top: 1px solid var(--fc-rule); font-size: 0.85em; min-width: 0; }
-button.link.slide-credits-toggle { max-width: 100%; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-break: normal; color: var(--fc-ink-muted); }
-.slide-credits-toggle::before { content: "▸ "; }
-.slide-credits.open .slide-credits-toggle::before { content: "▾ "; }
-.slide-credits-toggle:focus-visible { outline: 1px solid var(--fc-accent); outline-offset: 1px; }
-.slide-credits-label { font-style: italic; }
-.slide-credits-panel {
+/* A slide's panels (dropPanel in explore.js): the note under the head and the credits over the foot. Each lies over the drawing
+   rather than pushing it, on the page's own colors so it reads over a hero view's dark drawing, and scrolls on its own. */
+.slide-panel {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(100% + 4px);
   z-index: 5;
   max-height: min(20em, 50vh);
   overflow-y: auto;
@@ -866,14 +860,35 @@ button.link.slide-credits-toggle { max-width: 100%; min-width: 0; overflow: hidd
   border: 1px solid var(--fc-rule);
   border-radius: 4px;
   box-shadow: 0 4px 16px var(--fc-shadow);
+  white-space: normal;
   overflow-wrap: anywhere;
 }
+.slide-panel a { color: var(--fc-link); }
+.slide-panel-close { float: right; margin: -4px -6px 4px 8px; padding: 0 6px; border: 0; background: none; color: var(--fc-ink-muted); font: inherit; font-size: 1.3em; line-height: 1.2; cursor: pointer; border-radius: 3px; }
+.slide-panel-close:hover { color: var(--fc-ink); background: var(--fc-rule); }
+.slide-panel-close:focus-visible { outline: 1px solid var(--fc-accent); outline-offset: 1px; }
+/* The note panel (slideNote): the catalog description, then each view's note (.viz-note), under its session's name when stacked.
+   A note the view left empty is hidden, and a session with nothing to say with it. */
+.slide-note-panel { top: calc(100% + 4px); }
+.slide-note-desc { margin: 0 0 6px; }
+.slide-notes { display: grid; gap: 6px; }
+.slide-notes .viz-note { margin: 0; }
+.slide-notes .viz-note:empty { display: none; }
+.slide-note-group:not(:has(.viz-note:not(:empty))) { display: none; }
+.slide-note-session { display: block; font-weight: 600; font-size: 0.9em; }
+/* A slide's credits (slideCredits in explore.js): one line at its foot, a fixed height for every view like the head, in the
+   slide's frame rather than the view's drawing, so the page's colors hold on a hero view too. The names clip on a narrow
+   screen (the button's title has them all); opened, the full list lies over the bottom of the drawing, not pushing it, so
+   the view keeps its fitted height. */
+.slide-credits { flex: none; position: relative; display: flex; align-items: center; height: 1.6em; margin-top: 6px; border-top: 1px solid var(--fc-rule); font-size: 0.85em; min-width: 0; }
+button.link.slide-credits-toggle { max-width: 100%; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-break: normal; color: var(--fc-ink-muted); }
+.slide-credits-toggle::before { content: "▸ "; }
+.slide-credits.open .slide-credits-toggle::before { content: "▾ "; }
+.slide-credits-toggle:focus-visible { outline: 1px solid var(--fc-accent); outline-offset: 1px; }
+.slide-credits-label { font-style: italic; }
+.slide-credits-panel { bottom: calc(100% + 4px); }
 .slide-credits-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.slide-credits-close { float: right; margin: -4px -6px 4px 8px; padding: 0 6px; border: 0; background: none; color: var(--fc-ink-muted); font: inherit; font-size: 1.3em; line-height: 1.2; cursor: pointer; border-radius: 3px; }
-.slide-credits-close:hover { color: var(--fc-ink); background: var(--fc-rule); }
-.slide-credits-close:focus-visible { outline: 1px solid var(--fc-accent); outline-offset: 1px; }
 .slide-credits-list li > span { display: block; }
-.slide-credits-panel a { color: var(--fc-link); }
 .slide-credit-note { margin-top: 1px; }
 /* The stage while data loads: in the page from its first paint until the explorer mounts, and over the stage (the veil) while files are read. */
 .stage-loading {
@@ -904,7 +919,8 @@ button.link.slide-credits-toggle { max-width: 100%; min-width: 0; overflow: hidd
 .stacked { border-top: 1px solid var(--fc-rule); padding-top: 8px; margin-top: 12px; }
 .stacked:first-child { border-top: none; margin-top: 0; padding-top: 0; }
 .stack-head { display: flex; align-items: baseline; gap: 4px; margin-bottom: 6px; }
-.viz-host { width: 100%; }
+/* A flow-root, so its last child's margin counts in its scrollHeight, which vizkit's fitter measures. */
+.viz-host { width: 100%; display: flow-root; }
 /* The dock: the shelf and the nav under the stage. Sticky for windows too short to fit the stage, under the puck (20) and over the
    tooltip (10). With the puck at the bottom, the nav leaves room on the puck's side, and the shelf runs the full width with a spacer
    at that end, so its last card can scroll out from under the puck. */
