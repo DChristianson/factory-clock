@@ -5,7 +5,8 @@
 // the real values. See docs/visualization-explorer.md for the contract.
 // Clicking a point announces its session. Sees only its host and ctx: no VS Code.
 (function () {
-  const MAX_SIZE = 480;
+  const MAX_SIZE = 480; // the radar's side outside the explorer, at most
+  const MIN_SIZE = 220; // and its side at least, in a short or narrow slide
   const AXES = [
     ['Tokens', (r) => r.s.tokens],
     ['Prompts', (r) => r.s.prompts],
@@ -24,6 +25,7 @@
       let views = [];
       let selection = null;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the radar fills the slide's height, as far as the width allows
 
       function draw() {
         if (!views.length) {
@@ -33,7 +35,9 @@
         const rows = views.map((v) => ({ v, s: v.summary, failed: v.tools.filter((x) => x.status === 'failure').length, findings: v.findings.length }));
         const tops = AXES.map(([, of]) => Math.max(0, ...rows.map(of)));
         const pad = 110;
-        const size = Math.max(220, Math.min(MAX_SIZE, (host.clientWidth || MAX_SIZE) - pad * 2));
+        const byWidth = (host.clientWidth || MAX_SIZE) - pad * 2;
+        // Outside the explorer it keeps its old cap; in a slide, the slide's height (less the labels' 40px) is the cap.
+        const size = Math.max(MIN_SIZE, Math.min(byWidth, fitH.height(MAX_SIZE + 40, MIN_SIZE + 40) - 40));
         const cx = size / 2 + pad;
         const cy = size / 2 + 20;
         const radius = size / 2 - 8;
@@ -70,6 +74,7 @@
         panel.chart.replaceChildren(root);
         panel.legend.replaceChildren(...rows.map((r, s) => legendKey(`${sessionClass(s)} scatter-key`, sessionName(r.s, 40))));
         panel.note.textContent = `Each axis runs from zero to the largest value among the loaded sessions, printed by its name${rows.length === 1 ? ', so one session alone fills every axis it has any of; load more to compare' : ''}. Polygon area depends on the order of the axes, so read the points, not the shape. Hover a point for the numbers, and click one to select its session.`;
+        fitH.settle(fullH, draw);
       }
       return {
         update(sessions, sel) {

@@ -22,6 +22,7 @@
       let shape = null; // with a subject: the Shape to draw instead of the sessions
       let subject = null;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the rings fill the slide's height, as wide as it allows
 
       /** The rings: nested { label, tokens, cls, sessionId, turnId, approx, children }. */
       function forest() {
@@ -78,7 +79,8 @@
         }
         const depthOf = (list) => (list.length ? 1 + Math.max(...list.map((n) => depthOf(n.children))) : 0);
         const depth = depthOf(nodes);
-        const size = Math.max(280, Math.min(MAX_SIZE, host.clientWidth || MAX_SIZE));
+        const across = host.clientWidth || MAX_SIZE;
+        const size = Math.max(280, Math.min(across, fitH.height(Math.min(MAX_SIZE, across), 280)));
         const cx = size / 2;
         const outer = size / 2 - 4;
         const inner = outer * 0.2;
@@ -121,10 +123,12 @@
         if (shape) {
           panel.legend.replaceChildren(...shapeLegend(shape));
           panel.note.textContent = `From the center out: ${subject === 'plans' ? 'epics, then the items under them, colored by status' : 'packages, modules, then files, colored by kind'}. ${shapeNote(shape)} Outer arcs look bigger than inner ones of the same value, so use the treemap to compare sizes. Click an arc to select it.`;
+          fitH.settle(size, draw);
           return;
         }
         panel.legend.replaceChildren(...views[0].categoryGroups.map((label, i) => legendKey(`cat-${i + 1}`, label)), legendKey('cat-0', 'Other and replies only'));
         panel.note.textContent = `From the center out: ${views.length > 1 ? 'sessions, ' : ''}prompts, agents, then tool categories, whose sizes are approximate (≈). Outer arcs look bigger than inner ones of the same value, so use the treemap to compare sizes. Click an arc to select its turn.`;
+        fitH.settle(size, draw);
       }
       return {
         update(sessions, sel, options) {

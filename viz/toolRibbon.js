@@ -32,6 +32,7 @@
       const note = el('p', { class: 'muted small' });
       const turnsHost = el('div');
       host.replaceChildren(chartHost, legend, note, turnsHost);
+      const fitH = ctx.fitter(host); // the ribbons fill the slide's height; a pinned ribbon's turn list runs on below
 
       const nameOf = (key) => (key === START ? 'Start' : key === END ? 'End' : key);
       const selectedTurn = () => {
@@ -132,9 +133,9 @@
         const leftX = Math.min(LABEL, width * 0.26);
         const rightX = width - leftX - NODE_W;
         const totalLeft = sum(steps);
-        const roomy = Math.max(MIN_HEIGHT, Math.min(520, totalLeft * PX_PER_STEP));
         // One scale for both columns, so a step is as wide leaving as it is arriving.
         const gaps = Math.max(lefts.size, rights.size) * NODE_GAP;
+        const roomy = Math.max(MIN_HEIGHT, fitH.height(Math.max(MIN_HEIGHT, Math.min(520, totalLeft * PX_PER_STEP)) + gaps + 6, 0) - gaps - 6);
         const scale = roomy / totalLeft;
         const left = layoutColumn(lefts, (k) => sum(steps.filter((s) => s.from === k)), rank, 2, scale);
         const right = layoutColumn(rights, (k) => sum(steps.filter((s) => s.to === k)), rank, 2, scale);
@@ -204,6 +205,7 @@
         legend.replaceChildren(...groups.map((g) => key(`cat-${g}`, g ? view.categoryGroups[g - 1] : 'Other tools')), key('swatch-ribbon-start', 'start or end of a sequence'));
         note.textContent = `Each agent’s calls in a turn are one sequence, read left to right; width is how many times that step happened. The order is observed, but a call following another doesn’t show it depended on it. ${current ? 'Dimmed ribbons aren’t in the selected turn. ' : ''}Click a ribbon to list its turns.`;
         drawTurns(steps);
+        fitH.settle(height + turnsHost.offsetHeight, draw); // the turn list isn't room the ribbons give up
       }
 
       return {
