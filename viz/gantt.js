@@ -8,7 +8,8 @@
 // for the contract. Clicking a turn's bar announces { sessionId, turnId }. The
 // mode lives in the instance. Sees only its host and ctx: no VS Code.
 (function () {
-  const ROW = 24;
+  const ROW = 24; // px per row at the least; rows stretch toward ROW_MAX to fill the slide, and past what fits the slide scrolls
+  const ROW_MAX = 44;
   const LABEL = 132;
   const AXIS = 22;
   const MIN_BAR = 3; // px; a turn with a single event still shows
@@ -23,6 +24,7 @@
       let mode = 'gantt'; // 'gantt' | 'waterfall'
       let view = null;
       let selection = null;
+      const fitH = ctx.fitter(host); // the rows fill the slide's height
 
       const ganttBtn = el('button', { text: 'Gantt', 'aria-pressed': 'true' });
       const waterfallBtn = el('button', { text: 'Waterfall', 'aria-pressed': 'false' });
@@ -181,15 +183,18 @@
         return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', ...(step < 60000 ? { second: '2-digit' } : {}) });
       }
 
-      /** One chart: rows over a time domain, with compactions as lines through them. */
-      function chart(rows, from, to, width, ariaLabel, compactions) {
+      /** One chart: rows over a time domain, with compactions as lines through them, filling room px tall when its rows allow. */
+      function chart(rows, from, to, width, ariaLabel, compactions, room) {
         const span = Math.max(1000, to - from);
         const pad = Math.max(span * 0.01, 500);
         const d0 = from - pad;
         const d1 = to + pad;
         const pw = width - LABEL - 12;
         const x = (t) => LABEL + ((t - d0) / (d1 - d0)) * pw;
-        const height = AXIS + rows.length * ROW + 4;
+        const natural = AXIS + rows.length * ROW + 4;
+        const row = rows.length ? Math.max(ROW, Math.min(ROW_MAX, (room - AXIS - 4) / rows.length)) : ROW;
+        const sc = row / ROW; // bars and ticks keep their proportions as rows stretch
+        const height = Math.max(natural, Math.round(room));
         const root = svg('svg', { class: 'viz-chart gantt-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': ariaLabel });
 
         const { ticks, step } = clockTicks(d0, d1, pw);
@@ -201,23 +206,23 @@
         }
 
         const current = selectedTurn();
-        rows.forEach((row, i) => {
-          const y = AXIS + i * ROW;
-          const lab = svg('text', { class: 'row-label', x: 0, y: y + ROW / 2 + 4 });
-          lab.textContent = fit(row.label, LABEL - 2);
+        rows.forEach((r, i) => {
+          const y = AXIS + i * row;
+          const lab = svg('text', { class: 'row-label', x: 0, y: y + row / 2 + 4 });
+          lab.textContent = fit(r.label, LABEL - 2);
           const labTitle = svg('title', {});
-          labTitle.textContent = row.label;
+          labTitle.textContent = r.label;
           lab.append(labTitle);
           root.append(lab);
           if (i > 0) root.append(svg('line', { class: 'gantt-rule', x1: 0, x2: width - 12, y1: y, y2: y }));
 
-          for (const bar of row.bars) {
+          for (const bar of r.bars) {
             const bx = x(bar.from);
             const bw = Math.max(MIN_BAR, x(bar.to) - bx);
             const clickable = !!bar.turnId;
             const on = clickable && bar.turnId === current;
             const g = svg('g', { class: `gantt-bar${clickable ? ' clickable' : ''}`, ...(clickable ? { tabindex: 0, role: 'button', 'aria-label': `${bar.tip[0]}; select this turn` } : {}) });
-            g.append(svg('rect', { class: `gantt-span ${bar.cls}${on ? ' gantt-selected' : ''}`, x: bx, y: y + 4, width: bw, height: ROW - 8, rx: 2 }));
+            g.append(svg('rect', { class: `gantt-span ${bar.cls}${on ? ' gantt-selected' : ''}`, x: bx, y: y + 4 * sc, width: bw, height: row - 8 * sc, rx: 2 }));
             g.addEventListener('mousemove', (e) => showTip(e, bar.tip));
             g.addEventListener('mouseleave', hideTip);
             if (clickable) {
@@ -227,15 +232,15 @@
             }
             root.append(g);
           }
-          for (const k of foldTicks(row.ticks, x)) {
-            const t = svg('rect', { class: `gantt-tick ${k.cls}${k.fail ? ' gantt-fail' : ''}`, x: x(k.t) - 1, y: y + (row.bars.length ? 7 : 5), width: 2, height: row.bars.length ? ROW - 14 : ROW - 10 });
-            const hit = svg('rect', { class: 'hit', x: x(k.t) - 2, y: y + 2, width: 4, height: ROW - 4 });
+          for (const k of foldTicks(r.ticks, x)) {
+            const t = svg('rect', { class: `gantt-tick ${k.cls}${k.fail ? ' gantt-fail' : ''}`, x: x(k.t) - 1, y: y + (r.bars.length ? 7 : 5) * sc, width: 2, height: (r.bars.length ? ROW - 14 : ROW - 10) * sc });
+            const hit = svg('rect', { class: 'hit', x: x(k.t) - 2, y: y + 2 * sc, width: 4, height: row - 4 * sc });
             const tip = [...k.tip];
             if (k.n > 1) tip[0] = `${tip[0]} and ${k.n - 1} more nearby`;
             hit.addEventListener('mousemove', (e) => showTip(e, tip));
             hit.addEventListener('mouseleave', hideTip);
             // A tick on a bar passes clicks through to the bar under it.
-            if (row.bars.length) hit.setAttribute('pointer-events', 'none');
+            if (r.bars.length) hit.setAttribute('pointer-events', 'none');
             root.append(t, hit);
           }
         });
@@ -273,9 +278,11 @@
         const turns = turnsOf(v);
         const parts = [];
         const current = selectedTurn();
+        // The slide's room: the whole of it for one chart; with a turn open, half each, less the open turn's heading.
+        const room = fitH.height(0, 0);
         if (mode === 'gantt') {
           const rows = rowsOf(v, turns, null);
-          parts.push(chart(rows, from, to, width, `Gantt chart: ${rows.length} rows over the session's clock time`, v.compactions));
+          parts.push(chart(rows, from, to, width, `Gantt chart: ${rows.length} rows over the session's clock time`, v.compactions, room));
         } else {
           const rows = turns.map((t, i) => {
             const on = t.turnId === current;
@@ -301,13 +308,13 @@
               ticks: unlinked.map((c) => ({ t: ms(c.ts), cls: 'gantt-tick-call', tip: ['Model call no prompt claims', ['Tokens', fmt(callTokens(c))]] })),
             });
           }
-          if (rows.length) parts.push(chart(rows, from, to, width, `Waterfall: one row per turn, ${turns.length} turns`, v.compactions));
+          if (rows.length) parts.push(chart(rows, from, to, width, `Waterfall: one row per turn, ${turns.length} turns`, v.compactions, current ? (room - 24) / 2 : room));
           if (current) {
             const t = turns.find((x) => x.turnId === current);
             const detail = rowsOf(v, turns, current);
             parts.push(
               el('p', { class: 'gantt-detail-head small' }, [el('strong', { text: `P${t.index}` }), el('span', { class: 'muted', text: ` on its own time axis, ${duration(new Date(t.from).toISOString(), new Date(t.to).toISOString())}` })]),
-              chart(detail, t.from, t.to, width, `Turn P${t.index}: ${detail.length} rows over the turn's clock time`, v.compactions)
+              chart(detail, t.from, t.to, width, `Turn P${t.index}: ${detail.length} rows over the turn's clock time`, v.compactions, (room - 24) / 2)
             );
           }
         }
@@ -328,6 +335,7 @@
         );
         const idle = 'Model and tool calls are recorded as moments, so they’re ticks; a bar runs from a turn’s first event to its last, and gaps between bars are idle time. Time waiting on a tool isn’t told apart from time working, and token size isn’t time.';
         note.textContent = mode === 'gantt' ? `${idle} Click a bar to select its turn.` : `${idle} ${current ? 'Click another turn to open it.' : 'Click a turn to open it on its own time axis.'}`;
+        fitH.settle(parts.filter((p) => p.localName === 'svg').reduce((a, p) => a + Number(p.getAttribute('viewBox').split(' ')[3]), 0), draw);
       }
 
       return {

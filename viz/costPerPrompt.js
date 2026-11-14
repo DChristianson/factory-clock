@@ -18,6 +18,7 @@
       let views = [];
       let selection = null;
       let draws = 0;
+      const fitH = ctx.fitter(host); // the plot fills the slide's height
 
       const byAgentBtn = el('button', { text: 'By agent', 'aria-pressed': 'true' });
       const byCategoryBtn = el('button', { text: 'By tool category', 'aria-pressed': 'false' });
@@ -99,8 +100,8 @@
         const approx = mode === 'category';
         const width = Math.max(320, host.clientWidth || 800);
         const m = { l: 52, r: 12, t: 12, b: 40 };
-        const ph = 170;
-        const height = m.t + ph + m.b;
+        const height = fitH.height(m.t + 170 + m.b, m.t + 140 + m.b);
+        const ph = height - m.t - m.b;
         const pw = width - m.l - m.r;
         const gapS = groups.length > 1 ? 18 : 0;
         const colW = (pw - gapS * (groups.length - 1)) / nCols;
@@ -179,6 +180,7 @@
           mode === 'agent'
             ? `One y axis across sessions. Subagents run in their own context, counted in their turn’s column.${groups.some((g) => g.columns.some((c) => !c.turnId)) ? ' Unlinked: model calls no prompt claims.' : ''} Click a column to select the turn.`
             : '≈ By tool category is approximate: a turn’s tokens are split across the tool categories it used in proportion to how many calls each made. Click a column to select the turn.';
+        fitH.settle(height, draw);
       }
 
       return {

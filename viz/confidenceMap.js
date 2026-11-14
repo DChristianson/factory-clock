@@ -73,6 +73,7 @@
     mount(host, ctx) {
       const { svg, svgText, fit, clip, fmt, vizPanel, interact, legendKey, shapeSelected } = ctx;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the list takes at least the slide's height
       let selection = null;
       let data = { graphs: [], items: [], links: [] };
 
@@ -104,13 +105,15 @@
         }
         const shown = rows.slice(0, MAX_ROWS);
         const folded = rows.filter((r) => r.epic).length - shown.filter((r) => r.epic).length;
-        const height = HEAD + shown.reduce((a, r) => a + (r.epic ? r.h : DOC_ROW), 0) + 4;
+        const natural = HEAD + shown.reduce((a, r) => a + (r.epic ? r.h : DOC_ROW), 0) + 4;
+        // A list: rows keep their size, top-aligned; the drawing takes at least the slide's height, and a longer one scrolls in it.
+        const height = Math.max(natural, fitH.height(natural, 0));
         const nObs = items.filter((n) => n.item.confidence !== 'inferred').length;
         const root = svg('svg', { class: 'viz-chart conf-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Confidence map: ${fmt(nObs)} of ${fmt(items.length)} plan items read, ${fmt(items.length - nObs)} inferred, over ${docs.length} source${docs.length === 1 ? '' : 's'}` });
         root.append(svgText({ class: 'axis-label', x: colX[0], y: 13 }, `read (observed): ${fmt(nObs)}`));
         root.append(svgText({ class: 'axis-label', x: colX[1], y: 13 }, `guessed (inferred): ${fmt(items.length - nObs)}`));
         root.append(svgText({ class: 'axis-label', x: width - 4, y: 13, 'text-anchor': 'end' }, 'read'));
-        root.append(svg('line', { class: 'grid', x1: colX[1] - 4, x2: colX[1] - 4, y1: HEAD - 2, y2: height - 2 }));
+        root.append(svg('line', { class: 'grid', x1: colX[1] - 4, x2: colX[1] - 4, y1: HEAD - 2, y2: natural - 2 }));
 
         let aggregated = 0;
         let y = HEAD;
@@ -191,6 +194,7 @@
         if (folded) parts.push(`${fmt(folded)} rows folded past ${MAX_ROWS}.`);
         parts.push('Click a square or an epic’s name to select it.');
         panel.note.textContent = parts.join(' ');
+        fitH.settle(height, draw);
       }
 
       return {

@@ -11,7 +11,8 @@
 // the grouping buttons hide, and a block or a group's header announces
 // { artifactId } or { itemId }. Sees only its host and ctx: no VS Code.
 (function () {
-  const HEIGHT = 440;
+  const HEIGHT = 440; // outside the explorer; on a slide the treemap fills the slide's height
+  const MIN_HEIGHT = 240;
   const HEADER = 18; // px kept for a group's label when it's big enough for one
   const GAP = 2;
 
@@ -74,6 +75,7 @@
       let selection = null;
       let shape = null; // with a subject: the Shape to draw instead of the sessions
       let subject = null;
+      const fitH = ctx.fitter(host);
 
       const byTurnBtn = el('button', { text: 'By turn', 'aria-pressed': 'true' });
       const byCategoryBtn = el('button', { text: 'By tool category', 'aria-pressed': 'false' });
@@ -281,13 +283,15 @@
           return;
         }
         const width = Math.max(320, host.clientWidth || 800);
-        const root = svg('svg', { class: 'viz-chart treemap-chart', viewBox: `0 0 ${width} ${HEIGHT}`, role: 'img', 'aria-label': `Treemap of ${compact(total)} ${shape.valueLabel} in the loaded ${subject}` });
+        const height = fitH.height(HEIGHT, MIN_HEIGHT);
+        const root = svg('svg', { class: 'viz-chart treemap-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Treemap of ${compact(total)} ${shape.valueLabel} in the loaded ${subject}` });
         const outlines = [];
-        drawLevel(root, nodes, { x: 0, y: 0, w: width, h: HEIGHT }, outlines);
+        drawLevel(root, nodes, { x: 0, y: 0, w: width, h: height }, outlines);
         for (const r of outlines) root.append(svg('rect', { class: 'treemap-selected', x: r.x + 1, y: r.y + 1, width: Math.max(0, r.w - 2), height: Math.max(0, r.h - 2) }));
         chartHost.replaceChildren(root);
         legend.replaceChildren(...shapeLegend(shape));
         note.textContent = `Area is ${shape.valueLabel}: ${subject === 'plans' ? 'epics hold their items, each item counting one, colored by status' : 'packages hold modules, modules hold files, colored by kind; external dependencies have no lines here, so they’re left out'}. ${shapeNote(shape)} Click a block, or a group’s header, to select it.`;
+        fitH.settle(height, draw);
       }
 
       function draw() {
@@ -307,9 +311,10 @@
           return;
         }
         const width = Math.max(320, host.clientWidth || 800);
-        const root = svg('svg', { class: 'viz-chart treemap-chart', viewBox: `0 0 ${width} ${HEIGHT}`, role: 'img', 'aria-label': `Treemap of tokens ${mode === 'turn' ? 'by turn' : 'by tool category'}, ${views.length} session${views.length === 1 ? '' : 's'}` });
+        const height = fitH.height(HEIGHT, MIN_HEIGHT);
+        const root = svg('svg', { class: 'viz-chart treemap-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Treemap of tokens ${mode === 'turn' ? 'by turn' : 'by tool category'}, ${views.length} session${views.length === 1 ? '' : 's'}` });
         const outlines = [];
-        drawLevel(root, nodes, { x: 0, y: 0, w: width, h: HEIGHT }, outlines);
+        drawLevel(root, nodes, { x: 0, y: 0, w: width, h: height }, outlines);
         for (const r of outlines) root.append(svg('rect', { class: 'treemap-selected', x: r.x + 1, y: r.y + 1, width: Math.max(0, r.w - 2), height: Math.max(0, r.h - 2) }));
         chartHost.replaceChildren(root);
 
@@ -317,6 +322,7 @@
         const labels = views[0].categoryGroups;
         legend.replaceChildren(...labels.map((label, i) => key(`cat-${i + 1}`, label)), key('cat-0', OTHER));
         note.textContent = '≈ Area is tokens. A turn’s tokens are split across the tool categories it used in proportion to how many calls each made, so the category sizes are approximate. Click a block to select its turn.';
+        fitH.settle(height, draw);
       }
 
       return {

@@ -26,6 +26,7 @@
       let selection = null;
       let endDay = null; // the week's last day; follows the data until someone moves it
       let moved = false;
+      const fitH = ctx.fitter(host); // the rings fill the slide's height, as wide as the table beside them allows
 
       const label = el('strong', { class: 'small' });
       const prevBtn = el('button', { text: '‹ Earlier', 'aria-label': 'An earlier week' });
@@ -129,7 +130,8 @@
         };
 
         const avail = Math.max(320, host.clientWidth || 800);
-        const size = Math.max(MIN_SIZE, Math.min(MAX_SIZE, avail > 700 ? avail - 240 : avail));
+        const room = avail > 700 ? avail - 240 : avail;
+        const size = Math.max(MIN_SIZE, Math.min(room, fitH.height(Math.min(MAX_SIZE, room), MIN_SIZE)));
         const cx = size / 2;
         const cy = size / 2;
         const outer = size / 2 - 26;
@@ -247,6 +249,7 @@
           key('swatch-week-info', 'finding (info)')
         );
         note.textContent = `Rings are days, oldest in the middle; midnight is at the top and hours run clockwise, in local time. Only the ${views.length === 1 ? 'loaded session counts' : `${fmt(views.length)} loaded sessions count`}, so load more to fill the week.${undated ? ` ${fmt(undated)} finding${undated === 1 ? '' : 's'} with no time recorded left out.` : ''} Outer rings have more area, so go by color, or the table. Click a wedge to select that hour’s busiest turn.`;
+        fitH.settle(size, draw);
       }
 
       return {

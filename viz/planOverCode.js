@@ -89,7 +89,7 @@
         const marginRows = Math.min(unpinned.length, MARGIN_ROWS) + (unpinned.length > MARGIN_ROWS ? 1 : 0);
         const marginH = unpinned.length ? 18 + marginRows * 16 : 0;
         const gridH = Math.ceil(layout.height) + 4;
-        const height = side ? Math.max(gridH, marginH) : gridH + (marginH ? marginH + 10 : 0);
+        const height = Math.max(side ? Math.max(gridH, marginH) : gridH + (marginH ? marginH + 10 : 0), ctx.fitHeight(host) !== null ? maxHeight : 0); // in a slide, its whole height even when cells hit MAX_CELL
         const root = svg('svg', { class: 'viz-chart pog-chart', width, height, viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Plan over code: ${named.size} of ${items.length} plan items pinned on ${grid.cells.size} files` });
         const pinLayer = svg('g', { class: 'pog-pins' });
         for (const band of layout.bands) {

@@ -7,6 +7,7 @@
 (function () {
   const STEP = 44;
   const LIFT = 70; // a ridge's height; more than STEP, so ridges overlap
+  const MAX_STRETCH = 2; // in a tall slide, STEP and LIFT grow together up to this many times, then the ridges stay at the top
   window.factoryClock.register({
     id: 'ridgeline',
     title: 'Ridgeline',
@@ -26,6 +27,7 @@
         draw();
       });
       const panel = vizPanel(host, [metricControl, groupControl]);
+      const fitH = ctx.fitter(host); // the chart fills the slide's height; more ridges than fit scroll
 
       function groups() {
         const out = new Map();
@@ -49,7 +51,12 @@
         const width = Math.max(320, host.clientWidth || 800);
         const label = Math.min(170, Math.round(width * 0.26));
         const axisH = 34;
-        const height = LIFT + (rows.length - 1) * STEP + axisH + 4;
+        const natural = LIFT + (rows.length - 1) * STEP + axisH + 4;
+        const avail = fitH.height(natural, natural);
+        const k = Math.max(1, Math.min(MAX_STRETCH, (avail - axisH - 4) / (LIFT + (rows.length - 1) * STEP)));
+        const step = STEP * k;
+        const lift = LIFT * k;
+        const height = Math.max(Math.ceil(lift + (rows.length - 1) * step + axisH + 4), avail);
         const axis = niceAxis(Math.max(1, ...rows.flatMap((r) => r.values)), 5);
         const x = (v) => label + (v / axis.top) * (width - label - 16);
         const plotBottom = height - axisH;
@@ -60,11 +67,11 @@
         }
         root.append(svgText({ class: 'axis-label', x: label, y: plotBottom + 30 }, metric.label));
         rows.forEach((r, i) => {
-          const base = LIFT + i * STEP;
+          const base = lift + i * step;
           const sorted = [...r.values].sort((a, b) => a - b);
           const curve = density(sorted, 0, axis.top, 80);
           const peak = Math.max(...curve.map((p) => p.y)) || 1;
-          const points = curve.map((p) => `${x(p.x).toFixed(1)} ${(base - (p.y / peak) * (LIFT - 6)).toFixed(1)}`);
+          const points = curve.map((p) => `${x(p.x).toFixed(1)} ${(base - (p.y / peak) * (lift - 6)).toFixed(1)}`);
           const g = svg('g', { class: 'ridge' });
           g.append(svg('path', { class: 'ridge-fill', d: `M${x(0)} ${base} L${points.join(' L')} L${x(axis.top)} ${base} Z` }));
           g.append(svg('path', { class: 'ridge-line', d: `M${points.join(' L')}` }));
@@ -81,6 +88,7 @@
         panel.chart.replaceChildren(root);
         panel.legend.replaceChildren();
         panel.note.textContent = `Each ridge is scaled to its own peak, so compare where the values fall, not the heights; the count is by the name, and the tick is the median.${groupBy === 'session' ? ' Click a ridge to select its session.' : ''}`;
+        fitH.settle(height, draw);
       }
       return {
         update(sessions) {

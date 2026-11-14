@@ -14,6 +14,7 @@
       let views = [];
       let selection = null;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the plot fills the slide's height
 
       function draw() {
         if (!views.length) {
@@ -27,14 +28,15 @@
         });
         const width = Math.max(320, host.clientWidth || 800);
         const m = { l: 56, r: MAX_R, t: MAX_R, b: 40 };
-        const ph = 300;
+        const height = fitH.height(m.t + 300 + m.b, m.t + 200 + m.b);
+        const ph = height - m.t - m.b;
         const xa = niceAxis(Math.max(1, ...rows.map((r) => r.span)), 5);
         const ya = niceAxis(Math.max(1, ...rows.map((r) => r.s.tokens)), 4);
         const x = (v) => m.l + (v / xa.top) * (width - m.l - m.r);
         const y = (v) => m.t + ph - (v / ya.top) * ph;
         const maxTools = Math.max(1, ...rows.map((r) => r.s.toolCalls));
         const radius = (n) => Math.max(5, Math.sqrt(n / maxTools) * MAX_R);
-        const root = svg('svg', { class: 'viz-chart bubble-chart', viewBox: `0 0 ${width} ${m.t + ph + m.b}`, role: 'img', 'aria-label': `Bubble chart of ${rows.length} sessions: tokens against span, area for tool calls` });
+        const root = svg('svg', { class: 'viz-chart bubble-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Bubble chart of ${rows.length} sessions: tokens against span, area for tool calls` });
         for (const t of xa.ticks) {
           root.append(svg('line', { class: 'grid', x1: x(t), x2: x(t), y1: m.t, y2: m.t + ph }));
           root.append(svgText({ class: 'axis-label', x: x(t), y: m.t + ph + 14, 'text-anchor': 'middle' }, secondsText(t)));
@@ -62,6 +64,7 @@
         panel.chart.replaceChildren(root);
         panel.legend.replaceChildren(legendKey('swatch-bubble-warn', 'has warnings'), legendKey('swatch-bubble-info', 'info findings only'), legendKey('swatch-bubble-clean', 'no findings'));
         panel.note.textContent = 'Area is tool calls. Span runs from first event to last, so it includes idle time. Click a bubble to select its session.';
+        fitH.settle(height, draw);
       }
       return {
         update(sessions, sel) {

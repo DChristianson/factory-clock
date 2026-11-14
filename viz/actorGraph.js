@@ -45,6 +45,7 @@
       const legend = el('div', { class: 'legend small actor-legend' });
       const note = el('p', { class: 'muted small' });
       host.replaceChildren(chartHost, legend, note);
+      const fitH = ctx.fitter(host); // the graph fills the slide's height
       let views = [];
       let selection = null;
       let draws = 0;
@@ -139,7 +140,7 @@
           return counts.get(n.label) > 1 && p ? `${p.label}/${n.label}` : n.label;
         };
         const width = Math.max(320, host.clientWidth || 800);
-        const height = Math.round(Math.min(560, Math.max(360, width * 0.6)));
+        const height = fitH.height(Math.round(Math.min(560, Math.max(360, width * 0.6))), 300);
         const maxValue = Math.max(1, ...ids.map((id) => byId.get(id).value));
         const room = Math.sqrt((width * height) / ids.length);
         const rMax = Math.max(8, Math.min(22, room * 0.22));
@@ -222,6 +223,7 @@
         const cut = over ? ` Still more than ${MAX_SHAPE_NODES} after folding, so only the most connected are shown.` : '';
         const left = shape.nodes.length - ids.length;
         note.textContent = `${subject === 'plans' ? 'Items with links, colored by status; arrows run from blocker to blocked (or along the link)' : 'Artifacts with dependencies, colored by kind; arrows run from importer to imported'}, thicker for heavier links${links.some((l) => l.inferred) ? ', inferred ones dashed' : ''}. ${shapeNote(shape)}${folded}${cut} ${left > 0 ? `${fmt(left)} ${subject === 'plans' ? 'items' : 'nodes'} without links${folds ? ', or folded,' : ''} aren’t drawn. ` : ''}${ids.length > SHAPE_LABELS ? `Only the ${SHAPE_LABELS} largest are labeled; hover for the rest. ` : ''}Click a node to select it.`;
+        fitH.settle(height, drawShape);
       }
 
       /** Nodes and edges over every session, before subagents are folded. */
@@ -444,7 +446,9 @@
         const rightRow = 30;
         const groupHead = 22;
         const rightHeight = (models.length ? groupHead + models.length * rightRow : 0) + (tools.length ? groupHead + tools.length * rightRow : 0) + (models.length && tools.length ? 10 : 0);
-        const plotH = Math.max(rightHeight, agents.length * agentRow, subagents.length * subagentRow, agentRow * 2);
+        const needH = Math.max(rightHeight, agents.length * agentRow, subagents.length * subagentRow, agentRow * 2);
+        // The plot fills the slide's height (the left columns centered in it); a taller graph scrolls in the slide.
+        const plotH = Math.max(needH, fitH.height(m.t + needH + m.b, 0) - m.t - m.b);
         const height = m.t + plotH + m.b;
         const columns = subagents.length ? 4 : 3;
         const xRight = width - m.r;
@@ -628,6 +632,7 @@
         const prompt = keysOfTurn.length ? selectedPrompt() : null;
         const showing = prompt ? `Highlighting the actors in P${prompt.index}. ` : '';
         note.textContent = `${showing}Agents, subagents, and models are sized by tokens, tool categories by calls; edge thickness is the count of events. Hover for exact counts; click an actor to select the first turn it appears in.`;
+        fitH.settle(height, draw);
       }
 
       return {

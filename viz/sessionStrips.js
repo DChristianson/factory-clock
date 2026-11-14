@@ -7,6 +7,8 @@
 // as one row. Clicking a turn announces { sessionId, turnId }. Sees only its
 // host and ctx: no VS Code.
 (function () {
+  const ROW_H = 26; // a strip's height at least; in a tall slide strips grow to fill it, up to MAX_STRETCH times
+  const MAX_STRETCH = 2;
   window.factoryClock.register({
     id: 'session-strips',
     title: 'Session strips',
@@ -20,6 +22,7 @@
       let views = [];
       let selection = null;
       let draws = 0;
+      const fitH = ctx.fitter(host); // the strips fill the slide's height; more than fit scroll
 
       const sessionLabel = (s) => (s.name ? clip(s.name, 60) : short(s.sessionId));
       function spanText(fromMs, toMs) {
@@ -82,9 +85,11 @@
         const t1 = t1raw > t0 ? t1raw : t0 + 60_000;
         const width = Math.max(320, host.clientWidth || 800);
         const m = { l: 130, r: 12, t: 18, b: 22 };
-        const rowH = 26;
         const gap = 14; // room for a badge above each row
-        const height = m.t + rows.length * (rowH + gap) - gap + 6 + m.b;
+        const natural = m.t + rows.length * (ROW_H + gap) - gap + 6 + m.b;
+        const avail = fitH.height(natural, natural);
+        const rowH = Math.max(ROW_H, Math.min(ROW_H * MAX_STRETCH, (avail - m.t - m.b - 6 + gap) / rows.length - gap));
+        const height = Math.max(Math.ceil(m.t + rows.length * (rowH + gap) - gap + 6 + m.b), avail);
         const pw = width - m.l - m.r;
         const x = (t) => m.l + ((t - t0) / (t1 - t0)) * pw;
         const axisY = height - m.b;
@@ -107,7 +112,7 @@
           const v = r.v;
           const sessionId = v.summary.sessionId;
           const y = m.t + i * (rowH + gap);
-          const label = svg('text', { class: 'row-label', x: m.l - 10, y: y + 17, 'text-anchor': 'end' });
+          const label = svg('text', { class: 'row-label', x: m.l - 10, y: y + rowH / 2 + 4, 'text-anchor': 'end' });
           label.textContent = fit(sessionLabel(v.summary), m.l - 14);
           label.addEventListener('mousemove', (e) => showTip(e, [v.summary.name ? `${v.summary.name} (${short(sessionId)})` : sessionId, ['Prompts', fmt(v.summary.prompts)], ['Tokens', fmt(v.summary.tokens)], ['Span', spanText(ms(v.summary.firstTs), ms(v.summary.lastTs))]]));
           label.addEventListener('mouseleave', hideTip);
@@ -176,6 +181,7 @@
           key('swatch-info', 'finding (info)')
         );
         note.textContent = 'A block runs from a turn’s first prompt to its last model call; gaps between blocks are idle time. Finding badges are filled while active, outlined when past. Hover a block for its prompt; click to select the turn.';
+        fitH.settle(height, draw);
       }
 
       return {

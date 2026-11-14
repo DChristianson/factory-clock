@@ -5,7 +5,8 @@
 // an outlier announces its turn; clicking a row, its session. The metric lives
 // in the instance. Sees only its host and ctx: no VS Code.
 (function () {
-  const ROW = 64;
+  const ROW = 64; // px per session row, the least; rows stretch to fill the slide up to ROW_MAX
+  const ROW_MAX = 128;
   window.factoryClock.register({
     id: 'box-violin',
     title: 'Box and violin',
@@ -20,6 +21,7 @@
         draw();
       });
       const panel = vizPanel(host, [controls]);
+      const fitH = ctx.fitter(host); // rows stretch to fill the slide's height
 
       function draw() {
         const rows = views.map((v) => {
@@ -33,17 +35,20 @@
         const width = Math.max(320, host.clientWidth || 800);
         const label = Math.min(160, Math.round(width * 0.25));
         const axisH = 34;
-        const height = rows.length * ROW + axisH;
+        const room = fitH.height(rows.length * ROW + axisH, 0);
+        const row = Math.max(ROW, Math.min(ROW_MAX, Math.floor((room - axisH) / rows.length)));
+        const plotH = rows.length * row; // the axis sits under the rows; past ROW_MAX the space left stays below it
+        const height = Math.max(room, plotH + axisH);
         const axis = niceAxis(Math.max(1, ...rows.flatMap((r) => r.sorted)), 5);
         const x = (v) => label + (v / axis.top) * (width - label - 16);
         const root = svg('svg', { class: 'viz-chart box-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `${metric.label}, one row per session, ${rows.length} sessions` });
         for (const t of axis.ticks) {
-          root.append(svg('line', { class: 'grid', x1: x(t), x2: x(t), y1: 0, y2: height - axisH }));
-          root.append(svgText({ class: 'axis-label', x: x(t), y: height - axisH + 14, 'text-anchor': 'middle' }, metric.text(t)));
+          root.append(svg('line', { class: 'grid', x1: x(t), x2: x(t), y1: 0, y2: plotH }));
+          root.append(svgText({ class: 'axis-label', x: x(t), y: plotH + 14, 'text-anchor': 'middle' }, metric.text(t)));
         }
-        root.append(svgText({ class: 'axis-label', x: label, y: height - axisH + 30 }, metric.label));
+        root.append(svgText({ class: 'axis-label', x: label, y: plotH + 30 }, metric.label));
         rows.forEach((r, i) => {
-          const y = i * ROW + ROW / 2;
+          const y = i * row + row / 2;
           const sessionId = r.v.summary.sessionId;
           const s = r.sorted;
           const q1 = quantile(s, 0.25);
@@ -54,11 +59,11 @@
           const highFence = [...s].reverse().find((v) => v <= q3 + 1.5 * iqr);
           const on = selection && selection.sessionId === sessionId;
           const g = svg('g', { class: 'box-row' });
-          g.append(svg('rect', { class: 'hit', x: 0, y: y - ROW / 2, width, height: ROW }));
+          g.append(svg('rect', { class: 'hit', x: 0, y: y - row / 2, width, height: row }));
           if (s.length > 2 && s[s.length - 1] > s[0]) {
             const curve = density(s, s[0], s[s.length - 1]);
             const peak = Math.max(...curve.map((p) => p.y)) || 1;
-            const half = ROW / 2 - 6;
+            const half = row / 2 - 6;
             const up = curve.map((p) => `${x(p.x).toFixed(1)} ${(y - (p.y / peak) * half).toFixed(1)}`);
             const down = [...curve].reverse().map((p) => `${x(p.x).toFixed(1)} ${(y + (p.y / peak) * half).toFixed(1)}`);
             g.append(svg('path', { class: 'violin', d: `M${up.join(' L')} L${down.join(' L')} Z` }));
@@ -88,6 +93,7 @@
         panel.chart.replaceChildren(root);
         panel.legend.replaceChildren();
         panel.note.textContent = 'The shape is the density of the values, the box runs between the quartiles with a line at the median, the whisker reaches 1.5 times the box, and dots beyond it are outliers. Click a row to select its session, or a dot to select its turn.';
+        fitH.settle(height, draw);
       }
       return {
         update(sessions, sel) {

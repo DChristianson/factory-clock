@@ -29,6 +29,7 @@
     mount(host, ctx) {
       const { svg, svgText, clip, fmt, niceAxis, vizPanel, interact, legendKey, shapeSelected } = ctx;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the plot fills the slide's height
       let selection = null;
       let data = { graphs: [], items: [] };
 
@@ -49,11 +50,12 @@
 
         const width = Math.max(320, host.clientWidth || 800);
         const m = { l: 40, r: 76, t: 12, b: 24 };
-        const ph = 220;
+        const height = fitH.height(m.t + 220 + m.b, m.t + 160 + m.b);
+        const ph = height - m.t - m.b;
         const axis = niceAxis(opened.length);
         const x = (t) => m.l + ((t - lo) / (hi - lo)) * (width - m.l - m.r);
         const y = (k) => m.t + ph - (k / axis.top) * ph;
-        const root = svg('svg', { class: 'viz-chart burn-chart', viewBox: `0 0 ${width} ${m.t + ph + m.b}`, role: 'img', 'aria-label': `Burn-up: ${opened.length} items opened and ${closed.length} closed between ${new Date(lo).toDateString()} and ${new Date(hi).toDateString()}` });
+        const root = svg('svg', { class: 'viz-chart burn-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Burn-up: ${opened.length} items opened and ${closed.length} closed between ${new Date(lo).toDateString()} and ${new Date(hi).toDateString()}` });
         for (const t of axis.ticks) {
           root.append(svg('line', { class: 'grid', x1: m.l, x2: width - m.r, y1: y(t), y2: y(t) }));
           root.append(svgText({ class: 'axis-label', x: m.l - 6, y: y(t) + 4, 'text-anchor': 'end' }, fmt(t)));
@@ -119,6 +121,7 @@
         if (graphs.length > 1) parts.push(`The ${graphs.length} loaded plans are counted together.`);
         parts.push(dotted ? 'Click a dot to select its item.' : `More than ${MAX_DOTS} items: the dots are left out.`);
         panel.note.textContent = parts.join(' ');
+        fitH.settle(height, draw);
       }
 
       return {

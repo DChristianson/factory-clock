@@ -34,6 +34,7 @@
       let view = null;
       let selection = null;
       let draws = 0;
+      const fitH = ctx.fitter(host); // the graph takes at least the slide's height; a taller one scrolls in the slide
       let scrolledTo = null; // the selection last scrolled into view
 
       const callTokens = (c) => c.input + c.cacheRead + c.cacheCreation + c.output;
@@ -231,7 +232,7 @@
         }
         const hostWidth = Math.max(320, host.clientWidth || 800);
         const width = Math.max(hostWidth, GUTTER + maxCols * COL + 16);
-        const height = Math.max(40, y - ROW_GAP + 4);
+        const height = Math.max(40, y - ROW_GAP + 4, fitH.height(0, 0));
         const root = svg('svg', { class: 'viz-chart eg-chart', width, height, viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Event graph: ${rows.length} row${rows.length === 1 ? '' : 's'}, left to right` });
 
         const defs = svg('defs');
@@ -350,6 +351,7 @@
         if (collapsed) parts.push('×N is a repeated step folded into one node; hover for its parts.');
         if (eventsLeftOut) parts.push(`Left out to stay readable: ${fmt(eventsLeftOut)} of ${fmt(rows.reduce((a, r) => a + r.total, 0))} events${turnsCapped ? ` (${fmt(turnsCapped)} turn${turnsCapped === 1 ? ' shows' : 's show'} only the prompt; select one to draw it)` : ''}.`);
         note.textContent = parts.join(' ');
+        fitH.settle(height, draw);
       }
 
       function nodeEl(n, r, sessionId) {

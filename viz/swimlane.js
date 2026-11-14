@@ -7,7 +7,8 @@
 // the contract. Clicking a turn's band announces { sessionId, turnId }. Sees only
 // its host and ctx: no VS Code.
 (function () {
-  const LANE = 44;
+  const LANE = 44; // px per lane at least; lanes spread to fill the slide, up to LANE_MAX
+  const LANE_MAX = 88;
   const STEP = 30;
   const LABEL = 118;
   const HEAD = 22;
@@ -21,6 +22,7 @@
       let view = null;
       let selection = null;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the lanes spread to fill the slide's height
 
       const selectedTurn = () => {
         const s = selection;
@@ -74,9 +76,11 @@
           ...subagents.map((id) => ({ key: id, label: `sub ${id.replace(/^agent-/, '').slice(0, 7)}` })),
           { key: 'tools', label: 'Tool calls' },
         ];
-        const yOf = new Map(lanes.map((l, i) => [l.key, HEAD + i * LANE + LANE / 2]));
+        const natural = HEAD + lanes.length * LANE + 2;
+        const height = Math.max(natural, fitH.height(natural, 0));
+        const lane = Math.max(LANE, Math.min(LANE_MAX, (height - HEAD - 2) / Math.max(1, lanes.length)));
+        const yOf = new Map(lanes.map((l, i) => [l.key, HEAD + i * lane + lane / 2]));
         const chartW = 12 + steps.length * STEP + 12;
-        const height = HEAD + lanes.length * LANE + 2;
         const labels = svg('svg', { class: 'viz-chart swim-labels', width: LABEL, height, viewBox: `0 0 ${LABEL} ${height}` });
         lanes.forEach((l) => labels.append(svgText({ class: 'row-label', x: 0, y: yOf.get(l.key) + 4 }, fit(l.label, LABEL - 4))));
         const root = svg('svg', { class: 'viz-chart swim-chart', width: chartW, height, viewBox: `0 0 ${chartW} ${height}`, role: 'img', 'aria-label': `Swimlane of ${steps.length} steps across ${lanes.length} lanes` });
@@ -108,7 +112,7 @@
           }
           start = i;
         }
-        lanes.forEach((l, i) => root.append(svg('line', { class: 'swim-rule', x1: 0, x2: chartW, y1: HEAD + (i + 1) * LANE, y2: HEAD + (i + 1) * LANE })));
+        lanes.forEach((l, i) => root.append(svg('line', { class: 'swim-rule', x1: 0, x2: chartW, y1: HEAD + (i + 1) * lane, y2: HEAD + (i + 1) * lane })));
         // Hand-offs, then the steps over them.
         steps.forEach((s, i) => {
           if (i === 0 || steps[i - 1].turnId !== s.turnId) return;
@@ -145,6 +149,7 @@
           ...(view.tools.some((x) => x.status === 'failure') ? [legendKey('swatch-gantt-fail', 'includes a failed call')] : [])
         );
         panel.note.textContent = `Steps run left to right in order, and distance isn’t time. Lines are the order of events within a turn, not evidence that one step caused the next. Repeats in a lane fold into ×N.${cut ? ` ${current ? `Showing the selected turn; ${fmt(cut)} other steps are left out.` : `Showing the first ${fmt(CAP)} steps of ${fmt(all.length)}; select a turn to draw it in full.`}` : ''} Click a band to select its turn.`;
+        fitH.settle(height, draw);
       }
       return {
         update(sessions, sel) {

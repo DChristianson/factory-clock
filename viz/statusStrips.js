@@ -9,7 +9,8 @@
 (function () {
   const MAX_STRIPS = 40; // strips drawn; the rest fold, and the note says how many
   const MIN_BLOCK = 3; // px; narrower, a strip draws a segment per status instead of a block per item
-  const ROW = 34;
+  const ROW = 34; // px per strip at least; strips spread to fill the slide, up to ROW_MAX
+  const ROW_MAX = 68;
   const STRIP_H = 20;
   const AXIS = 16;
   // Done first, so the blocks fill the strip as the work does; then what's moving, stuck, waiting, set aside.
@@ -68,6 +69,7 @@
     mount(host, ctx) {
       const { svg, svgText, fit, clip, fmt, vizPanel, interact, legendKey, shapeSelected } = ctx;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the strips spread to fill the slide's height
       let selection = null;
       let data = { graphs: [], items: [] };
 
@@ -91,7 +93,9 @@
         const x0 = labelW + 8;
         const statW = 74; // the "5/7 · 71%" at the end
         const stripW = Math.max(60, width - x0 - statW - 8);
-        const height = AXIS + shown.length * ROW + 4;
+        const natural = AXIS + shown.length * ROW + 4;
+        const height = Math.max(natural, fitH.height(natural, 0));
+        const row = Math.max(ROW, Math.min(ROW_MAX, (height - AXIS - 4) / Math.max(1, shown.length)));
         const root = svg('svg', { class: 'viz-chart pstrip-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Status strips: ${shown.length} epics of ${fmt(items.length)} plan items` });
         for (const f of [0, 0.5, 1]) {
           root.append(svg('line', { class: 'grid', x1: x0 + f * stripW, x2: x0 + f * stripW, y1: AXIS - 2, y2: height - 4 }));
@@ -100,7 +104,7 @@
 
         let aggregated = 0;
         shown.forEach((grp, i) => {
-          const top = AXIS + i * ROW + (ROW - STRIP_H) / 2;
+          const top = AXIS + i * row + (row - STRIP_H) / 2;
           const list = [...grp.members].sort((a, b) => BLOCK_ORDER.indexOf(a.item.status) - BLOCK_ORDER.indexOf(b.item.status));
           const share = doneShare(list);
           const name = grp.head ? grp.head.item.title || grp.head.id : 'No epic';
@@ -166,6 +170,7 @@
         if (folded) parts.push(`${folded} strips folded past ${MAX_STRIPS}.`);
         parts.push('Click a block or an epic’s name to select it.');
         panel.note.textContent = parts.join(' ');
+        fitH.settle(height, draw);
       }
 
       return {

@@ -19,6 +19,7 @@
   const MAX_SHAPE_NODES = 48; // a Shape's linked nodes before the deepest fold to their parents
   const SHAPE_CELL_MAX = 30;
   const SHAPE_CELL_MIN = 12;
+  const FIT_GROW = 1.5; // in the explorer, cells grow up to this many times their usual size to fill the slide's height, as the width allows
   window.factoryClock.register({
     id: 'adjacency-matrix',
     title: 'Adjacency matrix',
@@ -30,6 +31,7 @@
       let shape = null; // with a subject: the Shape to draw instead of the sessions
       let subject = null;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the matrix fills the slide's height, as far as its width allows
 
       function build() {
         const subagents = new Set();
@@ -196,9 +198,11 @@
         const avail = Math.max(320, host.clientWidth || 800);
         const label = Math.min(170, Math.max(110, avail * 0.2));
         const head = 110;
-        const cell = Math.max(SHAPE_CELL_MIN, Math.min(SHAPE_CELL_MAX, Math.floor((avail - label - head) / n)));
+        const room = fitH.height(0, 0); // 0 outside the explorer: the matrix keeps its own size
+        const cap = room ? Math.max(SHAPE_CELL_MAX, Math.min(Math.round(SHAPE_CELL_MAX * FIT_GROW), Math.floor((room - head - 2) / n))) : SHAPE_CELL_MAX;
+        const cell = Math.max(SHAPE_CELL_MIN, Math.min(cap, Math.floor((avail - label - head) / n)));
         const fullW = label + n * cell + head;
-        const fullH = head + n * cell + 2;
+        const fullH = Math.max(head + n * cell + 2, room);
         const scale = heatScale(Math.max(...[...cells.values()].map((c) => c.weight)));
         const root = svg('svg', { class: 'viz-chart adj-chart', width: fullW, height: fullH, viewBox: `0 0 ${fullW} ${fullH}`, role: 'img', 'aria-label': `Coupling matrix of ${n} ${subject === 'plans' ? 'items' : 'artifacts'} and ${cells.size} links` });
         const sel = selection;
@@ -256,6 +260,7 @@
         const folded = folds ? ` More than ${MAX_SHAPE_NODES} had links, so the deepest were folded into their parents${folds > 1 ? ` ${folds} levels` : ''}.` : '';
         const cut = over ? ` Still more than ${MAX_SHAPE_NODES} after folding, so only the most connected are shown.` : '';
         panel.note.textContent = `${what}; a cell is the summed weight of those links. Rows and columns are grouped by parent (the outlined blocks on the diagonal) and ordered so linked ones sit together; the row’s swatch is its ${subject === 'plans' ? 'status' : 'kind'}.${anyInferred ? ' Inferred links are outlined dashed.' : ''}${folded}${cut} Click a row or cell to select ${subject === 'plans' ? 'its item' : 'its artifact'}.`;
+        fitH.settle(fullH, drawShape);
       }
 
       function draw() {
@@ -267,33 +272,38 @@
         }
         const label = 130;
         const head = 110;
-        const fullW = label + list.length * CELL + 110;
         // Models and tools never act here, so they have a column but no row.
         const rows = list.filter((a) => [...cells.values()].some((c) => c.from === a.key));
-        const fullH = head + rows.length * CELL + 2;
+        // Cells grow from CELL to fill the slide's height, as far as the width allows.
+        const room = fitH.height(0, 0); // 0 outside the explorer
+        const byHeight = Math.floor((room - head - 2) / Math.max(1, rows.length));
+        const byWidth = Math.floor((Math.max(320, host.clientWidth || 800) - label - 110) / list.length);
+        const size = room ? Math.max(CELL, Math.min(Math.round(CELL * FIT_GROW), byHeight, byWidth)) : CELL;
+        const fullW = label + list.length * size + 110;
+        const fullH = Math.max(head + rows.length * size + 2, room);
         const scale = heatScale(Math.max(...[...cells.values()].map((c) => c.count)));
         const root = svg('svg', { class: 'viz-chart adj-chart', width: fullW, height: fullH, viewBox: `0 0 ${fullW} ${fullH}`, role: 'img', 'aria-label': `Adjacency matrix of ${list.length} actors and ${cells.size} relationships` });
         const sel = selection;
         list.forEach((a, c) => {
-          const x = label + c * CELL + CELL / 2 + 3;
+          const x = label + c * size + size / 2 + 3;
           root.append(svgText({ class: 'axis-label', transform: `translate(${x} ${head - 6}) rotate(-45)` }, fit(a.label, 130)));
         });
         rows.forEach((row, r) => {
-          const y = head + r * CELL;
-          root.append(svgText({ class: 'row-label', x: 0, y: y + CELL / 2 + 4 }, fit(row.label, label - 4)));
+          const y = head + r * size;
+          root.append(svgText({ class: 'row-label', x: 0, y: y + size / 2 + 4 }, fit(row.label, label - 4)));
           list.forEach((col, c) => {
-            const x = label + c * CELL;
+            const x = label + c * size;
             const cell = cells.get(`${row.key}|${col.key}`);
             if (!cell) {
-              root.append(svg('rect', { class: 'heat-empty', x, y, width: CELL - 2, height: CELL - 2 }));
+              root.append(svg('rect', { class: 'heat-empty', x, y, width: size - 2, height: size - 2 }));
               return;
             }
             const [best] = [...cell.turns].sort((p, q) => q[1] - p[1]);
             const [sessionId, turnId] = best[0].split('\n');
             const on = !!sel && !!sel.turnId && [...cell.turns.keys()].some((k) => k.endsWith(`\n${sel.turnId}`) && (!sel.sessionId || k.startsWith(`${sel.sessionId}\n`)));
             const g = svg('g', { class: 'heat-cell' });
-            g.append(svg('rect', { class: `heat heat-${scale.stepOf(cell.count)}${cell.inferred ? ' adj-inferred' : ''}${on ? ' adj-on' : ''}`, x, y, width: CELL - 2, height: CELL - 2 }));
-            g.append(svgText({ class: 'adj-count', x: x + (CELL - 2) / 2, y: y + CELL / 2 + 3, 'text-anchor': 'middle' }, compact(cell.count)));
+            g.append(svg('rect', { class: `heat heat-${scale.stepOf(cell.count)}${cell.inferred ? ' adj-inferred' : ''}${on ? ' adj-on' : ''}`, x, y, width: size - 2, height: size - 2 }));
+            g.append(svgText({ class: 'adj-count', x: x + (size - 2) / 2, y: y + size / 2 + 3, 'text-anchor': 'middle' }, compact(cell.count)));
             interact(ctx, g, {
               label: `${row.label} to ${col.label}: ${cell.type}, ${fmt(cell.count)}`,
               tip: () => [`${row.label} → ${col.label}`, cell.type, ['Times', fmt(cell.count)], ['Turns', fmt(cell.turns.size)], ...(cell.failed ? [['Failed', fmt(cell.failed)]] : [])],
@@ -311,6 +321,7 @@
           legendKey('swatch-adj-inferred', 'inferred')
         );
         panel.note.textContent = `Each row acts on each column; models and tools only receive, so they have no row. Delegation is inferred from agent ids and order, so it’s outlined dashed and counts each subagent once per turn.${fold ? ` More than ${MAX_SUBAGENTS} subagents, so they’re folded into one.` : ''} ${sel && sel.turnId ? 'Outlined cells happened in the selected turn. ' : ''}Click a cell to select the turn with the most of it.`;
+        fitH.settle(fullH, draw);
       }
       return {
         update(sessions, sel, options) {

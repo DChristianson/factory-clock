@@ -7,7 +7,8 @@
 // announces the session behind it, and its busiest turn where there is one. The
 // grid choice lives in the instance. Sees only its host and ctx: no VS Code.
 (function () {
-  const CELL_H = 26;
+  const CELL_H = 26; // px per row at the least; rows stretch toward CELL_H_MAX to fill the slide, and past what fits the slide scrolls
+  const CELL_H_MAX = 52;
   const LABEL = 168;
   const HEAD = 22; // the column labels' height
   const HEAD_TURNED = 48; // and when they're turned to fit
@@ -23,6 +24,7 @@
       let mode = 'hours'; // 'hours' | 'tools' | 'findings'
       let views = [];
       let selection = null;
+      const fitH = ctx.fitter(host); // the rows fill the slide's height
 
       const buttons = [
         ['hours', 'Tokens by hour'],
@@ -151,7 +153,9 @@
         // A narrow column turns its label so a long name still has room.
         const turned = cellW < 64 && mode !== 'hours';
         const head = turned ? HEAD_TURNED : HEAD;
-        const height = head + g.rows.length * CELL_H + 2;
+        const room = fitH.height(0, 0);
+        const cellH = Math.max(CELL_H, Math.min(CELL_H_MAX, (room - head - 2) / g.rows.length));
+        const height = Math.max(head + g.rows.length * CELL_H + 2, Math.round(room));
         const max = Math.max(...[...g.cells.values()].map((c) => c.value));
         // Square-root steps; each step's top value goes in the legend.
         const bound = (i) => (max * (i * i)) / (STEPS * STEPS);
@@ -171,9 +175,9 @@
 
         const selectedSession = selection && selection.sessionId;
         g.rows.forEach((row, r) => {
-          const y = head + r * CELL_H;
+          const y = head + r * cellH;
           const on = !!row.sessionId && row.sessionId === selectedSession;
-          const lab = svg('text', { class: `row-label${on ? ' heat-row-on' : ''}`, x: 0, y: y + CELL_H / 2 + 4 });
+          const lab = svg('text', { class: `row-label${on ? ' heat-row-on' : ''}`, x: 0, y: y + cellH / 2 + 4 });
           lab.textContent = fit(row.label, label - 4);
           const title = svg('title', {});
           title.textContent = row.label;
@@ -183,15 +187,15 @@
             const x = label + c * cellW;
             const cell = g.cells.get(`${row.key}|${col.key}`);
             if (!cell) {
-              root.append(svg('rect', { class: 'heat-empty', x, y, width: Math.max(0.5, cellW - 1), height: CELL_H - 1 }));
+              root.append(svg('rect', { class: 'heat-empty', x, y, width: Math.max(0.5, cellW - 1), height: cellH - 1 }));
               return;
             }
             const group = svg('g', { class: 'heat-cell', tabindex: 0, role: 'button', 'aria-label': `${row.label}, ${col.full}: ${compact(cell.value)} ${g.unit}` });
             // The busiest turn in the cell, so a click leads to something to read.
             const turnId = [...cell.turns].sort((a, b) => b[1] - a[1]).map(([id]) => id)[0];
             const selected = !!turnId && selection && selection.turnId === turnId && (!selectedSession || selectedSession === cell.sessionId);
-            group.append(svg('rect', { class: `heat heat-${stepOf(cell.value)}`, x, y, width: Math.max(0.5, cellW - 1), height: CELL_H - 1 }));
-            if (selected) group.append(svg('rect', { class: 'heat-selected', x: x + 1, y: y + 1, width: Math.max(0.5, cellW - 3), height: CELL_H - 3 }));
+            group.append(svg('rect', { class: `heat heat-${stepOf(cell.value)}`, x, y, width: Math.max(0.5, cellW - 1), height: cellH - 1 }));
+            if (selected) group.append(svg('rect', { class: 'heat-selected', x: x + 1, y: y + 1, width: Math.max(0.5, cellW - 3), height: cellH - 3 }));
             group.addEventListener('mousemove', (e) => showTip(e, g.tip(cell, row, col)));
             group.addEventListener('mouseleave', hideTip);
             const pick = () => ctx.select(turnId ? { sessionId: cell.sessionId, turnId } : { sessionId: cell.sessionId });
@@ -222,6 +226,7 @@
             : mode === 'tools'
               ? 'Calls counted by category, per session. Click a cell to select its session and the turn with the most of those calls.'
               : `Findings counted on the local day each started${g.undated ? `; ${fmt(g.undated)} with no time recorded left out` : ''}. Only the loaded sessions count. Click a cell to select a session and turn behind it.`;
+        fitH.settle(height, draw);
       }
 
       return {

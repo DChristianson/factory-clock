@@ -157,7 +157,7 @@
         const most = Math.max(...counts);
         const avail = fitH.height(FALLBACK_HEIGHT, 220) - 24;
         const row = Math.max(ROW_MIN, Math.min(ROW_MAX, avail / most));
-        const height = Math.ceil(24 + most * row + 4);
+        const height = Math.max(Math.ceil(24 + most * row + 4), ctx.fitHeight(host) !== null ? Math.floor(avail + 24) : 0); // in a slide, its whole height even when rows hit ROW_MAX
         const colW = width / layers;
         const gutter = Math.min(80, Math.max(24, colW * 0.3));
         const markW = 6;

@@ -14,7 +14,8 @@
 (function () {
   const NODE_W = 12;
   const NODE_GAP = 14;
-  const HEIGHT = 340;
+  const HEIGHT = 340; // the flows' height outside the explorer; in a slide they take its height, down to MIN_HEIGHT
+  const MIN_HEIGHT = 240;
   const MAX_SHAPE_NODES = 36; // a Shape's linked nodes before their ends fold to parents
   const SHAPE_NODE_GAP = 8;
 
@@ -80,6 +81,7 @@
       let shape = null; // with a subject: the Shape to draw instead of the sessions
       let subject = null;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the flows fill the slide's height
       const turnsHost = el('div');
       host.append(turnsHost);
 
@@ -290,7 +292,8 @@
 
         const width = Math.max(420, host.clientWidth || 800);
         const most = Math.max(...columns.map((c) => c.length));
-        const height = Math.max(HEIGHT, most * (SHAPE_NODE_GAP + 10));
+        const fitted = fitH.height(HEIGHT + 30, MIN_HEIGHT + 30) - 30;
+        const height = Math.max(fitted, most * (SHAPE_NODE_GAP + 10));
         const heaviest = Math.max(1, ...columns.map((col) => col.reduce((a, n) => a + n.value, 0)));
         const scale = (height - (most - 1) * SHAPE_NODE_GAP - most * 2) / heaviest;
         const labelRoom = Math.min(170, width * 0.22);
@@ -385,6 +388,7 @@
         const folded = folds ? ` More than ${MAX_SHAPE_NODES} ${subject === 'plans' ? 'items' : 'artifacts'} had links, so ends were folded into their parents ${folds === 1 ? 'one level' : `${folds} levels`}.` : '';
         const cyc = back.length ? ` ${cycles ? `${cycles === 1 ? 'A cycle' : `${cycles} cycles`} (a group that depends on itself): ` : ''}${back.length} link${back.length === 1 ? '' : 's'} closing ${cycles === 1 ? 'it' : 'them'} ${back.length === 1 ? 'is' : 'are'} drawn back as ${back.length === 1 ? 'a dashed arc' : 'dashed arcs'}.` : '';
         panel.note.textContent = `${flow}; columns by dependency depth.${cyc}${folded} Ribbons take their source’s color${drawn.links.length ? '; inferred links are outlined dashed' : ''}. Click a node or ribbon to select ${subject === 'plans' ? 'an item' : 'an artifact'}${on ? '; flows away from the selection are dimmed' : ''}.`;
+        fitH.settle(bottom + 30, draw);
       }
 
       function draw() {
@@ -398,13 +402,14 @@
         const width = Math.max(420, host.clientWidth || 800);
         const total = columns[1].reduce((a, n) => a + n.value, 0);
         const most = Math.max(...columns.map((c) => c.length));
-        const scale = (HEIGHT - (most - 1) * NODE_GAP) / total;
+        const plotH = fitH.height(HEIGHT + 9, MIN_HEIGHT + 9) - 9; // the columns sit 3px down, so 9 below the plot covers the svg
+        const scale = (plotH - (most - 1) * NODE_GAP) / total;
         const label = Math.min(150, width * 0.22);
         const xs = [label, (width - NODE_W) / 2, width - label - NODE_W];
         const byKey = new Map();
-        let bottom = HEIGHT;
+        let bottom = plotH;
         columns.forEach((col, c) => {
-          const room = HEIGHT - (col.reduce((a, n) => a + n.value * scale, 0) + (col.length - 1) * NODE_GAP);
+          const room = plotH - (col.reduce((a, n) => a + n.value * scale, 0) + (col.length - 1) * NODE_GAP);
           let y = room / 2 + 3;
           col.sort((a, b) => (c === 1 ? a.key.localeCompare(b.key) : b.value - a.value));
           for (const n of col) {
@@ -458,6 +463,10 @@
         panel.legend.replaceChildren(legendKey('s1', 'main agent'), legendKey('s2', 'subagents'), legendKey('sankey-model', 'model'));
         panel.note.textContent = `Width is measured tokens, ${compact(total)} in all. A ribbon takes its source’s color. Click a ribbon to list its costliest turns${sel && sel.turnId ? '; ribbons outside the selected turn are dimmed' : ''}.`;
         drawTurns(links);
+        // A ribbon's list of turns scrolls below the flows rather than shrinking them, so it's left out of the measure.
+        turnsHost.hidden = true;
+        fitH.settle(bottom + 6, draw);
+        turnsHost.hidden = false;
       }
       return {
         update(sessions, sel, options) {

@@ -37,6 +37,7 @@
       let view = null;
       let selection = null;
       let draws = 0;
+      const fitH = ctx.fitter(host); // the lifelines run at least to the slide's bottom; a longer session scrolls
       let scrolledTo = null; // the selected turn already brought into view
       let refocus = null; // the turn whose band had keyboard focus when it was picked
 
@@ -389,7 +390,8 @@
           if (selected) backLayer.append(svg('rect', { class: 'seq-turn-selected', x: 0, y: top, width, height: y - top }));
         }
 
-        const height = y + 4;
+        // At least the slide's height under the header (the natural height outside the explorer); taller scrolls in the slide.
+        const height = Math.max(y + 4, fitH.height(y + 4 + HEAD_H, 0) - HEAD_H);
         for (const l of lanes) {
           const cx = x(l.key);
           lifeLayer.append(svg('line', { class: 'seq-life', x1: cx, x2: cx, y1: 0, y2: height }));
@@ -425,6 +427,7 @@
         if (hiddenRows) parts.push(`${fmt(hiddenRows)} row${hiddenRows === 1 ? '' : 's'} in ${fmt(hiddenTurns)} turn${hiddenTurns === 1 ? '' : 's'} not drawn, to keep the view usable; select a turn to draw it.`);
         parts.push('Click a turn’s band to select it in every visualizer.');
         note.textContent = parts.join(' ');
+        fitH.settle(HEAD_H + height, draw);
 
         if (refocus) {
           const band = bands.get(refocus);

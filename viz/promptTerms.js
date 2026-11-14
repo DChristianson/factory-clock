@@ -12,6 +12,7 @@
   const MAX_EDGES = 60;
   const LABEL_CHARS = 24;
   const ITERATIONS = 240;
+  const MIN_HEIGHT = 300; // the graph never gets shorter than this in a short slide; the slide scrolls
   // Words are counted the same way Conversation Landscape counts them (vizkit.js).
   const { termsOf: tokenize, foldPlural: singular } = window.factoryClockKit;
 
@@ -170,6 +171,8 @@
       let selection = null;
       let pinned = null; // the term whose prompts are listed
       let draws = 0;
+      const fitH = ctx.fitter(host); // the graph fills the slide's height
+      let laid = null; // { model, key, nodes }: the layout, kept until the data or the size changes
       // What a focusable part stands for, so a redraw can put focus back on its replacement.
       let focusKeys = new WeakMap();
 
@@ -216,13 +219,15 @@
         }
 
         const width = Math.max(320, host.clientWidth || 800);
-        const height = Math.round(Math.min(560, Math.max(340, width * 0.5)));
+        const height = fitH.height(Math.round(Math.min(560, Math.max(340, width * 0.5))), MIN_HEIGHT);
         const maxCount = Math.max(...model.terms.map((t) => t.count));
         const maxShared = Math.max(1, ...model.edges.map((e) => e.shared));
         const radius = (t) => 4 + 11 * Math.sqrt(t.count / maxCount);
         const labelOf = (t) => clip(t.term, LABEL_CHARS);
         const labelWidth = (t) => labelOf(t).length * 6.8;
-        const nodes = layout(model, width, height, radius, labelWidth);
+        const sizeKey = `${width}x${height}`;
+        if (!laid || laid.model !== model || laid.key !== sizeKey) laid = { model, key: sizeKey, nodes: layout(model, width, height, radius, labelWidth) };
+        const nodes = laid.nodes;
 
         const turnTerms = new Set(model.prompts.filter(inSelection).flatMap((p) => [...p.terms]));
         const related = new Set(pinned ? [model.byTerm.get(pinned).i] : []);
@@ -296,6 +301,10 @@
         drawList(parts);
         focusKeys = new WeakMap([...parts].map(([k, part]) => [part, k]));
         if (focused && parts.has(focused)) parts.get(focused).focus({ preventScroll: true });
+        // The pinned term's prompt list scrolls below the graph rather than shrinking it, so it's left out of the measure.
+        listHost.hidden = true;
+        fitH.settle(height, draw);
+        listHost.hidden = false;
       }
 
       function drawList(parts) {

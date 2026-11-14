@@ -11,7 +11,8 @@
   const MAX_NODES = 150; // items drawn in the graph; past this, settled items fold out first
   const MAX_LOOSE = 300; // squares in the row of items with no blocks links
   const MIN_COL = 130; // px per column before the drawing grows wider than the slide
-  const ROW = 30;
+  const ROW = 30; // px per item in a column, the least; rows stretch to fill the slide up to ROW_MAX
+  const ROW_MAX = 60;
   const BOX_H = 22;
   const SQUARE = 10;
   const UNFINISHED = new Set(['open', 'in_progress', 'blocked']);
@@ -39,6 +40,7 @@
     mount(host, ctx) {
       const { svg, svgText, fit, clip, fmt, vizPanel, interact, legendKey, shapeSelected } = ctx;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the graph fills the slide's height
       let selection = null;
       let data = { graphs: [], items: [], links: [] };
 
@@ -150,20 +152,23 @@
         const boxW = colW - 26;
         const drawW = Math.max(width, cols * colW + 2 * pad);
         const tallest = Math.max(0, ...layers.map((c) => c.length));
-        const graphH = nodes.length ? tallest * ROW + 22 : 0;
 
         // The folded row: items in no blocks link, as squares in status order.
         const looseShown = [...loose].sort((a, b) => STATUS_ORDER.indexOf(a.item.status) - STATUS_ORDER.indexOf(b.item.status)).slice(0, MAX_LOOSE);
         const perLine = Math.max(1, Math.floor((drawW - 2 * pad) / (SQUARE + 3)));
         const looseH = loose.length ? 22 + Math.ceil(looseShown.length / perLine) * (SQUARE + 3) + 4 : 0;
-        const height = Math.max(60, graphH + looseH + 6);
+        // The slide's height in drawing units (a drawing wider than the slide is scaled down to its width).
+        const room = Math.round((fitH.height(0, 0) * drawW) / width);
+        const row = tallest ? Math.max(ROW, Math.min(ROW_MAX, Math.floor((room - looseH - 6 - 22) / tallest))) : ROW;
+        const graphH = nodes.length ? tallest * row + 22 : 0;
+        const height = Math.max(60, graphH + looseH + 6, room);
 
         const root = svg('svg', { class: 'viz-chart blk-chart', viewBox: `0 0 ${drawW} ${height}`, role: 'img', 'aria-label': `Blocking graph: ${nodes.length} items in ${edges.length} blocks links over ${cols} columns, ${critical.size ? `a critical path of ${critical.size}` : 'no chain of unfinished work'}, and ${loose.length} items in no blocks link` });
         const at = (id) => {
           const l = layer.get(id);
           const col = layers[l];
-          const off = ((tallest - col.length) * ROW) / 2;
-          return { x: pad + l * colW, y: 18 + off + pos.get(id) * ROW };
+          const off = ((tallest - col.length) * row) / 2;
+          return { x: pad + l * colW, y: 18 + off + pos.get(id) * row };
         };
         if (nodes.length) {
           for (let l = 0; l < cols; l++) root.append(svgText({ class: 'axis-label', x: pad + l * colW, y: 11 }, l === 0 ? 'no blockers' : `${l} deep`));
@@ -242,6 +247,7 @@
         if (loose.length > looseShown.length) parts.push(`The row shows the first ${MAX_LOOSE} of ${fmt(loose.length)}.`);
         parts.push('Click an item to select it.');
         panel.note.textContent = parts.join(' ');
+        fitH.settle(Math.round((height * width) / drawW), draw);
       }
 
       return {
