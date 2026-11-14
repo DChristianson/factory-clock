@@ -87,6 +87,7 @@ export const TAXONOMY = {
       cartographic: 'Paper, contour lines, roads and pins; uncertain coasts dashed (Atlas)',
       strata: 'Three translucent planes stacked in a deep void, one hue each, bright messages rising and falling between them (Strata)',
       narrative: 'A narrative chart on a pale sheet: each actor a cased line through time, bending into the lanes where it works and running beside the others it meets (Storylines)',
+      textile: 'Woven cloth on a muted ground: warp threads, weft picks over and under, a selvedge at each edge, bands dyed by status (Loom)',
     },
   },
 } satisfies Taxonomy;
@@ -557,6 +558,18 @@ export const CATALOG: VisualizerEntry[] = [
       { work: 'Methods for Visual Understanding of Hierarchical System Structures', by: 'Kozo Sugiyama, Shojiro Tagawa, and Mitsuhiko Toda', year: 1981, relation: 'technique', note: 'The barycentric heuristic: order each column by the mean position of its neighbors in the last, to cut crossings' },
     ],
     tags: { subject: ['workspace'], category: ['actor', 'temporal'], purpose: ['expressive'], level: ['project'], dimension: ['actor', 'time', 'place'], language: ['narrative'] },
+  },
+  {
+    id: 'loom',
+    title: 'Loom',
+    description: 'The project as woven cloth: a warp thread per file grouped by package, a float in the heading wherever one thread imports another, plan items as weft bands dyed by status over the threads they name, and each session a pass of the shuttle whose picks ride over the files its turns touched, the cloth growing downward as the sessions replay.',
+    why: 'To see the plan and the sessions woven across the code, with time running down the cloth.',
+    hero: true,
+    credits: [
+      { work: 'Weber Kunst und Bild Buch', by: 'Marx Ziegler', year: 1677, url: 'https://books.google.de/books/about/The_weavers_art_revealed.html?id=4wrWQgAACAAJ&redir_esc=y', relation: 'form', note: 'The weaving draft: threads on a grid passing over and under, in the first printed book of drafts, as Patricia Hilts’s 1990 facsimile and translation (linked) presents it' },
+      { work: 'Time, clocks, and the ordering of events in a distributed system', by: 'Leslie Lamport', year: 1978, url: 'https://lamport.azurewebsites.net/pubs/pubs.html#time-clocks', relation: 'technique', note: 'The space-time diagram: a vertical line per process with time running along it, as each file is a thread with time running down the cloth' },
+    ],
+    tags: { subject: ['workspace', 'code'], category: ['temporal', 'dependency', 'state'], purpose: ['expressive'], level: ['project'], dimension: ['time', 'structure', 'place', 'status'], language: ['textile'] },
   },
 ];
 

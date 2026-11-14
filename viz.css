@@ -1821,3 +1821,131 @@ rect.pog-file { opacity: 1; }
 .hero-storylines .sl-sw-closed { width: 7px; height: 7px; border: 0.6px solid var(--sl-ink); transform: rotate(45deg); }
 .hero-storylines .sl-sw-closed.sl-st-done { background: var(--sl-done); }
 .hero-storylines .sl-sw-closed.sl-st-dropped { background: var(--sl-dropped); }
+
+/* ---------- Loom (hero view, language `textile`): woven cloth on a muted ground ---------- */
+.hero-loom {
+  --lm-sheet: #f1ede4;
+  --lm-cloth: #e6dfcf;
+  --lm-warp: #a49a86;
+  --lm-ground: #d6cdb9;
+  --lm-selvedge: #7d7464;
+  --lm-ink: #3a352d;
+  --lm-muted: #635c50; /* 5.6:1 on the sheet */
+  --lm-float: #7a5a3a;
+  --lm-dye-0: #3d5482;
+  --lm-dye-1: #2f6f6a;
+  --lm-dye-2: #6b4a78;
+  --lm-done: #5f7f5a;
+  --lm-in-progress: #c49a3a;
+  --lm-open: #b5533c;
+  --lm-blocked: #8a2f2a;
+  --lm-deferred: #8a877f;
+  --lm-dropped: #b9b1a2;
+  --lm-on: #1f1b16;
+  --lm-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--lm-sheet);
+  color: var(--lm-ink);
+  border-radius: 4px;
+  overflow: hidden;
+  font-family: var(--lm-font);
+}
+@media (prefers-color-scheme: dark) {
+  .hero-loom {
+    --lm-sheet: #1f1d1a;
+    --lm-cloth: #29261f;
+    --lm-warp: #6f675a;
+    --lm-ground: #3a362e;
+    --lm-selvedge: #93897a;
+    --lm-ink: #ebe4d4;
+    --lm-muted: #b2aa9b;
+    --lm-float: #c69a6a;
+    --lm-dye-0: #8ea3d8;
+    --lm-dye-1: #6fc0b6;
+    --lm-dye-2: #c19ad0;
+    --lm-done: #8db586;
+    --lm-in-progress: #e0b85a;
+    --lm-open: #e07d62;
+    --lm-blocked: #f09a8a;
+    --lm-deferred: #9b978e;
+    --lm-dropped: #5c574e;
+    --lm-on: #fff8e8;
+  }
+}
+.hero-loom .lm-svg { display: block; max-width: 100%; }
+.hero-loom .lm-empty { color: var(--lm-muted); font-style: italic; margin: 0; padding: 24px; }
+/* Sheet: a muted ground, the cloth a shade deeper, a selvedge at each edge. */
+.hero-loom .lm-sheet { fill: var(--lm-sheet); }
+.hero-loom .lm-cloth { fill: var(--lm-cloth); }
+.hero-loom .lm-head-ground { fill: var(--lm-cloth); opacity: 0.55; }
+.hero-loom .lm-warp { stroke: var(--lm-warp); stroke-linecap: butt; }
+.hero-loom .lm-warp.lm-folded { stroke-dasharray: 1 1.5; }
+.hero-loom .lm-warp.lm-on { stroke: var(--lm-on); }
+.hero-loom .lm-ground line { stroke: var(--lm-ground); }
+.hero-loom .lm-selvedge { stroke: var(--lm-selvedge); stroke-width: 1.4; }
+.hero-loom .lm-hit { fill: transparent; cursor: pointer; }
+.hero-loom .lm-hit:hover, .hero-loom .lm-hit:focus { fill: var(--lm-ink); fill-opacity: 0.06; outline: none; }
+/* Type: a quiet system sans, small. */
+.hero-loom .lm-pkg { fill: var(--lm-ink); font-size: 9.5px; letter-spacing: 0.06em; cursor: pointer; }
+.hero-loom .lm-pkg:hover, .hero-loom .lm-pkg:focus, .hero-loom .lm-pkg.lm-on { text-decoration: underline; outline: none; }
+.hero-loom .lm-bracket, .hero-loom .lm-tick { fill: none; stroke: var(--lm-muted); stroke-width: 0.7; }
+.hero-loom .lm-date, .hero-loom .lm-stamp { fill: var(--lm-muted); font: 9px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.hero-loom .lm-row-label { font-size: 9px; cursor: pointer; }
+.hero-loom .lm-row-label:hover, .hero-loom .lm-row-label:focus, .hero-loom .lm-row-label.lm-on { text-decoration: underline; font-weight: 600; outline: none; }
+/* The heading: floats where imports cross. */
+.hero-loom .lm-float-weft { stroke: var(--lm-float); stroke-width: 1.2; opacity: 0.55; }
+.hero-loom .lm-float-weft.lm-loose { stroke-dasharray: 2 2; }
+.hero-loom .lm-float-mark { cursor: pointer; }
+.hero-loom .lm-float { stroke: var(--lm-float); }
+.hero-loom .lm-bind { fill: var(--lm-float); }
+.hero-loom .lm-float-mark.lm-loose .lm-float { stroke-dasharray: 1.5 1; }
+.hero-loom .lm-float-mark:hover .lm-float, .hero-loom .lm-float-mark:focus .lm-float { stroke: var(--lm-on); }
+.hero-loom .lm-float-mark:focus { outline: none; }
+/* Bands: plan items, weft dyed by status over the threads they name. */
+.hero-loom .lm-band { cursor: pointer; }
+.hero-loom .lm-band line { stroke: currentColor; opacity: 0.85; }
+.hero-loom .lm-band.lm-loose line { opacity: 0.6; }
+.hero-loom .lm-band.lm-undated line { opacity: 0.5; }
+.hero-loom .lm-band:hover line, .hero-loom .lm-band:focus line { opacity: 1; }
+.hero-loom .lm-band:focus { outline: none; }
+.hero-loom .lm-band.lm-on line { opacity: 1; stroke: var(--lm-on); }
+.hero-loom .lm-band-run { stroke: currentColor; stroke-width: 1; opacity: 0.45; }
+.hero-loom .lm-st-done { color: var(--lm-done); }
+.hero-loom .lm-st-in_progress { color: var(--lm-in-progress); }
+.hero-loom .lm-st-open { color: var(--lm-open); }
+.hero-loom .lm-st-blocked { color: var(--lm-blocked); }
+.hero-loom .lm-st-deferred { color: var(--lm-deferred); }
+.hero-loom .lm-st-dropped { color: var(--lm-dropped); }
+/* Rows: sessions, a pass of the shuttle and a pick per turn. */
+.hero-loom .lm-dye-0 { color: var(--lm-dye-0); fill: var(--lm-dye-0); }
+.hero-loom .lm-dye-1 { color: var(--lm-dye-1); fill: var(--lm-dye-1); }
+.hero-loom .lm-dye-2 { color: var(--lm-dye-2); fill: var(--lm-dye-2); }
+.hero-loom .lm-pass { stroke: currentColor; stroke-width: 1; opacity: 0.4; }
+.hero-loom .lm-turn { fill: none; stroke: currentColor; stroke-width: 1; opacity: 0.7; }
+.hero-loom .lm-pick-run { stroke: currentColor; stroke-width: 1; opacity: 0.55; }
+.hero-loom .lm-pick { cursor: pointer; }
+.hero-loom .lm-pick:focus { outline: none; }
+.hero-loom .lm-over { fill: currentColor; stroke: none; }
+.hero-loom .lm-over.lm-read { fill-opacity: 0.55; }
+.hero-loom .lm-over.lm-loose { fill-opacity: 0.25; stroke: currentColor; stroke-width: 0.6; stroke-dasharray: 1.2 1.2; }
+.hero-loom .lm-pick:hover .lm-over, .hero-loom .lm-pick:focus .lm-over, .hero-loom .lm-row.lm-on .lm-over { stroke: var(--lm-on); stroke-width: 0.6; }
+.hero-loom .lm-pick.lm-on .lm-over { stroke-width: 1.2; }
+/* The fell: the woven edge, during replay. */
+.hero-loom .lm-fell { stroke: var(--lm-ink); stroke-width: 1.4; opacity: 0.7; }
+/* The foot: replay controls and the key. */
+.hero-loom .lm-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 6px 12px 8px; border-top: 1px solid var(--lm-ground); }
+.hero-loom .replay-bar { flex: 1 1 360px; margin: 0; color: var(--lm-ink); }
+.hero-loom .replay-bar button, .hero-loom .replay-bar select { font: 11px var(--lm-font); color: var(--lm-ink); background: var(--lm-cloth); border: 1px solid var(--lm-warp); border-radius: 3px; padding: 2px 8px; }
+.hero-loom .replay-bar button:hover { background: var(--lm-ground); }
+.hero-loom .lm-legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 10px; color: var(--lm-muted); }
+.hero-loom .lm-key { display: inline-flex; align-items: center; gap: 5px; }
+.hero-loom .lm-swatch { width: 10px; height: 8px; display: inline-block; background-image: repeating-linear-gradient(0deg, transparent 0 2px, var(--lm-cloth) 2px 3px); }
+.hero-loom .lm-sw-done { background-color: var(--lm-done); }
+.hero-loom .lm-sw-in_progress { background-color: var(--lm-in-progress); }
+.hero-loom .lm-sw-open { background-color: var(--lm-open); }
+.hero-loom .lm-sw-blocked { background-color: var(--lm-blocked); }
+.hero-loom .lm-sw-deferred { background-color: var(--lm-deferred); }
+.hero-loom .lm-sw-dropped { background-color: var(--lm-dropped); }
+.hero-loom .lm-sw-weft { background-color: var(--lm-dye-0); background-image: none; height: 4px; }
+.hero-loom .lm-sw-weft.lm-sw-read { opacity: 0.55; }
+.hero-loom .lm-sw-float { background-color: var(--lm-float); background-image: none; width: 3px; height: 9px; }
+.hero-loom .lm-sw-loose { background: none; border: 1px dashed var(--lm-muted); }
