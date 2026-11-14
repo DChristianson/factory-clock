@@ -4,7 +4,7 @@ import { EventSet } from '../web';
 import { isNormalizedEvent, parseJsonl } from '../web';
 import { buildMarks } from '../web';
 import { SYNTHETIC_DAY, syntheticEvents, syntheticSessionIds } from '../web';
-import { readDemoTraces } from '../web';
+import { readDemoTraces, startingPick } from '../web';
 import * as vm from 'vm';
 
 const at = (min: number) => new Date(Date.UTC(2026, 9, 22, 10, min)).toISOString();
@@ -154,6 +154,26 @@ async function main() {
     assert.strictEqual(readDemoTraces({ events: [{ nope: 1 }] }), null);
     const one = syntheticEvents().filter((x) => x.sessionId === syntheticSessionIds()[0]);
     assert.deepStrictEqual(readDemoTraces({ picked: ['gone'], events: one })!.picked, [syntheticSessionIds()[0]]);
+  });
+
+  test('the explorer starts with every session, up to the cap, unless the visitor chose a pick', () => {
+    const ids = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+    const has = (id: string) => ids.includes(id);
+    // Nothing saved: every session, up to the cap of 8.
+    assert.deepStrictEqual(startingPick({}, ids, has), { picked: ids.slice(0, 8), pickChosen: false });
+    assert.deepStrictEqual(startingPick({}, ['a', 'b'], has), { picked: ['a', 'b'], pickChosen: false });
+    // The page's old automatic pick of two (no pickChosen) gives way to all of them.
+    assert.deepStrictEqual(startingPick({ picked: ['a', 'b'] }, ids, has).picked, ids.slice(0, 8));
+    assert.deepStrictEqual(startingPick({ picked: ['a', 'b'], pickChosen: false }, ids, has).picked, ids.slice(0, 8));
+    // A chosen pick is kept, minus ids the data doesn't have.
+    assert.deepStrictEqual(startingPick({ picked: ['c', 'gone', 'a'], pickChosen: true }, ids, has), { picked: ['c', 'a'], pickChosen: true });
+    // A chosen pick with nothing left in this data: back to every session.
+    assert.deepStrictEqual(startingPick({ picked: ['gone'], pickChosen: true }, ids, has), { picked: ids.slice(0, 8), pickChosen: false });
+    // Junk in storage is ignored.
+    assert.deepStrictEqual(startingPick({ picked: 'a', pickChosen: true }, ['a'], has), { picked: ['a'], pickChosen: false });
+    assert.deepStrictEqual(startingPick({ picked: [1, null, 'b'], pickChosen: true }, ids, has), { picked: ['b'], pickChosen: true });
+    // No sessions at all: an empty pick.
+    assert.deepStrictEqual(startingPick({}, [], has), { picked: [], pickChosen: false });
   });
 
   let failures = 0;
