@@ -74,7 +74,7 @@
     return catalog.filter((e) => Object.entries(filters).every(([facet, vals]) => !vals || !vals.length || vals.some((v) => (e.tags[facet] || []).includes(v))));
   }
 
-  // A credit's people as the After line cites them; matches creditName in src/catalog.ts, whose unit tests cover it.
+  // A credit's people as a slide's credit line cites them; matches creditName in src/catalog.ts, whose unit tests cover it.
   function creditName(by) {
     const given = /\(([^()]+)\)\s*$/.exec(by);
     if (given) return given[1].trim();
@@ -177,17 +177,15 @@
       renderCollapsed();
     });
 
-    // Here: the view on stage, why to look at it, what it's after, what's next, and its tags as chips that filter.
+    // Here: the view on stage, why to look at it, what's next, and its tags as chips that filter.
     const puckDesc = el('p', { class: 'muted small puck-desc' });
     const puckWhy = el('p', { class: 'small puck-why', hidden: true });
-    // The work the view draws on (entry.credits), one name per credit, linked when it has a url.
-    const puckAfter = el('p', { class: 'muted small puck-after', hidden: true });
     const puckNext = el('p', { class: 'small puck-next', hidden: true });
     const facets = el('div');
     const filterNote = el('span', { class: 'muted small' });
     const clearBtn = el('button', { class: 'link', text: 'Clear', 'data-key': 'here:clear' });
     clearBtn.addEventListener('click', () => setFilters({}));
-    const hereBody = el('div', { class: 'puck-panel puck-here' }, [puckDesc, puckWhy, puckAfter, puckNext, facets, el('div', { class: 'puck-foot' }, [filterNote, el('span', { class: 'spacer' }), clearBtn])]);
+    const hereBody = el('div', { class: 'puck-panel puck-here' }, [puckDesc, puckWhy, puckNext, facets, el('div', { class: 'puck-foot' }, [filterNote, el('span', { class: 'spacer' }), clearBtn])]);
 
     // Ask: the preferences as questions; the answers are the filters (and the replay's stills, and the tour's pace).
     const askQuestions = el('div', { class: 'ask-questions' });
@@ -350,8 +348,8 @@
     // The stage takes the height left in the window, so the dock under it stays
     // in view and a drawing taller than that scrolls inside its slide. The
     // height doesn't follow the view: nothing on the stage or in the dock
-    // changes height from one view to the next (the slide head is one line at
-    // a fixed height, the nav's "n of m" can't wrap it, off-stage neighbors
+    // changes height from one view to the next (the slide head and its credit
+    // foot are each one line at a fixed height, the nav's "n of m" can't wrap it, off-stage neighbors
     // sit out of flow), so it changes only with the window, and every view
     // fills the same slide (vizkit's fitHeight / fitter).
     function fitStage() {
@@ -494,6 +492,50 @@
       return c;
     }
 
+    // ---------- a slide's credits ----------
+    // The work the view draws on (entry.credits), at the foot of its slide: one line of names at a fixed
+    // height, always shown, that opens to every credit in full (work, by, year, relation, note, link).
+    // The full list lies over the bottom of the drawing rather than pushing it, so the view keeps its
+    // fitted height while it's open; it closes when its slide leaves the stage.
+    function slideCredits(entry) {
+      const list = Array.isArray(entry.credits) ? entry.credits : [];
+      const foot = el('div', { class: 'slide-credits' });
+      if (!list.length) return { foot, setOpen() {} };
+      const cites = list.map((c) => (c.year === undefined ? creditName(c.by) : `${creditName(c.by)} ${c.year}`));
+      const panelId = `slide-credits-${entry.id}`;
+      const toggle = el('button', { class: 'link slide-credits-toggle', 'aria-expanded': 'false', 'aria-controls': panelId, title: `After ${cites.join(' · ')}` }, [
+        el('span', { class: 'slide-credits-label', text: 'After ' }),
+        cites.join(' · '),
+      ]);
+      const panel = el('div', { class: 'slide-credits-panel', id: panelId, role: 'region', 'aria-label': `Credits for ${entry.title}`, hidden: true }, [
+        el('ul', { class: 'slide-credits-list' }, list.map((c, i) => {
+          const work = el('cite', { text: c.work });
+          const by = c.by.replace(/\s*\([^()]+\)\s*$/, ''); // "Karen Spärck Jones (Spärck Jones)": the brackets give the short form only
+          return el('li', {}, [
+            el('span', { class: 'slide-credit-head' }, [el('strong', { text: cites[i] }), el('span', { class: 'muted', text: ` · ${c.relation}` })]),
+            el('span', { class: 'slide-credit-work' }, [c.url ? el('a', { href: c.url, target: '_blank', rel: 'noopener' }, [work]) : work, `, ${by}${c.year === undefined ? '' : `, ${c.year}`}`]),
+            c.note ? el('span', { class: 'muted slide-credit-note', text: c.note }) : null,
+          ]);
+        })),
+      ]);
+      const setOpen = (open) => {
+        panel.hidden = !open;
+        toggle.setAttribute('aria-expanded', String(open));
+        foot.classList.toggle('open', open);
+      };
+      toggle.addEventListener('click', () => setOpen(panel.hidden));
+      const closeOnEscape = (e) => {
+        if (e.key !== 'Escape' || panel.hidden) return;
+        e.stopPropagation();
+        setOpen(false);
+        toggle.focus();
+      };
+      toggle.addEventListener('keydown', closeOnEscape);
+      panel.addEventListener('keydown', closeOnEscape);
+      foot.append(toggle, panel);
+      return { foot, setOpen };
+    }
+
     function buildSlides() {
       for (const s of slides) destroyParts(s);
       slides.length = 0;
@@ -502,13 +544,15 @@
       st.catalog.forEach((entry, i) => {
         const host = el('div', { class: 'slide-host' });
         const subjectHost = el('div', { class: 'slide-subject' });
+        const credits = slideCredits(entry);
         const slide = el('article', { class: 'slide', 'aria-label': entry.title, hidden: true }, [
           // One line at a fixed height whatever the view (the description clips), so every slide gives its view the same room.
           el('div', { class: 'slide-head' }, [el('span', { class: 'muted small slide-pos', text: `${i + 1}/${st.catalog.length}` }), el('strong', { class: 'slide-title', text: entry.title, title: entry.title }), el('span', { class: 'muted small slide-desc', text: entry.description, title: entry.description }), subjectHost]),
           host,
+          credits.foot,
         ]);
         const c = card(entry);
-        slides.push({ entry, slide, host, subjectHost, card: c, allowed: true, parts: [], subjectKey: null });
+        slides.push({ entry, slide, host, subjectHost, card: c, allowed: true, parts: [], subjectKey: null, credits });
         stage.append(slide);
         shelf.append(c);
       });
@@ -607,6 +651,7 @@
         s.slide.hidden = !(shown || near);
         s.slide.classList.toggle('offstage', near);
         s.slide.classList.toggle('pinned', shown && s.entry.id === st.compareId);
+        if (!shown) s.credits.setOpen(false); // flipped away: it comes back closed
         if (shown || near) updateSlide(s);
         else destroyParts(s);
         // Its width may have changed (off stage, or the other half of a comparison).
@@ -825,17 +870,6 @@
       puckDesc.textContent = entry ? entry.description : st.catalog.length ? 'Clear a filter to see visualizers again.' : 'Waiting for the catalog…';
       puckWhy.hidden = !(entry && entry.why);
       puckWhy.replaceChildren(...(entry && entry.why ? [el('span', { class: 'puck-label', text: 'Why this view' }), entry.why] : []));
-      const credits = entry && Array.isArray(entry.credits) ? entry.credits : [];
-      puckAfter.hidden = credits.length === 0;
-      puckAfter.replaceChildren(
-        ...(credits.length ? ['After '] : []),
-        ...credits.flatMap((c, i) => {
-          const cite = c.year === undefined ? creditName(c.by) : `${creditName(c.by)} ${c.year}`;
-          const title = `${c.work}, ${c.by}${c.year === undefined ? '' : `, ${c.year}`} (${c.relation})${c.note ? `: ${c.note}` : ''}`;
-          const name = c.url ? el('a', { href: c.url, target: '_blank', rel: 'noopener', title, text: cite }) : el('span', { title, text: cite });
-          return i ? [' · ', name] : [name];
-        })
-      );
       // Next: the following card on the shelf, in the guide's order, so the shelf reads as a path.
       const vis = allowed().filter((s) => s.entry.id !== st.compareId);
       const pos = entry ? vis.findIndex((s) => s.entry.id === entry.id) : -1;

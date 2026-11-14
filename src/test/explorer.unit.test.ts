@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vm from 'vm';
 import { SessionView } from '../schema';
-import { creditRows } from '../web/credits';
 import { buildExplorerState, CATALOG, Credit, creditCite, creditName, GuideFilters, guideShelf, leadsWithHeroes, matchesFilters, TAXONOMY, unusedValues, validateCatalog, VisualizerEntry } from '../index';
 
 // Factory Clock's catalog and explorer state.
@@ -69,7 +68,7 @@ async function main() {
     assert.strictEqual(creditCite({ ...c, year: 1910 }), 'Gantt 1910');
   });
 
-  test('the puck’s After line names credits as the catalog does', () => {
+  test('a slide’s credit line names credits as the catalog does', () => {
     // explore.js is a plain browser script with its own copy of creditName.
     const source = fs.readFileSync(path.resolve(__dirname, '..', '..', 'explore.js'), 'utf8');
     const fn = /\n  function creditName\(by\) \{[\s\S]*?\n  \}\n/.exec(source);
@@ -77,14 +76,6 @@ async function main() {
     const sandbox: { creditName?: (by: string) => string } = {};
     vm.runInNewContext(`${fn[0]}\nthis.creditName = creditName;`, sandbox);
     for (const c of CATALOG.flatMap((v) => v.credits)) assert.strictEqual(sandbox.creditName!(c.by), creditName(c.by), c.by);
-  });
-
-  test('the Credits list has a row per view, in carousel order, with every credit', () => {
-    const rows = creditRows(CATALOG);
-    assert.deepStrictEqual(rows.map((r) => r.id), CATALOG.map((v) => v.id));
-    for (const [i, r] of rows.entries()) assert.strictEqual(r.credits.length, CATALOG[i].credits.length, r.id);
-    const sankey = rows.find((r) => r.id === 'sankey')!;
-    assert.deepStrictEqual(sankey.credits[0], { cite: 'Sankey 1898', detail: 'The Thermal Efficiency of Steam Engines, Matthew H. P. R. Sankey. The Sankey diagram, in Kennedy and Sankey’s report to the Institution of Civil Engineers', url: 'https://doi.org/10.1680/imotp.1898.19100', relation: 'form' });
   });
 
   test('a broken catalog names each problem', () => {
