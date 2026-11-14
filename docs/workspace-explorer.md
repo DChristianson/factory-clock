@@ -189,6 +189,53 @@ The loader stops being three things and becomes one: choose a project folder, or
 
 For the examples, the page builds without any file: the synthetic sessions it has, plus a synthetic code graph (a fake monorepo of five packages and some 120 files with imports, a couple of cycles, and tests) and a synthetic plan (three epics, thirty items, blocks and parents, dates spread over a month), both seeded. Beside them, as the demo traces are today, the demo **workspace**: this repository's own code, beads, and planning markdown, read at build time by `scripts/site.js` running the same adapters in Node and written into the page, and offered with the traces. Everything it reads is already in this public repository except the beads export, which is committed after the owner has read it. Later, static data from a target project goes in the same folder the same way.
 
+## Workspace packages and the store
+
+Decided 2026-11-14, superseding the demo workspace above: the example data stops being three unrelated things (generated sessions, a generated code graph and plan, redacted traces), and every view draws one **workspace** at a time. A workspace is one project's sessions, code, and plans packaged together. The model and store are in [`src/web/workspaceStore.ts`](../src/web/workspaceStore.ts); the picker that lists them and the scrape script that makes them come later.
+
+### Name, time range, identity
+
+Every workspace has a **name** and a **time range**, the first and last of its events. Its events are the sessions' events and its plan items' `created`, `updated`, and `closed` times, since those are things that happened in the project too; so a plan begun a month before the first session starts the range a month earlier. When nothing has a time, the code and plan graphs' `generatedAt` stand in, so a workspace of code alone still has a place in the list. With none of those either, the range is absent (`null`). A timestamp that doesn't parse is skipped, never guessed; the package check drops an event whose time doesn't parse. Times are kept as UTC ISO strings with milliseconds, so the same instant written two ways is one range.
+
+The name and the range together are the workspace's identity: the same project packaged twice over different spans is two workspaces under one name. Its id, for the picker and saved state, is `name @ first..last`, or `name @ -` with no range.
+
+### The store
+
+`WorkspaceStore` holds the page's workspaces in memory. Built-in workspaces and the ones a visitor loads from files go in the same way (`add(package, origin)`, where origin is `built-in` or `loaded`). `list()` gives them grouped by name, names in alphabetical order, each group newest first (by first event, then last), a workspace with no range last. `get(id)` and `find(name, range)` look one up by its identity.
+
+Adding a workspace whose identity is already held **replaces** it, and `add` says it did. Loading the same files again should give what's in them now; and two packages with the same name and the same first and last event can't be told apart in the list, so keeping both would show two rows nobody could choose between. A visitor's package can replace a built-in one this way, and is marked loaded from then on.
+
+Today only the generated workspace goes through the store: the page adds it at start and draws the generated sessions from it, exactly as it drew them before. The example traces are drawn as before until the picker decides what becomes of them.
+
+### The package format
+
+A workspace travels as a package, version 1. A Node script writes it and the page checks it with `checkWorkspacePackage`, which works like the code and plan checks: a wrong `kind` or `version`, a missing or unusable name or source, or contents that aren't lists make the package unusable; otherwise broken rows are reported and dropped (an object that isn't an event, an event whose time doesn't parse, an event id seen twice, a code or plan graph that doesn't check, with that graph's own row errors passed on).
+
+```ts
+interface WorkspacePackage {
+  kind: 'workspace-package';
+  version: 1;
+  name: string; // shown in the picker; at most 120 characters, no line breaks, never an absolute path
+  range: { first: string; last: string } | null; // first and last event, as above
+  source: {
+    tool: string; // what made it: `factory-clock synthetic`, the scrape script
+    generatedAt: string;
+    note?: string; // for the person picking it: what's in it, what was removed
+  };
+  events: NormalizedEvent[]; // the sessions' events, as Snagboat writes them
+  code: CodeGraph[];
+  plans: PlanGraph[];
+}
+```
+
+`range` is written into the package so a list can show it without reading the contents, but the check always recomputes it from what it kept; a stated range that disagrees is reported, and the computed one is used. `makeWorkspacePackage` builds a package with its range filled in.
+
+### Where packages live
+
+Each built-in package is a file in the site, loaded only when picked, rather than all of them in one bundle. The page's security policy allows scripts from its own origin and no fetches, so a package is a script, not a JSON file: `workspaces/<file>.js` registers its package on `window.factoryClockWorkspaces` under its id (`workspaceScript` writes one). The site lists them in `workspaces/index.js`, which sets `window.factoryClockWorkspaceIndex` to `{ name, range, file }` entries (`workspaceIndexScript` writes it), so the picker can list every workspace by name and range before any is loaded. When one is picked, the page adds its script tag, reads it back with `readRegisteredWorkspace`, and fills the listed entry (`addListed`, then `fill`, which refuses a package whose name or range isn't the one the index promised). The scrape script writes these files; the page's script injection comes with the picker.
+
+The generated workspace is the exception: it's made in the bundle by seeded code, so it's built there with `syntheticWorkspacePackage` rather than shipped as a file, and goes into the store through the same format. This repository's own data isn't packaged.
+
 ## The explorer
 
 The explorer is still one script, `explore.js`, mounted over a source object, and still sees only `ctx` and the source. The source grows per subject: `listUnits(subject)`, `loadUnits(subject, ids)`, `onWorkspace(cb)`; the session methods stay as aliases so the page's session code doesn't change in the same step.
@@ -561,6 +608,7 @@ Confirmed in review with the owner on 2026-11-13. Rows marked *changed* differ f
 | Existing views and languages | All kept, unchanged; the design adds and never retires (the owner, 2026-11-13) |
 | Fusing design languages | **Not decided.** The spike (step 22) shows two fusions working before anything is built. New heroes keep their four slots in separate blocks meanwhile, which costs nothing |
 | Fonts | System stacks, as before |
+| Workspaces | *Added 2026-11-14:* one workspace (a project's sessions, code, and plans) at a time; identified by name and time range; built-in and loaded ones in one store; site packages are scripts loaded when picked ("Workspace packages and the store") |
 
 ## Open questions
 

@@ -235,7 +235,7 @@ async function main() {
     assert.strictEqual(linksOf(g, 'blocks').filter((l) => l.from.startsWith(W)).length, 4);
     // The Decisions table and the Open questions list.
     const decisions = g.items.filter((i) => i.parent === W && i.kind === 'decision');
-    assert.strictEqual(decisions.length, 18);
+    assert.strictEqual(decisions.length, 19);
     assert.deepStrictEqual(decisions.filter((d) => d.status === 'open').map((d) => d.title), ['Fusing design languages']);
     assert.strictEqual(g.items.filter((i) => i.parent === W && i.kind === 'question').length, 4);
     assert.ok(g.items.filter((i) => i.id.startsWith(W)).every((i) => i.confidence === 'inferred'));
