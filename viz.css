@@ -836,7 +836,7 @@ rect.pog-file { opacity: 1; }
    to view: the title gives way, clipped; the Draw switch keeps its place. The title is a button that opens the note panel. */
 .slide-head { flex: none; position: relative; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; height: 1.8em; margin-bottom: 8px; white-space: nowrap; min-width: 0; }
 .slide-head > * { flex: none; }
-.slide-head > .spacer { flex: 1 1 0; min-width: 0; }
+.slide-head > .slide-desc { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
 button.link.slide-title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; word-break: normal; color: var(--fc-ink); font-weight: 600; }
 .slide-title::before { content: "▸ "; color: var(--fc-ink-muted); font-weight: normal; }
 .slide-head.open .slide-title::before { content: "▾ "; }

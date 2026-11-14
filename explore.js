@@ -609,8 +609,11 @@
         // Opening either of a slide's panels closes the other.
         const note = slideNote(entry, () => credits.setOpen(false));
         const credits = slideCredits(entry, () => note.setOpen(false));
-        // One line at a fixed height whatever the view (the title clips), so every slide gives its view the same room.
-        note.head.append(el('span', { class: 'muted small slide-pos', text: `${i + 1}/${st.catalog.length}` }), note.title, el('span', { class: 'spacer' }), subjectHost, note.panel);
+        // One line at a fixed height whatever the view (the title and description clip), so every slide gives its view the same room.
+        // The description's first line follows the title, clipped; the full text is in the panel, which it also opens.
+        const desc = el('span', { class: 'muted small slide-desc', text: entry.description, title: entry.description });
+        desc.addEventListener('click', () => note.setOpen(true));
+        note.head.append(el('span', { class: 'muted small slide-pos', text: `${i + 1}/${st.catalog.length}` }), note.title, desc, subjectHost, note.panel);
         const slide = el('article', { class: 'slide', 'aria-label': entry.title, hidden: true }, [note.head, host, credits.foot]);
         const c = card(entry);
         slides.push({ entry, slide, host, subjectHost, card: c, allowed: true, parts: [], subjectKey: null, credits, note });
