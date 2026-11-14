@@ -158,8 +158,10 @@
         }
         const width = Math.max(320, host.clientWidth || 800);
         const avail = fitH.height(FALLBACK_HEIGHT, 280);
-        const R = Math.max(80, Math.min(width / 2 - LABEL_ROOM, avail / 2 - 24, 280));
-        const height = Math.ceil(2 * R + 48);
+        // In a slide the wheel takes the room it's given (width or height); outside one it keeps its old 280 cap.
+        const inSlide = ctx.fitHeight(host) !== null;
+        const R = Math.max(80, Math.min(width / 2 - LABEL_ROOM, avail / 2 - 24, inSlide ? Infinity : 280));
+        const height = Math.max(Math.ceil(2 * R + 48), inSlide ? Math.floor(avail) : 0);
         const cx = width / 2;
         const cy = height / 2;
         const rOuter0 = R - 10;

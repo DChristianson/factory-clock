@@ -41,7 +41,7 @@
         const heat = heatScale(Math.max(1, maxIn));
         const sel = selection && selection.artifactId ? selection.artifactId : null;
         const lit = new Set(sel ? grid.under.get(sel) || [] : []);
-        const height = Math.ceil(layout.height) + 2;
+        const height = Math.max(Math.ceil(layout.height) + 2, ctx.fitHeight(host) !== null ? maxHeight : 0); // in a slide, its whole height even when cells hit MAX_CELL
         const root = svg('svg', { class: 'viz-chart filegrid-chart', width, height, viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `File grid: ${grid.cells.size} ${grid.fold === 'module' ? 'modules' : 'files'} in ${layout.bands.length} packages` });
         const unit = grid.fold === 'module' ? 'module' : 'file';
         for (const band of layout.bands) {
