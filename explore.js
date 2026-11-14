@@ -708,7 +708,10 @@
       const vis = allowed();
       const pos = vis.findIndex((s) => s.entry.id === st.currentId);
       stage.classList.toggle('comparing', !!st.compareId);
-      for (const s of slides) {
+      // Two passes. First every slide goes where it belongs (on stage, off stage, or hidden); only then is
+      // anything drawn or measured. In one pass, a slide earlier on the shelf than the old current one was
+      // measured while the old one was still on stage beside it, and fitted itself to too little room.
+      const placed = slides.map((s) => {
         const i = vis.indexOf(s);
         const shown = onStage(s);
         const near = !shown && pos >= 0 && i >= 0 && Math.abs(i - pos) <= 1;
@@ -721,6 +724,9 @@
           s.credits.setOpen(false);
           s.note.setOpen(false);
         }
+        return { s, shown, near, wasShown };
+      });
+      for (const { s, shown, near, wasShown } of placed) {
         if (shown || near) updateSlide(s);
         else destroyParts(s);
         // Its width may have changed (off stage, or the other half of a comparison).
