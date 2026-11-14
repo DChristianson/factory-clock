@@ -23,6 +23,12 @@
 //   listUnits(subject)   optional: the pickable units of 'code' or 'plans' ({ subject, id, label, detail }[])
 //   loadUnits(subject, ids) optional: pick those units; answered through onWorkspace
 //   onWorkspace(cb)      optional: cb(Workspace) whenever any subject's picks change
+//   getViewId()          optional: the view id the host's address names (the web page's #hash), or null; it wins over
+//                        the saved current view when the views arrive, dropping the filters that hide it, as the Map does
+//   setViewId(id)        optional: the view on stage changed (or the address named no known view); the host writes id
+//                        to its address without a history entry. Called only with a catalog id
+//   onViewId(cb)         optional: cb(id | null) when the address names another view (a hashchange); returns a function
+//                        that stops it. A host without an address (VS Code) leaves all three out
 //
 // ctx: the helpers from vizkit.js plus tooltip, showTip(evt, rows), hideTip(), and optionally
 // shapeFor(workspace, subject) -> Shape | null (src/model/shape.ts shapeOfWorkspace) and
@@ -111,6 +117,9 @@
     };
     const save = (partial) => source.setState(partial);
     if (firstVisit) save({ asked: true });
+    // The view the host's address names: opened once the catalog arrives (buildSlides), or else the saved one.
+    let linkedId = typeof source.getViewId === 'function' ? source.getViewId() : null;
+    let addressed = null; // the id last given to setViewId, so it's written only when it changes
     // The hero views' playback settings (speed, loop) are shared by every replay and remembered with the tab.
     if (saved.replay && typeof ctx.setReplayPrefs === 'function') ctx.setReplayPrefs(saved.replay);
     const stopReplayPrefs = typeof ctx.onReplayPrefs === 'function' ? ctx.onReplayPrefs((prefs) => save({ replay: prefs })) : () => {};
@@ -621,6 +630,14 @@
         stage.append(slide);
         shelf.append(c);
       });
+      // The address wins over the saved view; an id it names that isn't in the catalog leaves the saved or first one.
+      const linked = linkedId && slideById(linkedId);
+      linkedId = null;
+      if (linked) {
+        st.currentId = linked.entry.id;
+        st.filters = filtersShowing(linked.entry);
+        save({ current: st.currentId, filters: st.filters });
+      }
       if (!current()) st.currentId = st.catalog.length ? st.catalog[0].id : null;
       applyFilters();
     }
@@ -735,6 +752,15 @@
       activate();
       renderShelf();
       renderPuck();
+      address();
+    }
+
+    // The host's address names the view on stage (the current one; comparing, not the pinned one).
+    function address() {
+      const cur = current();
+      if (!cur || !cur.allowed || cur.entry.id === addressed || typeof source.setViewId !== 'function') return;
+      addressed = cur.entry.id;
+      source.setViewId(addressed);
     }
 
     function renderShelf() {
@@ -1144,7 +1170,7 @@
         d.g.focus();
       };
       dots.forEach((d, n) => {
-        d.g.addEventListener('click', () => openFromMap(d.entry));
+        d.g.addEventListener('click', () => openView(d.entry));
         d.g.addEventListener('mouseenter', () => caption(d));
         d.g.addEventListener('mouseleave', () => caption(null));
         d.g.addEventListener('focus', () => caption(d));
@@ -1152,7 +1178,7 @@
         d.g.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            openFromMap(d.entry);
+            openView(d.entry);
             return;
           }
           let to = null;
@@ -1176,14 +1202,18 @@
       caption(null);
       mapKey.replaceChildren(...langs.map((v) => el('span', { class: 'map-key-item', title: tax.language.values[v] }, [el('i', { class: `map-swatch ${langClass(langs, v)}`, 'aria-hidden': 'true' }), v === 'standard' ? 'shared' : v])));
     }
-    // A dot opens its view; one the filters hide first drops the filters that hide it (only those facets).
-    function openFromMap(entry) {
+    // The filters without the facets that hide this view.
+    function filtersShowing(entry) {
+      const kept = {};
+      for (const [facet, vals] of Object.entries(st.filters)) if (!vals || !vals.length || vals.some((v) => (entry.tags[facet] || []).includes(v))) kept[facet] = vals;
+      return kept;
+    }
+    // A Map dot or the address opens its view; one the filters hide first drops the filters that hide it (only those facets).
+    function openView(entry) {
       if (!st.order.includes(entry.id)) {
-        const kept = {};
-        for (const [facet, vals] of Object.entries(st.filters)) if (!vals.length || vals.some((v) => (entry.tags[facet] || []).includes(v))) kept[facet] = vals;
         st.currentId = entry.id; // so applyFilters keeps it rather than moving to a neighbor
         save({ current: entry.id });
-        setFilters(kept);
+        setFilters(filtersShowing(entry));
       }
       goTo(entry.id);
     }
@@ -1215,6 +1245,22 @@
         if (slides.length) layout(); // views drawing code or plans redraw; a subject that arrived or left changes their switches
       });
     }
+    // The address names another view (a pasted #id, a link in the page): flip to it. One that names no view gets the stage's back.
+    const stopViewId =
+      typeof source.onViewId === 'function'
+        ? source.onViewId((id) => {
+            if (!slides.length) {
+              linkedId = id; // the views haven't arrived; buildSlides opens it
+              return;
+            }
+            const s = id && slideById(id);
+            if (s && s.entry.id !== st.currentId) openView(s.entry);
+            else {
+              addressed = null;
+              address();
+            }
+          }) || (() => {})
+        : () => {};
     let resizeTimer;
     const onResize = () => {
       clearTimeout(resizeTimer);
@@ -1282,6 +1328,7 @@
       },
       destroy() {
         stopReplayPrefs();
+        stopViewId();
         window.removeEventListener('resize', onResize);
         if (pageObserver) pageObserver.disconnect();
         if (drag) stopDragging();

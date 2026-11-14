@@ -5,6 +5,8 @@ import { isNormalizedEvent, parseJsonl } from '../web';
 import { buildMarks } from '../web';
 import { SYNTHETIC_DAY, syntheticEvents, syntheticSessionIds } from '../web';
 import { readDemoTraces, startingPick } from '../web';
+import { hashForViewId, viewIdFromHash } from '../web';
+import { CATALOG } from '../catalog';
 import * as vm from 'vm';
 
 const at = (min: number) => new Date(Date.UTC(2026, 9, 22, 10, min)).toISOString();
@@ -174,6 +176,22 @@ async function main() {
     assert.deepStrictEqual(startingPick({ picked: [1, null, 'b'], pickChosen: true }, ids, has), { picked: ['b'], pickChosen: true });
     // No sessions at all: an empty pick.
     assert.deepStrictEqual(startingPick({}, [], has), { picked: [], pickChosen: false });
+  });
+
+  test('a view address: the hash holds a view id, and every catalog id is URL-safe', () => {
+    assert.strictEqual(viewIdFromHash('#atlas'), 'atlas');
+    assert.strictEqual(viewIdFromHash('atlas'), 'atlas');
+    assert.strictEqual(viewIdFromHash('#factory-clock'), 'factory-clock');
+    assert.strictEqual(viewIdFromHash(''), null);
+    assert.strictEqual(viewIdFromHash('#'), null);
+    assert.strictEqual(viewIdFromHash('#%20'), null);
+    assert.strictEqual(viewIdFromHash('#%E0%A4%A'), null, 'a malformed escape reads as no id');
+    assert.strictEqual(viewIdFromHash('#no-such-view'), 'no-such-view', 'unknown ids pass through; the explorer falls back');
+    for (const entry of CATALOG) {
+      assert.ok(/^[a-z0-9-]+$/.test(entry.id), `${entry.id}: lowercase letters, digits, hyphens`);
+      assert.strictEqual(hashForViewId(entry.id), '#' + entry.id, `${entry.id}: needs no escaping`);
+      assert.strictEqual(viewIdFromHash(hashForViewId(entry.id)), entry.id);
+    }
   });
 
   let failures = 0;

@@ -4,6 +4,7 @@ import { EventSet, FindingsFor } from './eventSet';
 import { ProjectRead, Picks, Subject, UnitSummary, WorkspaceSet, isSkippedDir, looksBinary, planWalk, readProject, readSingleFiles } from './loader';
 import { startingPick } from './pick';
 import { readDemoTraces } from './traces';
+import { hashForViewId, viewIdFromHash } from './viewLink';
 import { WorkspaceStore, syntheticWorkspacePackage } from './workspaceStore';
 
 /**
@@ -35,6 +36,12 @@ interface ExploreSource {
   /** Picks units of one subject and sends the Workspace for every subject's picks. */
   loadUnits(subject: Subject, ids: string[]): void;
   onWorkspace(cb: (workspace: Workspace) => void): void;
+  /** The view the page's #hash names, or null. */
+  getViewId(): string | null;
+  /** Writes the view on stage to the #hash, without a history entry. */
+  setViewId(id: string): void;
+  /** cb on each hashchange; returns a function that stops it. */
+  onViewId(cb: (id: string | null) => void): () => void;
 }
 
 interface ExploreTab {
@@ -72,6 +79,28 @@ function writeState(state: Record<string, unknown>): void {
     // Storage blocked or full: the tab still works, it just won't remember.
   }
 }
+
+/**
+ * The view's address (bqx.46): #<view id> names the view on stage. Only a catalog id is ever written,
+ * with replaceState, so flipping adds no history entry and doesn't fire hashchange back at the explorer.
+ */
+const viewAddress: Pick<ExploreSource, 'getViewId' | 'setViewId' | 'onViewId'> = {
+  getViewId: () => viewIdFromHash(location.hash),
+  setViewId(id) {
+    const hash = hashForViewId(id);
+    if (location.hash === hash) return;
+    try {
+      history.replaceState(history.state, '', hash);
+    } catch {
+      // A browser that refuses (some file:// pages): the address just doesn't follow.
+    }
+  },
+  onViewId(cb) {
+    const onHash = () => cb(viewIdFromHash(location.hash));
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  },
+};
 
 /** The picks of code and plans, saved beside the sessions' `picked`. */
 function storedPicks(): Picks {
@@ -142,6 +171,7 @@ function sourceOver(set: WorkspaceSet): ExploreSource {
       listeners.workspace.push(cb);
       cb(set.workspace({ ...storedPicks(), sessions: sessionPick }));
     },
+    ...viewAddress,
   };
 }
 

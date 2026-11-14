@@ -10,3 +10,4 @@ export * from './traces';
 export * from './syntheticWorkspace';
 export * from './loader';
 export * from './workspaceStore';
+export * from './viewLink';

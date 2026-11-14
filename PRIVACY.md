@@ -18,7 +18,9 @@ When you open the published page, it loads Google's analytics tag (`gtag.js`) fr
 - the referring page, if your browser sends one
 - what Google's tag collects about any visit: browser, device, screen size, language, and a rough location that Google works out from your IP address
 
-Google signals and ad personalization are turned off. The sessions, code, and plans you load are never sent, to Google or anywhere else, because the page never puts them in its address, its title, or any request. Google's own terms cover what Google does with the page view: <https://policies.google.com/privacy>.
+Google signals and ad personalization are turned off. The sessions, code, and plans you load are never sent, to Google or anywhere else, because the page never puts them in its address, its title, or any request.
+
+**The address's hash.** The page keeps the view on stage in its address as `#` and the view's id from the built-in catalog, such as `#atlas`, so the address links to that view. That id is the only thing the page ever writes there: never a selection, a session, a file name, or anything you loaded. The page view above leaves the hash out. Google's own terms cover what Google does with the page view: <https://policies.google.com/privacy>.
 
 The page's Content-Security-Policy is:
 
