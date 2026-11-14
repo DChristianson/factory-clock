@@ -675,6 +675,7 @@ select, input[type="search"] {
 .shape-link.shape-inferred { stroke-dasharray: 4 3; stroke-width: inherit; }
 .slide-subject { margin-left: auto; }
 .slide-subject button { font-size: 0.85em; padding: 1px 8px; }
+.slide-subject .controls { flex-wrap: nowrap; margin: 0; gap: 6px; }
 
 /* Dependency layers (viz/dependencyLayers.js) */
 .deplayers-chart { display: block; }
@@ -831,7 +832,12 @@ rect.pog-file { opacity: 1; }
 .slide.offstage * { visibility: hidden; }
 .slide.pinned { order: -1; }
 .stage.comparing .slide:not(.offstage) { border-color: var(--fc-ink-muted); }
-.slide-head { flex: none; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+/* One line at a fixed height for every view, so the slide host below it (and so every view's fitted height) is the same from view
+   to view: the description gives way first, clipped, then the title; the Draw switch keeps its place. */
+.slide-head { flex: none; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; height: 1.8em; margin-bottom: 8px; white-space: nowrap; min-width: 0; }
+.slide-head > * { flex: none; }
+.slide-head > .slide-title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.slide-head > .slide-desc { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 /* The stage's height is set to fit the window (fitStage in explore.js); a taller drawing scrolls here. */
 .slide-host { flex: 1; min-height: 0; width: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-gutter: stable; }
 /* The stage while data loads: in the page from its first paint until the explorer mounts, and over the stage (the veil) while files are read. */
@@ -910,6 +916,9 @@ rect.pog-file { opacity: 1; }
 .card-dots i.on { background: var(--fc-ink-muted); border-color: var(--fc-ink-muted); }
 .nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .nav .spacer { flex: 1; }
+/* "n of m" takes the room left on its row and clips rather than wrapping the nav, so the dock (and the stage above it) keeps one
+   height while flipping. */
+.nav .nav-note { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .puck {
   position: fixed;
   z-index: 20; /* above .tooltip (10) */

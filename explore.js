@@ -109,7 +109,7 @@
     const prevBtn = el('button', { text: '‹ Previous', 'aria-label': 'Previous view on the shelf' });
     const nextBtn = el('button', { text: 'Next ›', 'aria-label': 'Next view on the shelf' });
     const compareBtn = el('button', { text: 'Compare', 'aria-pressed': 'false', title: 'Keep this view on the left and step through the others beside it' });
-    const navNote = el('span', { class: 'muted small', 'aria-live': 'polite' });
+    const navNote = el('span', { class: 'muted small nav-note', 'aria-live': 'polite' }); // its text never wraps the nav (viz.css .nav-note), so the dock keeps its height
     const toPicker = el('button', { class: 'link to-picker', text: 'Sessions and project ↓', title: 'Pick and load sessions and the project, below the explorer' });
     toPicker.addEventListener('click', () => picker.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     const shelf = el('div', { class: 'shelf', role: 'group', 'aria-label': 'Views the filters allow; click one to put it on the stage' });
@@ -250,7 +250,11 @@
     // ---------- stage height ----------
     // The stage takes the height left in the window, so the dock under it stays
     // in view and a drawing taller than that scrolls inside its slide. The
-    // height doesn't follow the view, so the dock stays put between views.
+    // height doesn't follow the view: nothing on the stage or in the dock
+    // changes height from one view to the next (the slide head is one line at
+    // a fixed height, the nav's "n of m" can't wrap it, off-stage neighbors
+    // sit out of flow), so it changes only with the window, and every view
+    // fills the same slide (vizkit's fitHeight / fitter).
     function fitStage() {
       if (!explorer.offsetParent) return; // the tab is hidden; shown() fits it
       const top = stage.getBoundingClientRect().top + window.scrollY;
@@ -400,7 +404,8 @@
         const host = el('div', { class: 'slide-host' });
         const subjectHost = el('div', { class: 'slide-subject' });
         const slide = el('article', { class: 'slide', 'aria-label': entry.title, hidden: true }, [
-          el('div', { class: 'slide-head' }, [el('span', { class: 'muted small', text: `${i + 1}/${st.catalog.length}` }), el('strong', { text: entry.title }), el('span', { class: 'muted small', text: entry.description }), subjectHost]),
+          // One line at a fixed height whatever the view (the description clips), so every slide gives its view the same room.
+          el('div', { class: 'slide-head' }, [el('span', { class: 'muted small slide-pos', text: `${i + 1}/${st.catalog.length}` }), el('strong', { class: 'slide-title', text: entry.title, title: entry.title }), el('span', { class: 'muted small slide-desc', text: entry.description, title: entry.description }), subjectHost]),
           host,
         ]);
         const c = card(entry);
