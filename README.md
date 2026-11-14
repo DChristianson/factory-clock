@@ -24,6 +24,8 @@ The hero views replay sessions on a shared clock with play, scrub, speed and loo
 
 **Standard views:** Turn tree, Context timeline, Session strips, Cost per prompt, Context fill, Sequence diagram, Event graph, Actor graph, Prompt terms, Gantt and waterfall, Treemap, Heatmap, Tool-call ribbon, Week in one picture, Histogram, Box and violin, Ridgeline, Scatter plot, Bubble chart, Sunburst, Calendar heatmap, Radar, Parallel coordinates, Streamgraph, Sankey, Adjacency matrix, Swimlane.
 
+Each view has an address: the page's URL with `#` and the view's catalog id, such as `https://dchristianson.github.io/factory-clock/#atlas`. Opening it puts that view on the stage, dropping any filters that hide it. The address bar follows the view on stage as you flip, without adding to the browser's history, so copying it links to what you see. An id the catalog doesn't have opens the view you saw last, or the first.
+
 The catalog in [`src/catalog.ts`](src/catalog.ts) has each view's description and tags. Tags come from five facets: category (what question it answers), purpose (informative or expressive), level (one session, or several), dimension (time, actor, quantity, ...), and design language. The design behind each view is in [docs/visualization-explorer.md](docs/visualization-explorer.md).
 
 Every view acknowledges the prior art it draws on: the chart type it is, and any technique or picture it borrows. Each view names them at the foot of its slide ("After Shneiderman 1992 · …"); press the line for the full credits, with links to the sources. They come from the `credits` in the catalog.
@@ -83,7 +85,7 @@ The page shows no findings. Inside Snagboat, the page replayed Snagboat's heuris
 
 ## Privacy
 
-The files you load never leave your browser. The published page sends one page view to Google Analytics, with no query or hash in its address. A copy you build or serve yourself sends nothing. See [PRIVACY.md](PRIVACY.md).
+The files you load never leave your browser. The published page sends one page view to Google Analytics, with no query or hash in its address. The hash holds only the id of the view on stage. A copy you build or serve yourself sends nothing. See [PRIVACY.md](PRIVACY.md).
 
 ## Layout
 
