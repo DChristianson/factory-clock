@@ -518,26 +518,46 @@
           ]);
         })),
       ]);
-      const setOpen = (open) => {
-        panel.hidden = !open;
-        toggle.setAttribute('aria-expanded', String(open));
-        foot.classList.toggle('open', open);
-      };
-      toggle.addEventListener('click', () => setOpen(panel.hidden));
-      const closeOnEscape = (e) => {
-        if (e.key !== 'Escape' || panel.hidden) return;
+      // While open, the panel closes on Escape anywhere on the page (a clicked button doesn't take focus in
+      // every browser, so a listener on the button alone can miss it), on a press outside it, or on its ×.
+      const onKey = (e) => {
+        if (e.key !== 'Escape') return;
         e.stopPropagation();
         setOpen(false);
         toggle.focus();
       };
-      toggle.addEventListener('keydown', closeOnEscape);
-      panel.addEventListener('keydown', closeOnEscape);
+      const onPress = (e) => {
+        if (!panel.contains(e.target) && !toggle.contains(e.target)) setOpen(false);
+      };
+      const setOpen = (open) => {
+        if (open === !panel.hidden) return;
+        panel.hidden = !open;
+        toggle.setAttribute('aria-expanded', String(open));
+        foot.classList.toggle('open', open);
+        if (open) {
+          document.addEventListener('keydown', onKey, true);
+          document.addEventListener('pointerdown', onPress, true);
+        } else {
+          document.removeEventListener('keydown', onKey, true);
+          document.removeEventListener('pointerdown', onPress, true);
+        }
+      };
+      toggle.addEventListener('click', () => setOpen(panel.hidden));
+      const close = el('button', { class: 'slide-credits-close', 'aria-label': `Close the credits for ${entry.title}`, title: 'Close', text: '×' });
+      close.addEventListener('click', () => {
+        setOpen(false);
+        toggle.focus();
+      });
+      panel.prepend(close);
       foot.append(toggle, panel);
       return { foot, setOpen };
     }
 
     function buildSlides() {
-      for (const s of slides) destroyParts(s);
+      for (const s of slides) {
+        destroyParts(s);
+        s.credits.setOpen(false);
+      }
       slides.length = 0;
       stage.replaceChildren();
       shelf.replaceChildren();
@@ -1207,7 +1227,10 @@
         window.removeEventListener('resize', onResize);
         if (pageObserver) pageObserver.disconnect();
         if (drag) stopDragging();
-        for (const s of slides) destroyParts(s);
+        for (const s of slides) {
+          destroyParts(s);
+          s.credits.setOpen(false); // drops its page listeners if open
+        }
         root.replaceChildren();
         if (mounted === tab) mounted = null;
       },

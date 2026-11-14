@@ -869,6 +869,9 @@ button.link.slide-credits-toggle { max-width: 100%; min-width: 0; overflow: hidd
   overflow-wrap: anywhere;
 }
 .slide-credits-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.slide-credits-close { float: right; margin: -4px -6px 4px 8px; padding: 0 6px; border: 0; background: none; color: var(--fc-ink-muted); font: inherit; font-size: 1.3em; line-height: 1.2; cursor: pointer; border-radius: 3px; }
+.slide-credits-close:hover { color: var(--fc-ink); background: var(--fc-rule); }
+.slide-credits-close:focus-visible { outline: 1px solid var(--fc-accent); outline-offset: 1px; }
 .slide-credits-list li > span { display: block; }
 .slide-credits-panel a { color: var(--fc-link); }
 .slide-credit-note { margin-top: 1px; }
