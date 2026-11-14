@@ -870,7 +870,10 @@ button.link.slide-title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-o
 /* The note panel (slideNote): the catalog description, then each view's note (.viz-note), under its session's name when stacked.
    A note the view left empty is hidden, and a session with nothing to say with it. */
 .slide-note-panel { top: calc(100% + 4px); }
-.slide-note-desc { margin: 0 0 6px; }
+.slide-note-section + .slide-note-section { margin-top: 10px; }
+.slide-note-heading { margin: 0 0 4px; font-size: 0.8em; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--fc-ink-muted); }
+.slide-note-desc { margin: 0; }
+.slide-notes-section:not(:has(.viz-note:not(:empty))) { display: none; }
 .slide-notes { display: grid; gap: 6px; }
 .slide-notes .viz-note { margin: 0; }
 .slide-notes .viz-note:empty { display: none; }

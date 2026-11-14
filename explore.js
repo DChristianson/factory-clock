@@ -571,8 +571,9 @@
       const title = el('button', { class: 'link slide-title', 'aria-expanded': 'false', 'aria-controls': panelId, title: `About ${entry.title}` }, [entry.title]);
       const notes = el('div', { class: 'slide-notes' });
       const panel = el('div', { class: 'slide-panel slide-note-panel', id: panelId, role: 'region', 'aria-label': `About ${entry.title}`, hidden: true }, [
-        el('p', { class: 'slide-note-desc', text: entry.description }),
-        notes,
+        el('section', { class: 'slide-note-section' }, [el('h3', { class: 'slide-note-heading', text: 'Description' }), el('p', { class: 'slide-note-desc', text: entry.description })]),
+        // Hidden by CSS while the view has written no note (the turn tree, or before data loads).
+        el('section', { class: 'slide-note-section slide-notes-section' }, [el('h3', { class: 'slide-note-heading', text: 'Notes' }), notes]),
       ]);
       const head = el('div', { class: 'slide-head' });
       return { head, title, panel, notes, ...dropPanel({ toggle: title, panel, frame: head, closeLabel: `Close the note on ${entry.title}`, onOpen }) };
