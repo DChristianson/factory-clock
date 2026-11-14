@@ -88,6 +88,7 @@ export const TAXONOMY = {
       strata: 'Three translucent planes stacked in a deep void, one hue each, bright messages rising and falling between them (Strata)',
       narrative: 'A narrative chart on a pale sheet: each actor a cased line through time, bending into the lanes where it works and running beside the others it meets (Storylines)',
       textile: 'Woven cloth on a muted ground: warp threads, weft picks over and under, a selvedge at each edge, bands dyed by status (Loom)',
+      transit: 'A metro diagram on white: thick colored lines at 45° and 90°, stations as rings, interchanges in ink (Transit map)',
     },
   },
 } satisfies Taxonomy;
@@ -570,6 +571,19 @@ export const CATALOG: VisualizerEntry[] = [
       { work: 'Time, clocks, and the ordering of events in a distributed system', by: 'Leslie Lamport', year: 1978, url: 'https://lamport.azurewebsites.net/pubs/pubs.html#time-clocks', relation: 'technique', note: 'The space-time diagram: a vertical line per process with time running along it, as each file is a thread with time running down the cloth' },
     ],
     tags: { subject: ['workspace', 'code'], category: ['temporal', 'dependency', 'state'], purpose: ['expressive'], level: ['project'], dimension: ['time', 'structure', 'place', 'status'], language: ['textile'] },
+  },
+  {
+    id: 'transit-map',
+    title: 'Transit map',
+    description: 'The plan as a metro map: each epic (or planning document) is a colored line, its items are stations in dependency order with a ring for their status, shared and blocking items are interchanges, the packages they name are districts underneath, and sessions are trains that stop at the items they mention as they replay.',
+    why: 'To read the plan the way you read a metro map: which lines, which stops are done, and where they meet.',
+    hero: true,
+    credits: [
+      { work: 'Automatic Layout of Project Plans Using a Metro Map Metaphor', by: 'Jonathan M. Stott, Peter Rodgers, Remo A. Burkhard, Michael Meier, and Matthias T. J. Smis', year: 2005, url: 'https://doi.org/10.1109/IV.2005.26', relation: 'metaphor', note: 'A project plan drawn as a metro map: tracks as lines, tasks as stations, shared and dependent tasks as interchanges' },
+      { work: 'London Underground diagram', by: 'Harry Beck', year: 1933, url: 'https://en.wikipedia.org/wiki/Harry_Beck', relation: 'form', note: 'The schematic metro diagram: lines at 45° and 90°, stations evenly spaced, distance given up for order and connection' },
+      { work: 'Drawing and Labeling High-Quality Metro Maps by Mixed-Integer Programming', by: 'Martin Nöllenburg and Alexander Wolff', year: 2011, url: 'https://doi.org/10.1109/TVCG.2010.81', relation: 'technique', note: 'Octilinear metro-map layout and its criteria; this view keeps the octilinear rule with a hashed heuristic in place of the optimizer' },
+    ],
+    tags: { subject: ['workspace', 'plans'], category: ['dependency', 'state', 'temporal'], purpose: ['expressive'], level: ['project'], dimension: ['dependency', 'status', 'structure'], language: ['transit'] },
   },
 ];
 
