@@ -23,6 +23,7 @@
       let views = [];
       let selection = null;
       let draws = 0;
+      const fitH = ctx.fitter(host); // the plot fills the slide's height
 
       const sessionLabel = (s) => (s.name ? clip(s.name, 60) : short(s.sessionId));
       const ctxOf = (c) => c.input + c.cacheRead + c.cacheCreation;
@@ -77,8 +78,8 @@
         const top = niceMax(Math.max(1, ...lines.flatMap((l) => l.points.map((p) => p.ctx)), ...markValues));
         const width = Math.max(320, host.clientWidth || 800);
         const m = { l: 52, r: 12, t: 12, b: 24 };
-        const ph = 180;
-        const height = m.t + ph + m.b;
+        const height = fitH.height(m.t + 180 + m.b, m.t + 140 + m.b);
+        const ph = height - m.t - m.b;
         const pw = width - m.l - m.r;
         const axisY = m.t + ph;
         const x = (k) => m.l + (k / Math.max(1, maxN - 1)) * pw;
@@ -219,6 +220,7 @@
           anyCompaction ? key('swatch-compaction-dot', 'first call after a compaction') : null
         );
         note.textContent = 'Main agent’s context only (fresh input, cache read, and cache creation); subagents run in their own context. x is each call’s index within its session, so sessions line up by progress rather than clock. Hover a point for its breakdown; click to select its turn.';
+        fitH.settle(height, draw);
       }
 
       return {

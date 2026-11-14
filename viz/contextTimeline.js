@@ -24,6 +24,7 @@
       let expanded = false;
       let zoom = null; // [fromMs, toMs], 'all', or null for the default domain
       let draws = 0;
+      const fitH = ctx.fitter(host); // the steps fill the slide's height (outside the explorer, their own)
 
       function update(sessions, sel, options) {
         const next = sessions[0] || null;
@@ -102,11 +103,12 @@
         const maxCtx = Math.max(1, ...mainCalls.map(ctxOf), ...markValues);
         const top = Math.pow(10, Math.floor(Math.log10(maxCtx))) * Math.ceil(maxCtx / Math.pow(10, Math.floor(Math.log10(maxCtx))));
         const m = { l: 52, r: 12, t: 22 };
-        const ph = expanded ? 260 : 150;
         const outH = expanded ? 46 : 0;
         const lanes = expanded ? v.subagents.length : 0;
+        const around = m.t + (outH ? outH + 14 : 0) + 22 + lanes * 18 + (lanes ? 8 : 0); // all but the steps' plot
+        const height = fitH.height(around + (expanded ? 260 : 150), around + 120);
+        const ph = height - around;
         const axisY = m.t + ph + (outH ? outH + 14 : 0);
-        const height = axisY + 22 + lanes * 18 + (lanes ? 8 : 0);
         const pw = width - m.l - m.r;
         const x = (t) => m.l + ((t - t0) / (t1 - t0)) * pw;
         const y = (val) => m.t + ph - (val / top) * ph;
@@ -312,6 +314,7 @@
         chartHost.replaceChildren(root);
         const subNote = v.subagents.length && !expanded ? ` · ${v.subagents.length} subagent lane${v.subagents.length > 1 ? 's' : ''} when expanded` : '';
         note.textContent = `Showing ${new Date(t0).toLocaleString()} – ${new Date(t1).toLocaleTimeString()}${zoom === 'all' ? ' (whole session)' : ''}. Main agent's context only; subagents run in their own context.${subNote}`;
+        fitH.settle(height, draw);
       }
 
       return {

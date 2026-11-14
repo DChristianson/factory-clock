@@ -21,6 +21,7 @@
       let views = [];
       let selection = null;
       const panel = vizPanel(host, []);
+      const fitH = ctx.fitter(host); // the axes fill the slide's height
 
       function draw() {
         const lines = views.flatMap((v, s) => turnStats(v).map((t) => ({ t, v, s })));
@@ -30,11 +31,12 @@
         }
         const width = Math.max(420, host.clientWidth || 800);
         const m = { l: 34, r: 34, t: 30, b: 22 };
-        const ph = 300;
+        const height = fitH.height(m.t + 300 + m.b, m.t + 200 + m.b);
+        const ph = height - m.t - m.b;
         const gap = (width - m.l - m.r) / (AXES.length - 1);
         const tops = AXES.map(([, of]) => niceMax(Math.max(1, ...lines.map((l) => of(l.t)))));
         const y = (a, v) => m.t + ph - (v / tops[a]) * ph;
-        const root = svg('svg', { class: 'viz-chart par-chart', viewBox: `0 0 ${width} ${m.t + ph + m.b}`, role: 'img', 'aria-label': `Parallel coordinates: ${lines.length} turns over ${AXES.length} measures` });
+        const root = svg('svg', { class: 'viz-chart par-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Parallel coordinates: ${lines.length} turns over ${AXES.length} measures` });
         AXES.forEach(([name, , kind], a) => {
           const x = m.l + a * gap;
           root.append(svg('line', { class: 'par-axis', x1: x, x2: x, y1: m.t, y2: m.t + ph }));
@@ -63,6 +65,7 @@
         panel.chart.replaceChildren(root);
         panel.legend.replaceChildren(...(views.length > 1 ? views.map((v, s) => legendKey(`${sessionClass(s)} scatter-key`, sessionName(v.summary, 40))) : []));
         panel.note.textContent = 'One line per turn. Each axis has its own scale, from zero at the bottom to the value at its top. Hover a line for its numbers, and click it to select the turn.';
+        fitH.settle(height, draw);
       }
       return {
         update(sessions, sel) {

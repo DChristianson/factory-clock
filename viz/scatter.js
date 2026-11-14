@@ -19,6 +19,8 @@
     for (let p = lo; p <= hi; p++) ticks.push(Math.pow(10, p));
     return { lo, hi, ticks, at: (v) => (Math.log10(v) - lo) / (hi - lo) };
   }
+  const PLOT_H = 300; // the plot's height outside the explorer; in a slide it takes the slide's height, down to MIN_PLOT_H
+  const MIN_PLOT_H = 160;
   window.factoryClock.register({
     id: 'scatter',
     title: 'Scatter plot',
@@ -33,6 +35,7 @@
         draw();
       });
       const panel = vizPanel(host, [controls]);
+      const fitH = ctx.fitter(host); // the plot fills the slide's height
 
       function draw() {
         const [, yLabel, yOf] = Y.find(([k]) => k === yKey);
@@ -44,7 +47,7 @@
         }
         const width = Math.max(320, host.clientWidth || 800);
         const m = { l: 56, r: 16, t: 10, b: 40 };
-        const ph = 300;
+        const ph = fitH.height(m.t + PLOT_H + m.b, m.t + MIN_PLOT_H + m.b) - m.t - m.b;
         const xa = logAxis(points.map((p) => p.xv));
         const ya = logAxis(points.map((p) => p.yv));
         const x = (v) => m.l + xa.at(v) * (width - m.l - m.r);
@@ -75,6 +78,7 @@
         panel.legend.replaceChildren(...(views.length > 1 ? views.map((v, s) => legendKey(`${sessionClass(s)} scatter-key`, sessionName(v.summary, 40))) : []));
         const left = all.length - points.length;
         panel.note.textContent = `One point per turn, on log axes, where equal distances are equal ratios.${left ? ` Left out, because a log axis can’t draw zero: ${fmt(left)} turn${left === 1 ? '' : 's'} with no length or none of this measure.` : ''} Click a point to select its turn.`;
+        fitH.settle(m.t + ph + m.b, draw);
       }
       return {
         update(sessions, sel) {

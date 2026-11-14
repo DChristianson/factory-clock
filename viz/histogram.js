@@ -19,6 +19,7 @@
         draw();
       });
       const panel = vizPanel(host, [controls]);
+      const fitH = ctx.fitter(host); // the bars fill the slide's height
 
       function draw() {
         const items = views.flatMap((v, s) => metricValues(v, metric.key).map((x) => ({ ...x, s, sessionId: v.summary.sessionId })));
@@ -41,12 +42,13 @@
         }
         const width = Math.max(320, host.clientWidth || 800);
         const m = { l: 44, r: 12, t: 10, b: 34 };
-        const ph = 240;
+        const height = fitH.height(m.t + 240 + m.b, m.t + 160 + m.b);
+        const ph = height - m.t - m.b;
         const tallest = niceMax(Math.max(...bins.map((b) => b.items.length)));
         const axis = niceAxis(tallest, tallest <= 2 ? tallest : 5); // whole numbers: tops are 1, 2, 5, or 10 times a power of ten
         const y = (v) => m.t + ph - (v / axis.top) * ph;
         const bw = (width - m.l - m.r) / bins.length;
-        const root = svg('svg', { class: 'viz-chart', viewBox: `0 0 ${width} ${m.t + ph + m.b}`, role: 'img', 'aria-label': `Histogram of ${metric.label}: ${fmt(items.length)} values in ${bins.length} bins` });
+        const root = svg('svg', { class: 'viz-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Histogram of ${metric.label}: ${fmt(items.length)} values in ${bins.length} bins` });
         for (const t of axis.ticks) {
           root.append(svg('line', { class: 'grid', x1: m.l, x2: width - m.r, y1: y(t), y2: y(t) }));
           root.append(svgText({ class: 'axis-label', x: m.l - 6, y: y(t) + 4, 'text-anchor': 'end' }, fmt(t)));
@@ -77,6 +79,7 @@
         panel.chart.replaceChildren(root);
         panel.legend.replaceChildren(...(views.length > 1 ? views.map((v, s) => legendKey(sessionClass(s), sessionName(v.summary, 40))) : []));
         panel.note.textContent = `${fmt(items.length)} values${clipped ? `; the last bar gathers everything past the 99th percentile, up to ${metric.text(max)}` : ''}. Click a bar to select the turn behind its largest value.`;
+        fitH.settle(height, draw);
       }
       return {
         update(sessions) {

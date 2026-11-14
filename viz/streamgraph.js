@@ -20,6 +20,7 @@
         draw();
       });
       const panel = vizPanel(host, [controls]);
+      const fitH = ctx.fitter(host); // the stream fills the slide's height
 
       /** The current mode's events: { ts, layer, cls, label, amount, turnId }. */
       function eventsOf(v) {
@@ -61,11 +62,12 @@
         const peak = Math.max(1, ...totals);
         const width = Math.max(320, host.clientWidth || 800);
         const m = { l: 12, r: 12, t: 8, b: 26 };
-        const ph = 260;
+        const height = fitH.height(8 + 260 + 26, 200);
+        const ph = height - m.t - m.b;
         const xAt = (i) => m.l + ((i + 0.5) / BINS) * (width - m.l - m.r);
         const k = ph / peak;
         const mid = m.t + ph / 2;
-        const root = svg('svg', { class: 'viz-chart stream-chart', viewBox: `0 0 ${width} ${m.t + ph + m.b}`, role: 'img', 'aria-label': `Streamgraph of ${mode === 'category' ? 'tool calls by category' : `tokens by ${mode}`}, ${stack.length} layers` });
+        const root = svg('svg', { class: 'viz-chart stream-chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Streamgraph of ${mode === 'category' ? 'tool calls by category' : `tokens by ${mode}`}, ${stack.length} layers` });
         // Ticks on round local times: the first step that fits, offset by the time zone.
         const step = [1, 2, 5, 10, 15, 30, 60, 120, 180, 360, 720, 1440].map((n) => n * 60000).find((n) => (to - from) / n <= Math.max(2, Math.floor(width / 110))) || 86400000;
         const zone = new Date(from).getTimezoneOffset() * 60000;
@@ -117,6 +119,7 @@
         panel.chart.replaceChildren(el('div', {}, [root]));
         panel.legend.replaceChildren(...stack.map((l) => legendKey(l.cls, l.label)));
         panel.note.textContent = `Thickness is the amount in a ${secondsText(binWidthS)} bin; the height of the peak is ${mode === 'category' ? `${fmt(peak)} calls` : `${compact(peak)} tokens`}. Up and down have no meaning here, so read thickness rather than position. Click a layer to select the busiest turn at that time.`;
+        fitH.settle(height, draw);
       }
       return {
         update(sessions) {
