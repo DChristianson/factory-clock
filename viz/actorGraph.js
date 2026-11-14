@@ -40,7 +40,7 @@
     title: 'Actor graph',
     tags: { subject: ['sessions', 'code', 'plans'], category: ['actor', 'dependency'], purpose: ['expressive', 'informative'], level: ['session', 'project'], dimension: ['actor', 'communication', 'quantity', 'structure', 'dependency', 'status'], language: ['standard'] },
     mount(host, ctx) {
-      const { el, svg, compact, fmt, clip, fit, short, ms, agentName, modelShort, showTip, hideTip, interact, svgText, forceLayout, shapeClass, shapeLegend, shapeSelection, shapeTip, shapeKindText, shapeNote } = ctx;
+      const { el, svg, compact, fmt, clip, fit, short, ms, agentName, modelShort, showTip, hideTip, interact, svgText, settledLayout, shapeClass, shapeLegend, shapeSelection, shapeTip, shapeKindText, shapeNote } = ctx;
       const chartHost = el('div');
       const legend = el('div', { class: 'legend small actor-legend' });
       const note = el('p', { class: 'muted small' });
@@ -52,6 +52,7 @@
       let shape = null; // with a subject: the Shape to draw instead of the sessions
       let subject = null;
       const arrowId = `actor-arrow-${++arrowIds}`;
+      const shapeLayout = settledLayout(); // the Shape graph settles once per change in its nodes and links, then stays still
 
       const callTokens = (c) => c.input + c.cacheRead + c.cacheCreation + c.output;
       const turnKey = (sessionId, turnId) => `${sessionId}\n${turnId}`;
@@ -60,7 +61,9 @@
         views = sessions;
         selection = sel || null;
         shape = (options && options.shape) || null;
-        subject = (options && options.subject) || null;
+        const nextSubject = (options && options.subject) || null;
+        if (nextSubject !== subject) shapeLayout.reset();
+        subject = nextSubject;
         draw();
       }
 
@@ -146,7 +149,7 @@
         const rMax = Math.max(8, Math.min(22, room * 0.22));
         const radius = (n) => 3 + (rMax - 3) * Math.sqrt(Math.max(0, n.value) / maxValue);
         const maxW = Math.max(1, ...links.map((l) => l.weight));
-        const pos = forceLayout(
+        const pos = shapeLayout(
           ids.map((id) => ({ id, r: radius(byId.get(id)) })),
           links.map((l) => ({ source: l.from, target: l.to, weight: l.weight })),
           { width, height, padding: 20 }

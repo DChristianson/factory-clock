@@ -136,7 +136,11 @@ The clock respects `prefers-reduced-motion`: it opens on the final state and doe
 
 **Force layout**
 
-`forceLayout(nodes, links, { width, height, previous? })` returns `Map(id → { x, y })`. Deterministic: starting positions come from `hashId(id)`, a stable number for a string, also in `ctx`. Pass the last result as `previous` so an update moves nodes gently. `drift(id, t, amplitude)` → `{ dx, dy }` is decoration only. Every pair of nodes is compared, so fold to a few dozen nodes first. See [Shared force layout](visualization-explorer.md#shared-force-layout).
+`forceLayout(nodes, links, { width, height, previous? })` returns `Map(id → { x, y })`. Deterministic: the same nodes, links, and box give the same positions every time, in any input order (nodes and links are sorted by id first, and starting positions come from `hashId(id)`, a stable number for a string, also in `ctx`); nothing is random. With `previous`, known nodes start where they were, so an update moves nodes gently. Every pair of nodes is compared, so fold to a few dozen nodes first. See [Shared force layout](visualization-explorer.md#shared-force-layout).
+
+Don't call `forceLayout` from a draw function; keep a `settledLayout()` in the instance and call that with the same arguments. It runs the layout only when the set of node ids or linked pairs changes, and otherwise returns the cached positions: selection, hover, replay, and a change in weights or radii alone reuse them, and a new size rescales them into the new box (pinned nodes go to their pins) instead of running again. When the node set does change, it warm-starts from the cached positions with a short run, so the nodes that stayed move little. `layout.reset()` forgets it (a different session, say). A view that builds its layout in a model of its own, as the Atlas and Strata do, keys that model on the data and scales it at draw time, to the same effect.
+
+`drift(id, t, amplitude)` → `{ dx, dy }` is decoration only: keep the amplitude to a pixel or two, apply it only while the replay plays (so only on stage), never under reduced motion, and never feed it back into the layout; paused or finished, everything rests on its place.
 
 ## The data
 
@@ -178,6 +182,7 @@ The explorer loads at most 8 sessions (`EXPLORE_SESSION_CAP`), and each carries 
 - **The host owns saved state.** Keep a view's state in the instance. The explorer saves only the shared selection and the replay settings.
 - **Any size.** Work at any slide width and down to a 320 px slide height. Use `viewBox` and the host's width, and the slide's height (below).
 - **Performance.** Aggregate or cap marks; put each limit in a named constant at the top of the file and say it in the view's note. Animate only through the replay clock, and only while active. Try the view on the longest session you have, not only the demo data.
+- **Settle and stay still.** A layout is computed once per change in the data (the nodes and links, the sessions, the workspace) and reused for every other redraw: selection, hover, replay ticks, resize, and slide changes. Resize rescales the layout rather than re-running it. Only replay moves things, through the replay clock, and it stops under reduced motion and off stage; nothing jitters, creeps, or animates while idle. Use `settledLayout()` for force layouts (see [Force layout](#ctx)).
 - **Accessible.** Give the SVG `role="img"` and an `aria-label`. Make clickable marks keyboard-reachable (`interact` does this). Every view takes part in the shared selection: clicking a mark should select its turn or session.
 
 ## Fitting a slide

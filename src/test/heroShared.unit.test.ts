@@ -45,8 +45,10 @@ interface Shared {
   setReplayPrefs(p: { speed?: string | number; loop?: boolean; stills?: boolean }): void;
   onReplayPrefs(cb: (p: { speed: string; loop: boolean }) => void): () => void;
   forceLayout(nodes: Array<{ id: string; r?: number; pin?: Pt }>, links: Array<{ source: string; target: string; weight: number }>, opts: Record<string, unknown>): Map<string, Pt>;
+  settledLayout(): Layout;
   drift(id: string, t: number, amplitude: number): { dx: number; dy: number };
 }
+type Layout = ((nodes: Array<{ id: string; r?: number; pin?: Pt }>, links: Array<{ source: string; target: string; weight: number }>, opts: Record<string, unknown>) => Map<string, Pt>) & { reset(): void };
 interface Pt {
   x: number;
   y: number;
@@ -341,9 +343,56 @@ async function main() {
     const a = shared.forceLayout(nodes, links, box);
     const b = shared.forceLayout(nodes, links, box);
     assert.deepStrictEqual([...a.entries()], [...b.entries()]);
-    // Order of the input doesn't decide where a node goes first either.
-    const c = shared.forceLayout([...nodes].reverse(), links, box);
-    for (const n of nodes) assert.ok(Number.isFinite(c.get(n.id)!.x));
+    // Nor does the order of the input: reversed nodes and links give the very same positions.
+    const c = shared.forceLayout([...nodes].reverse(), [...links].reverse(), box);
+    for (const n of nodes) assert.deepStrictEqual({ ...c.get(n.id) }, { ...a.get(n.id) }, n.id);
+  });
+
+  test('a settled layout reuses its positions until the nodes or links change', () => {
+    const { nodes, links } = star();
+    const layout = shared.settledLayout();
+    const first = layout(nodes, links, box);
+    // A redraw for a selection, a hover, or a replay tick: nothing moves, even with new weights or radii.
+    const again = layout(
+      nodes.map((n) => ({ ...n, r: n.r + 1 })),
+      links.map((l) => ({ ...l, weight: l.weight * 2 })),
+      box
+    );
+    for (const n of nodes) assert.deepStrictEqual({ ...again.get(n.id) }, { ...first.get(n.id) }, n.id);
+    // And it's the layout forceLayout gives cold, so the same data always opens on the same picture.
+    const cold = shared.forceLayout(nodes, links, box);
+    for (const n of nodes) assert.deepStrictEqual({ ...first.get(n.id) }, { ...cold.get(n.id) }, n.id);
+  });
+
+  test('a resize rescales the settled layout instead of running it again', () => {
+    const { nodes, links } = star();
+    const layout = shared.settledLayout();
+    const small = layout(nodes, links, { ...box, padding: 20 });
+    const big = layout(nodes, links, { width: 1160, height: 400, padding: 20 });
+    for (const n of nodes) {
+      const a = small.get(n.id)!;
+      const b = big.get(n.id)!;
+      assert.ok(Math.abs(b.x - (20 + (a.x - 20) * 2)) < 0.2, `${n.id} x ${a.x} -> ${b.x}`);
+      assert.ok(Math.abs(b.y - a.y) < 0.2, `${n.id} y ${a.y} -> ${b.y}`);
+    }
+    // Back to the first size, back to the first picture.
+    const back = layout(nodes, links, { ...box, padding: 20 });
+    for (const n of nodes) assert.deepStrictEqual({ ...back.get(n.id) }, { ...small.get(n.id) }, n.id);
+  });
+
+  test('a new node warm-starts the settled layout, and the rest barely move', () => {
+    const { nodes, links } = star();
+    const layout = shared.settledLayout();
+    const before = layout(nodes, links, box);
+    const after = layout([...nodes, { id: 'tool:new', r: 6 }], [...links, { source: 'agent', target: 'tool:new', weight: 2 }], box);
+    const moved = nodes.map((n) => dist(before.get(n.id)!, after.get(n.id)!));
+    const mean = moved.reduce((a, b) => a + b, 0) / moved.length;
+    assert.ok(mean < 25, `known nodes moved ${mean.toFixed(1)}px on average`);
+    assert.ok(after.has('tool:new'));
+    // A reset forgets it: the next call is the cold layout again.
+    layout.reset();
+    const cold = layout(nodes, links, box);
+    for (const n of nodes) assert.deepStrictEqual({ ...cold.get(n.id) }, { ...before.get(n.id) }, n.id);
   });
 
   test('every node stays inside the box, clear of the padding', () => {
