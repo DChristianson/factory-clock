@@ -1949,3 +1949,134 @@ rect.pog-file { opacity: 1; }
 .hero-loom .lm-sw-weft.lm-sw-read { opacity: 0.55; }
 .hero-loom .lm-sw-float { background-color: var(--lm-float); background-image: none; width: 3px; height: 9px; }
 .hero-loom .lm-sw-loose { background: none; border: 1px dashed var(--lm-muted); }
+
+/* ---------- Transit map (hero, language `transit`) ---------- */
+/* Sheet: a white ground, ink, faint districts, and the view's own line colors, distinct in both themes. */
+.hero-transit {
+  --tr-ground: #ffffff;
+  --tr-ink: #2b2a26;
+  --tr-muted: #6b675e; /* 5.6:1 on white */
+  --tr-district: #eceae4;
+  --tr-district-edge: #dcd9d0;
+  --tr-district-name: #858175;
+  --tr-depot: #f5f4f0;
+  --tr-window: #f2c14e;
+  --tr-gray: #767676;
+  --tr-on-line: #ffffff; /* text on a line's color */
+  --tr-l0: #d7263d;
+  --tr-l1: #1b6ca8;
+  --tr-l2: #1f8540;
+  --tr-l3: #c46200;
+  --tr-l4: #7b3fa0;
+  --tr-l5: #00838f;
+  --tr-l6: #c2185b;
+  --tr-l7: #8d5a2b;
+  --tr-l8: #66760a;
+  --tr-l9: #2f3e9e;
+  background: var(--tr-ground);
+  color: var(--tr-ink);
+  border-radius: 4px;
+  padding: 8px 10px 10px;
+  font-family: -apple-system, "Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  .hero-transit {
+    --tr-ground: #16181b;
+    --tr-ink: #eceae4;
+    --tr-muted: #aaa69c;
+    --tr-district: #23262a;
+    --tr-district-edge: #2e3237;
+    --tr-district-name: #8f8b81;
+    --tr-depot: #1d2024;
+    --tr-window: #f2c14e;
+    --tr-gray: #9a9a9a;
+    --tr-on-line: #16181b;
+    --tr-l0: #ff5a6e;
+    --tr-l1: #4ea3e6;
+    --tr-l2: #4cc46c;
+    --tr-l3: #ffa133;
+    --tr-l4: #b47ee0;
+    --tr-l5: #26c6da;
+    --tr-l6: #f06292;
+    --tr-l7: #c8916a;
+    --tr-l8: #b5c934;
+    --tr-l9: #8c9af2;
+  }
+}
+.hero-transit .tr-svg { display: block; max-width: 100%; }
+.hero-transit .tr-ground { fill: var(--tr-ground); }
+.hero-transit .tr-foot { margin-top: 6px; }
+.hero-transit .tr-c-0 { --line: var(--tr-l0); }
+.hero-transit .tr-c-1 { --line: var(--tr-l1); }
+.hero-transit .tr-c-2 { --line: var(--tr-l2); }
+.hero-transit .tr-c-3 { --line: var(--tr-l3); }
+.hero-transit .tr-c-4 { --line: var(--tr-l4); }
+.hero-transit .tr-c-5 { --line: var(--tr-l5); }
+.hero-transit .tr-c-6 { --line: var(--tr-l6); }
+.hero-transit .tr-c-7 { --line: var(--tr-l7); }
+.hero-transit .tr-c-8 { --line: var(--tr-l8); }
+.hero-transit .tr-c-9 { --line: var(--tr-l9); }
+.hero-transit .tr-c-gray { --line: var(--tr-gray); }
+.hero-transit .tr-c-ink { --line: var(--tr-ink); }
+/* Type: sans-serif names, set horizontally or at 45° */
+.hero-transit .tr-name { fill: var(--tr-ink); font-size: 9.5px; pointer-events: none; paint-order: stroke; stroke: var(--tr-ground); stroke-width: 2.5px; stroke-linejoin: round; }
+.hero-transit .tr-district-name { fill: var(--tr-district-name); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; pointer-events: none; }
+.hero-transit .tr-key-text, .hero-transit .tr-train-name { fill: var(--tr-ink); font-size: 9.5px; }
+.hero-transit .tr-depot-name { fill: var(--tr-muted); font-size: 8.5px; letter-spacing: 0.16em; }
+.hero-transit .tr-stamp { fill: var(--tr-muted); font-size: 9px; }
+.hero-transit .tr-bullet-text, .hero-transit .tr-fold-text { fill: var(--tr-on-line); font-size: 9.5px; font-weight: 700; pointer-events: none; }
+/* Marks: districts */
+.hero-transit .tr-district { cursor: pointer; }
+.hero-transit .tr-district-box { fill: var(--tr-district); stroke: var(--tr-district-edge); stroke-width: 1; }
+.hero-transit .tr-district:hover .tr-district-box, .hero-transit .tr-district:focus .tr-district-box { stroke: var(--tr-muted); }
+.hero-transit .tr-district.tr-on .tr-district-box { stroke: var(--tr-ink); stroke-width: 1.6; }
+.hero-transit .tr-district:focus { outline: none; }
+/* Marks: lines, thick with rounded joins */
+.hero-transit .tr-line { cursor: pointer; }
+.hero-transit .tr-line:focus { outline: none; }
+.hero-transit .tr-line-path { fill: none; stroke: var(--line); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.hero-transit .tr-line-halo { fill: none; stroke: var(--tr-ink); stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; opacity: 0.35; }
+.hero-transit .tr-line:hover .tr-line-path, .hero-transit .tr-line:focus .tr-line-path { stroke-width: 8; }
+.hero-transit .tr-hit { fill: none; stroke: transparent; stroke-width: 14; stroke-linecap: round; }
+.hero-transit .tr-bullet-box { fill: var(--line); }
+/* Marks: transfers */
+.hero-transit .tr-transfer-shared { stroke: var(--tr-ink); stroke-width: 6; stroke-linecap: round; }
+.hero-transit .tr-transfer-core { stroke: var(--tr-ground); stroke-width: 2.6; stroke-linecap: round; }
+.hero-transit .tr-transfer-blocks { stroke: var(--tr-ink); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.hero-transit .tr-transfer-blocks.tr-inferred { stroke-dasharray: 1 3; }
+/* Marks: stations, a ring whose inside is the status */
+.hero-transit .tr-station { cursor: pointer; }
+.hero-transit .tr-station:focus { outline: none; }
+.hero-transit .tr-ring { fill: var(--tr-ground); stroke: var(--line); stroke-width: 2.2; }
+.hero-transit .tr-interchange .tr-ring { stroke: var(--tr-ink); stroke-width: 2.6; }
+.hero-transit .tr-inferred .tr-ring { stroke-dasharray: 2.2 1.6; }
+.hero-transit .tr-mark { display: none; fill: var(--line); stroke: none; }
+.hero-transit .tr-m-cross, .hero-transit .tr-m-pause { fill: none; stroke: var(--line); stroke-width: 1.5; stroke-linecap: round; }
+.hero-transit .tr-st-in_progress .tr-m-half,
+.hero-transit .tr-st-done .tr-m-fill,
+.hero-transit .tr-st-dropped .tr-m-cross,
+.hero-transit .tr-st-blocked .tr-m-bar,
+.hero-transit .tr-st-deferred .tr-m-pause { display: inline; }
+.hero-transit .tr-st-dropped .tr-ring { opacity: 0.7; }
+.hero-transit .tr-st-unborn { opacity: 0.22; }
+.hero-transit .tr-station:hover .tr-ring, .hero-transit .tr-station:focus .tr-ring { stroke-width: 3.4; }
+.hero-transit .tr-station.tr-on .tr-ring { stroke: var(--tr-ink); stroke-width: 3.6; }
+.hero-transit .tr-fold-disc { fill: var(--line); stroke: var(--tr-ground); stroke-width: 1.5; }
+.hero-transit .tr-fold-more .tr-fold-disc { fill: var(--tr-ground); stroke: var(--line); stroke-width: 2.2; }
+.hero-transit .tr-fold-more .tr-fold-text { fill: var(--tr-ink); }
+.hero-transit .tr-fold:hover .tr-fold-disc { stroke: var(--tr-ink); }
+/* The legend and the depot */
+.hero-transit .tr-legend-box, .hero-transit .tr-depot-box { fill: var(--tr-ground); stroke: var(--tr-district-edge); stroke-width: 1; }
+.hero-transit .tr-depot-box { fill: var(--tr-depot); }
+.hero-transit .tr-key-line { stroke: var(--line); stroke-width: 5; stroke-linecap: round; }
+.hero-transit .tr-depot-track { stroke: var(--tr-district-edge); stroke-width: 1.5; }
+/* Trains */
+.hero-transit .tr-train { cursor: pointer; }
+.hero-transit .tr-train:focus { outline: none; }
+.hero-transit .tr-train-body { fill: var(--tr-ink); }
+.hero-transit .tr-train-window { fill: var(--tr-window); }
+.hero-transit .tr-train.tr-idle .tr-train-window { fill: var(--tr-muted); }
+.hero-transit .tr-train.tr-running .tr-train-name { display: none; }
+.hero-transit .tr-train.tr-on .tr-train-body, .hero-transit .tr-train:hover .tr-train-body, .hero-transit .tr-train:focus .tr-train-body { stroke: var(--tr-l0); stroke-width: 2; }
+.hero-transit .tr-unbuilt { stroke-dasharray: 2 10; opacity: 0.7; }
+.hero-transit .tr-empty-text { fill: var(--tr-ink); font-size: 12px; paint-order: stroke; stroke: var(--tr-ground); stroke-width: 4px; stroke-linejoin: round; }
