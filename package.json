@@ -15,7 +15,8 @@
   },
   "scripts": {
     "build": "tsc -p . && node scripts/site.js",
-    "test": "tsc -p tsconfig.test.json && node scripts/runUnit.js"
+    "test": "tsc -p tsconfig.test.json && node scripts/runUnit.js",
+    "package-workspace": "node scripts/packageWorkspace.js"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
