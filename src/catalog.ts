@@ -89,6 +89,7 @@ export const TAXONOMY = {
       narrative: 'A narrative chart on a pale sheet: each actor a cased line through time, bending into the lanes where it works and running beside the others it meets (Storylines)',
       textile: 'Woven cloth on a muted ground: warp threads, weft picks over and under, a selvedge at each edge, bands dyed by status (Loom)',
       transit: 'A metro diagram on white: thick colored lines at 45° and 90°, stations as rings, interchanges in ink (Transit map)',
+      isometric: 'Flat-shaded blocks at a fixed 2:1 angle, an architectural model of the code with scaffolding and lit windows (Skyline)',
     },
   },
 } satisfies Taxonomy;
@@ -584,6 +585,20 @@ export const CATALOG: VisualizerEntry[] = [
       { work: 'Drawing and Labeling High-Quality Metro Maps by Mixed-Integer Programming', by: 'Martin Nöllenburg and Alexander Wolff', year: 2011, url: 'https://doi.org/10.1109/TVCG.2010.81', relation: 'technique', note: 'Octilinear metro-map layout and its criteria; this view keeps the octilinear rule with a hashed heuristic in place of the optimizer' },
     ],
     tags: { subject: ['workspace', 'plans'], category: ['dependency', 'state', 'temporal'], purpose: ['expressive'], level: ['project'], dimension: ['dependency', 'status', 'structure'], language: ['transit'] },
+  },
+  {
+    id: 'skyline',
+    title: 'Skyline',
+    description: 'The whole project as a city at a fixed isometric angle: packages are blocks placed by their imports, files are buildings with height by lines and footprint by fan-in, imports run along the streets, open plan items are scaffolding and epics cranes, and windows light as the sessions replay through the day.',
+    why: 'To see the project as a city: where the code is big, where work is under way, and where the agents are.',
+    hero: true,
+    credits: [
+      { work: 'Visualizing Software Systems as Cities', by: 'Richard Wettel and Michele Lanza', year: 2007, url: 'https://wettel.github.io/codecity.html', relation: 'metaphor', note: 'CodeCity: packages as districts and classes as buildings whose size shows their metrics (the CodeCity page linked)' },
+      { work: 'Synchronised Visualisation of Software Process and Product Artefacts: Concept, Design and Prototype Implementation', by: 'Mujtaba Alshakhouri, Jim Buchan, and Stephen G. MacDonell', year: 2018, url: 'https://arxiv.org/abs/2105.00705', relation: 'metaphor', note: 'ScrumCity: a code city tied to the planned work on it' },
+      { work: 'contrib-skyline', by: 'Ilyas Akbar Almadani', url: 'https://github.com/ilyasaalmadani/contrib-skyline', relation: 'technique', note: 'An isometric city drawn as plain SVG, its windows lit by activity' },
+      { ...FORCE_LAYOUT, note: 'Blocks placed by the imports between packages before they snap to the street grid' },
+    ],
+    tags: { subject: ['workspace', 'code'], category: ['quantitative', 'dependency', 'state'], purpose: ['expressive'], level: ['project'], dimension: ['structure', 'quantity', 'place', 'status'], language: ['isometric'] },
   },
 ];
 

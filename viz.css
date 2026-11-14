@@ -2080,3 +2080,165 @@ rect.pog-file { opacity: 1; }
 .hero-transit .tr-train.tr-on .tr-train-body, .hero-transit .tr-train:hover .tr-train-body, .hero-transit .tr-train:focus .tr-train-body { stroke: var(--tr-l0); stroke-width: 2; }
 .hero-transit .tr-unbuilt { stroke-dasharray: 2 10; opacity: 0.7; }
 .hero-transit .tr-empty-text { fill: var(--tr-ink); font-size: 12px; paint-order: stroke; stroke: var(--tr-ground); stroke-width: 4px; stroke-linejoin: round; }
+
+/* Skyline, design language `isometric`: an architectural model of the code at a fixed 2:1 angle. Flat faces in three
+   tones of one hue per role (top lightest, the left face lit, the right face in shade), hard shadows one way in one
+   flat tone, and no gradient but the sky. The replay sets --sk-dusk on the drawing (0 day, 1 night): the night sky
+   and a veil over the model fade in by it, and the lit windows sit above the veil. The dark sheet is the same model
+   under a dim room light. */
+.hero-skyline {
+  --sk-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sk-ink: #3e4c5e;
+  --sk-muted: #56657a; /* 5:1 on the sheet */
+  --sk-sheet: #eef1f5;
+  --sk-day0: #d9e2ed;
+  --sk-day1: #edf1f6;
+  --sk-night0: #141b2d;
+  --sk-night1: #2e3552;
+  --sk-veil: #10162a;
+  --sk-street: #c3ccd7;
+  --sk-plot: #dde3ea;
+  --sk-plot-edge: #abb4bf;
+  --sk-plinth-l: #9aa5b2;
+  --sk-plinth-r: #808b99;
+  --sk-route: #8a98a8;
+  --sk-bridge: #56667a;
+  --sk-shadow: #1f2a38;
+  --sk-src-top: #6284ad;
+  --sk-src-left: #496280;
+  --sk-src-right: #384c63;
+  --sk-src-edge: #2e3d50;
+  --sk-src-win: #3a4e68;
+  --sk-test-top: #9ac1ae;
+  --sk-test-left: #728f81;
+  --sk-test-right: #596f64;
+  --sk-test-edge: #485a51;
+  --sk-test-win: #b6d6c7;
+  --sk-doc-top: #e9cf95;
+  --sk-doc-left: #ad9a6e;
+  --sk-doc-right: #867756;
+  --sk-doc-edge: #6c6045;
+  --sk-plain-top: #c3c8cf;
+  --sk-plain-left: #969ca5;
+  --sk-plain-right: #7a8089;
+  --sk-plain-edge: #5f646c;
+  --sk-plain-win: #858b94;
+  --sk-lit: #f2c14e;
+  --sk-open: #c8552f;
+  --sk-in-progress: #c98a17;
+  --sk-blocked: #8e2a1c;
+  --sk-deferred: #7d8597;
+  --sk-crane: #c8552f;
+  --sk-select: #e0702f;
+  background: var(--sk-sheet);
+  color: var(--sk-ink);
+  border-radius: 4px;
+  padding: 8px 10px 10px;
+  font-family: var(--sk-mono);
+}
+@media (prefers-color-scheme: dark) {
+  .hero-skyline {
+    --sk-ink: #cfd7e2;
+    --sk-muted: #9eabbc;
+    --sk-sheet: #1b212b;
+    --sk-day0: #2a3443;
+    --sk-day1: #3a4556;
+    --sk-night0: #080b16;
+    --sk-night1: #1a2036;
+    --sk-veil: #05070f;
+    --sk-street: #4a5463;
+    --sk-plot: #5a6576;
+    --sk-plot-edge: #6d7889;
+    --sk-plinth-l: #333b47;
+    --sk-plinth-r: #282f39;
+    --sk-route: #8e9bab;
+    --sk-bridge: #b3bfcd;
+    --sk-shadow: #0b0f16;
+    --sk-select: #ff9a5c;
+  }
+}
+.hero-skyline .sk-svg { display: block; max-width: 100%; --sk-dusk: 0; }
+.hero-skyline .sk-empty { color: var(--sk-muted); font-style: italic; margin: 24px 8px; }
+.hero-skyline .sk-day0 { stop-color: var(--sk-day0); }
+.hero-skyline .sk-day1 { stop-color: var(--sk-day1); }
+.hero-skyline .sk-night0 { stop-color: var(--sk-night0); }
+.hero-skyline .sk-night1 { stop-color: var(--sk-night1); }
+.hero-skyline .sk-dusk { opacity: var(--sk-dusk); }
+.hero-skyline .sk-veil { fill: var(--sk-veil); opacity: calc(var(--sk-dusk) * 0.5); pointer-events: none; }
+/* The model's base and its streets */
+.hero-skyline .sk-street { fill: var(--sk-street); stroke: var(--sk-plot-edge); stroke-width: 0.6; stroke-linejoin: round; }
+.hero-skyline .sk-plinth-l { fill: var(--sk-plinth-l); }
+.hero-skyline .sk-plinth-r { fill: var(--sk-plinth-r); }
+.hero-skyline .sk-plot { fill: var(--sk-plot); stroke: var(--sk-plot-edge); stroke-width: 0.6; stroke-linejoin: round; cursor: pointer; }
+.hero-skyline .sk-plot.sk-inferred { stroke-dasharray: 3 2; }
+.hero-skyline .sk-plot.sk-on { stroke: var(--sk-select); stroke-width: 1.6; }
+.hero-skyline .sk-route { fill: none; stroke: var(--sk-route); stroke-linecap: round; stroke-linejoin: round; }
+.hero-skyline .sk-route-g.sk-inferred .sk-route { stroke-dasharray: 3 3; }
+.hero-skyline .sk-route-g:hover .sk-route, .hero-skyline .sk-bridge-g:hover .sk-bridge { stroke: var(--sk-select); }
+.hero-skyline .sk-hit { fill: none; stroke: transparent; cursor: pointer; }
+.hero-skyline .sk-shadows { fill: var(--sk-shadow); opacity: 0.2; pointer-events: none; }
+.hero-skyline .sk-bridge { fill: none; stroke: var(--sk-bridge); stroke-width: 2.2; stroke-linejoin: round; }
+.hero-skyline .sk-bridge-g.sk-inferred .sk-bridge { stroke-dasharray: 4 3; }
+/* Buildings: three tones per role */
+.hero-skyline .sk-body { cursor: pointer; }
+.hero-skyline .sk-face { stroke-width: 0.5; stroke-linejoin: round; }
+.hero-skyline .sk-source .sk-top { fill: var(--sk-src-top); }
+.hero-skyline .sk-source .sk-left { fill: var(--sk-src-left); }
+.hero-skyline .sk-source .sk-right { fill: var(--sk-src-right); }
+.hero-skyline .sk-source .sk-face { stroke: var(--sk-src-edge); }
+.hero-skyline .sk-source .sk-win { fill: var(--sk-src-win); }
+.hero-skyline .sk-test .sk-top { fill: var(--sk-test-top); }
+.hero-skyline .sk-test .sk-left { fill: var(--sk-test-left); }
+.hero-skyline .sk-test .sk-right { fill: var(--sk-test-right); }
+.hero-skyline .sk-test .sk-face { stroke: var(--sk-test-edge); }
+.hero-skyline .sk-test .sk-win { fill: var(--sk-test-win); opacity: 0.55; }
+.hero-skyline .sk-doc .sk-top, .hero-skyline .sk-doc .sk-roof-l { fill: var(--sk-doc-top); }
+.hero-skyline .sk-doc .sk-left, .hero-skyline .sk-doc .sk-roof-r { fill: var(--sk-doc-left); }
+.hero-skyline .sk-doc .sk-right { fill: var(--sk-doc-right); }
+.hero-skyline .sk-doc .sk-face { stroke: var(--sk-doc-edge); }
+.hero-skyline .sk-plain .sk-top { fill: var(--sk-plain-top); }
+.hero-skyline .sk-plain .sk-left { fill: var(--sk-plain-left); }
+.hero-skyline .sk-plain .sk-right { fill: var(--sk-plain-right); }
+.hero-skyline .sk-plain .sk-face { stroke: var(--sk-plain-edge); }
+.hero-skyline .sk-plain .sk-win { fill: var(--sk-plain-win); }
+.hero-skyline .sk-b.sk-on .sk-face { stroke: var(--sk-select); stroke-width: 1.3; }
+.hero-skyline .sk-body:hover .sk-face, .hero-skyline .sk-body:focus .sk-face { stroke: var(--sk-select); }
+.hero-skyline .sk-win { pointer-events: none; }
+.hero-skyline .sk-lit { fill: var(--sk-lit); pointer-events: none; }
+.hero-skyline .sk-glow { fill: var(--sk-lit); opacity: 0.6; pointer-events: none; }
+.hero-skyline .sk-lights.sk-inferred .sk-lit { opacity: 0.75; }
+.hero-skyline .sk-lamp { fill: transparent; stroke: none; cursor: pointer; }
+/* Work under way */
+.hero-skyline .sk-scaf { fill: none; stroke: var(--sk-open); stroke-width: 0.8; stroke-linecap: round; }
+.hero-skyline .sk-scaf.sk-st-in_progress { stroke: var(--sk-in-progress); }
+.hero-skyline .sk-scaf.sk-st-blocked { stroke: var(--sk-blocked); }
+.hero-skyline .sk-scaf.sk-st-deferred { stroke: var(--sk-deferred); }
+.hero-skyline .sk-scaf.sk-inferred { stroke-dasharray: 2 2; }
+.hero-skyline .sk-b.sk-on .sk-scaf { stroke-width: 1.5; }
+.hero-skyline .sk-crane { fill: none; stroke: var(--sk-crane); stroke-width: 1.5; stroke-linecap: round; }
+.hero-skyline .sk-crane-w { fill: var(--sk-crane); }
+.hero-skyline .sk-crane-g.sk-on .sk-crane { stroke-width: 2.6; }
+/* Type */
+.hero-skyline .sk-name { fill: var(--sk-ink); font: 10px var(--sk-mono); paint-order: stroke; stroke: var(--sk-street); stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
+.hero-skyline .sk-caption { fill: var(--sk-ink); font: 10px var(--sk-mono); letter-spacing: 0.06em; }
+.hero-skyline .sk-caption-r { fill: var(--sk-muted); letter-spacing: 0; }
+/* Foot and legend */
+.hero-skyline .sk-foot { display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap; border-top: 1px solid var(--sk-plot-edge); padding: 6px 0 2px; margin-top: 6px; }
+.hero-skyline .sk-foot .replay-bar { flex: 1 1 360px; margin: 0; color: var(--sk-ink); }
+.hero-skyline .replay-bar button, .hero-skyline .replay-bar select { font: 11px var(--sk-mono); color: var(--sk-ink); background: var(--sk-plot); border: 1px solid var(--sk-plot-edge); border-radius: 3px; padding: 2px 8px; }
+.hero-skyline .sk-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font: 11px var(--sk-mono); color: var(--sk-muted); }
+.hero-skyline .sk-key { display: inline-flex; align-items: center; gap: 6px; }
+.hero-skyline .sk-sw { display: inline-block; width: 14px; height: 10px; box-sizing: border-box; }
+.hero-skyline .sk-sw-plot { background: var(--sk-plot); border: 1px solid var(--sk-plot-edge); }
+.hero-skyline .sk-sw-source { background: var(--sk-src-left); border-right: 7px solid var(--sk-src-right); }
+.hero-skyline .sk-sw-test { background: var(--sk-test-left); border-right: 7px solid var(--sk-test-right); }
+.hero-skyline .sk-sw-doc { background: var(--sk-doc-left); border-right: 7px solid var(--sk-doc-right); }
+.hero-skyline .sk-sw-plain { background: var(--sk-plain-left); border-right: 7px solid var(--sk-plain-right); }
+.hero-skyline .sk-sw-folded { background: var(--sk-src-left); border-top: 3px solid var(--sk-src-top); }
+.hero-skyline .sk-sw-route { height: 3px; background: var(--sk-route); }
+.hero-skyline .sk-sw-bridge { height: 6px; border: 2px solid var(--sk-bridge); border-bottom: none; }
+.hero-skyline .sk-sw-scaf { border: 1px solid var(--sk-open); border-width: 1px 1px 1px 1px; box-shadow: inset 0 -4px 0 -3px var(--sk-open); }
+.hero-skyline .sk-sw-crane { border-top: 2px solid var(--sk-crane); border-left: 2px solid var(--sk-crane); }
+.hero-skyline .sk-sw-lit { width: 10px; background: var(--sk-lit); }
+.hero-skyline .sk-sw-inferred { border: 1px dashed var(--sk-muted); }
+.hero-skyline .sk-sw-twoway { height: 6px; border-top: 2px solid var(--sk-route); border-bottom: 2px solid var(--sk-route); }
