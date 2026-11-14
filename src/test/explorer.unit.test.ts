@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as vm from 'vm';
 import { SessionView } from '../schema';
 import { creditRows } from '../web/credits';
-import { buildExplorerState, CATALOG, Credit, creditCite, creditName, TAXONOMY, unusedValues, validateCatalog, VisualizerEntry } from '../index';
+import { buildExplorerState, CATALOG, Credit, creditCite, creditName, GuideFilters, guideShelf, leadsWithHeroes, matchesFilters, TAXONOMY, unusedValues, validateCatalog, VisualizerEntry } from '../index';
 
 // Factory Clock's catalog and explorer state.
 
@@ -115,6 +115,72 @@ async function main() {
     assert.match(problems([entry({ credits: [{ ...credit, by: '' }] })])[0], /credit 1 has no by/);
     assert.match(problems([entry({ credits: [{ ...credit, year: 92 }] })])[0], /year is not a year/);
     assert.match(problems([entry({ credits: [{ ...credit, note: '' }] })])[0], /empty note/);
+  });
+
+  test('the guide filters as the puck does: any value within a facet, every facet with picks', () => {
+    const ids = (filters: GuideFilters) => guideShelf(CATALOG, filters).map((v) => v.id);
+    assert.deepStrictEqual(ids({}), CATALOG.map((v) => v.id), 'no answers: the whole catalog, in its order');
+    assert.deepStrictEqual(ids({ subject: [], category: [] }), CATALOG.map((v) => v.id), 'an emptied facet does not filter');
+    const deps = ids({ category: ['dependency', 'state'] });
+    assert.ok(deps.length > 0);
+    for (const v of CATALOG) assert.strictEqual(deps.includes(v.id), v.tags.category.includes('dependency') || v.tags.category.includes('state'), v.id);
+    const both = ids({ subject: ['code'], purpose: ['expressive'] });
+    for (const v of CATALOG) assert.strictEqual(both.includes(v.id), v.tags.subject.includes('code') && v.tags.purpose.includes('expressive'), v.id);
+    assert.strictEqual(matchesFilters(CATALOG[0], { subject: ['plans'] }), false);
+    assert.deepStrictEqual(ids({ language: ['nonesuch'] }), []);
+  });
+
+  test('the guide orders the shelf: subjects in the order picked, then the catalog’s order, with no scoring', () => {
+    const order = guideShelf(CATALOG, { subject: ['plans', 'code'] });
+    const rank = (v: VisualizerEntry) => (v.tags.subject.includes('plans') ? 0 : 1);
+    for (const v of order) assert.ok(v.tags.subject.includes('plans') || v.tags.subject.includes('code'), v.id);
+    for (let i = 1; i < order.length; i++) {
+      const a = order[i - 1];
+      const b = order[i];
+      assert.ok(rank(a) < rank(b) || (rank(a) === rank(b) && CATALOG.indexOf(a) < CATALOG.indexOf(b)), `${a.id} before ${b.id}`);
+    }
+    assert.ok(order.findIndex((v) => !v.tags.subject.includes('plans')) > 0, 'plans first, then code');
+    // Picking the other way round turns the order round, not the set.
+    const reversed = guideShelf(CATALOG, { subject: ['code', 'plans'] });
+    assert.deepStrictEqual([...reversed].map((v) => v.id).sort(), order.map((v) => v.id).sort());
+    assert.strictEqual(reversed[0].tags.subject.includes('code'), true);
+    // A view drawing several subjects ranks by the earliest picked.
+    const multi = order.find((v) => v.tags.subject.includes('plans') && v.tags.subject.includes('code'));
+    if (multi) assert.ok(order.indexOf(multi) < order.findIndex((v) => !v.tags.subject.includes('plans')));
+  });
+
+  test('“For: impressing” leads with the hero views, in catalog order; both or neither keeps the catalog’s order', () => {
+    assert.strictEqual(leadsWithHeroes({ purpose: ['expressive'] }), true);
+    assert.strictEqual(leadsWithHeroes({ purpose: ['expressive', 'informative'] }), false);
+    assert.strictEqual(leadsWithHeroes({}), false);
+    const impress = guideShelf(CATALOG, { purpose: ['expressive'] });
+    const heroes = CATALOG.filter((v) => v.hero);
+    assert.deepStrictEqual(impress.slice(0, heroes.length).map((v) => v.id), heroes.map((v) => v.id));
+    assert.ok(impress.slice(heroes.length).every((v) => !v.hero && v.tags.purpose.includes('expressive')));
+    const rest = impress.slice(heroes.length).map((v) => CATALOG.indexOf(v));
+    assert.deepStrictEqual(rest, [...rest].sort((a, b) => a - b));
+    const both = guideShelf(CATALOG, { purpose: ['informative', 'expressive'] });
+    assert.deepStrictEqual(both.map((v) => v.id), CATALOG.map((v) => v.id));
+    // Heroes lead even within a subject order.
+    const codeImpress = guideShelf(CATALOG, { subject: ['sessions', 'workspace'], purpose: ['expressive'] });
+    const firstPlain = codeImpress.findIndex((v) => !v.hero);
+    assert.ok(codeImpress.slice(firstPlain).every((v) => !v.hero));
+    const heroPart = codeImpress.slice(0, firstPlain);
+    assert.ok(heroPart.length > 0 && heroPart.findIndex((v) => !v.tags.subject.includes('sessions')) !== 0, 'sessions heroes before workspace heroes');
+  });
+
+  test('explore.js’s fallback shelf (no ctx.guideShelf) allows the same views as the guide', () => {
+    // explore.js is a plain browser script; without the page's guideShelf it filters on its own, in catalog order.
+    const source = fs.readFileSync(path.resolve(__dirname, '..', '..', 'explore.js'), 'utf8');
+    const fn = /\n  function filterShelf\(catalog, filters\) \{[\s\S]*?\n  \}\n/.exec(source);
+    assert.ok(fn, 'explore.js has filterShelf');
+    const sandbox: { filterShelf?: (c: VisualizerEntry[], f: GuideFilters) => VisualizerEntry[] } = {};
+    vm.runInNewContext(`${fn[0]}\nthis.filterShelf = filterShelf;`, sandbox);
+    const cases: GuideFilters[] = [{}, { subject: ['code'] }, { subject: ['plans', 'sessions'], category: ['state'] }, { purpose: ['expressive'] }, { language: ['standard'], level: ['project'] }, { category: [] }];
+    for (const f of cases) {
+      const ids = (list: VisualizerEntry[]) => list.map((v) => v.id).sort();
+      assert.deepStrictEqual(ids(sandbox.filterShelf!(CATALOG, f)), ids(guideShelf(CATALOG, f)), JSON.stringify(f));
+    }
   });
 
   test('the explorer state keeps the picked order and names the ids without a view', () => {

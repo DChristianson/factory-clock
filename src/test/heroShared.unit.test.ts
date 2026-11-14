@@ -20,6 +20,7 @@ interface Clock {
   shown: number;
   playing: boolean;
   speed: number;
+  reduced: boolean;
   mode(): 'live' | 'replay';
   atEnd(): boolean;
   setSessions(views: SessionView[]): void;
@@ -40,8 +41,8 @@ interface Shared {
   createReplay(opts: Record<string, unknown>): Clock;
   REPLAY_SPEEDS: number[];
   REPLAY_CHOICES: Array<[string, string]>;
-  getReplayPrefs(): { speed: string; loop: boolean };
-  setReplayPrefs(p: { speed?: string | number; loop?: boolean }): void;
+  getReplayPrefs(): { speed: string; loop: boolean; stills: boolean };
+  setReplayPrefs(p: { speed?: string | number; loop?: boolean; stills?: boolean }): void;
   onReplayPrefs(cb: (p: { speed: string; loop: boolean }) => void): () => void;
   forceLayout(nodes: Array<{ id: string; r?: number; pin?: Pt }>, links: Array<{ source: string; target: string; weight: number }>, opts: Record<string, unknown>): Map<string, Pt>;
   drift(id: string, t: number, amplitude: number): { dx: number; dy: number };
@@ -197,6 +198,34 @@ async function main() {
     assert.strictEqual(clock.shown, 0);
   });
 
+  test('stills (the puck’s Motion) is reduced motion for every clock: a playing one stops on its final frame, a new one opens there', () => {
+    const f = frames();
+    const playing = shared.createReplay({ raf: f.raf, caf: f.caf, now: longAfter, reducedMotion: false });
+    playing.setSessions(one);
+    playing.setActive(true);
+    assert.strictEqual(playing.playing, true);
+    try {
+      shared.setReplayPrefs({ stills: true });
+      assert.strictEqual(shared.getReplayPrefs().stills, true);
+      assert.strictEqual(playing.playing, false);
+      assert.ok(playing.atEnd());
+      assert.strictEqual(playing.reduced, true);
+      assert.strictEqual(f.pending, false);
+      const fresh = shared.createReplay({ raf: f.raf, caf: f.caf, now: longAfter, reducedMotion: false });
+      fresh.setSessions(one);
+      fresh.setActive(true);
+      assert.ok(fresh.atEnd());
+      assert.strictEqual(fresh.playing, false, 'no autoplay');
+      fresh.play();
+      assert.strictEqual(fresh.playing, true, 'Play still plays');
+      fresh.destroy();
+    } finally {
+      shared.setReplayPrefs({ stills: false });
+    }
+    assert.strictEqual(playing.reduced, false);
+    playing.destroy();
+  });
+
   test('a recent session opens live at the end, and an update keeps it there', () => {
     const f = frames();
     const partial = { ...one[0], calls: one[0].calls.slice(0, Math.floor(one[0].calls.length / 2)), tools: [], compactions: [] } as SessionView;
@@ -243,7 +272,7 @@ async function main() {
     let heard = null as null | { speed: string; loop: boolean };
     const stop = shared.onReplayPrefs((p) => (heard = p));
     a.setLoop(true);
-    assert.deepStrictEqual({ ...heard }, { speed: '10', loop: true });
+    assert.deepStrictEqual({ ...heard }, { speed: '10', loop: true, stills: false });
     stop();
     a.destroy();
     b.destroy();

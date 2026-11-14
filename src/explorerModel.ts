@@ -50,3 +50,41 @@ export function buildExplorerState(picked: string[], viewFor: (sessionId: string
   }
   return { taxonomy: TAXONOMY, catalog: CATALOG, sessions, notLoaded };
 }
+
+/**
+ * The puck's filters, which are also the guide's answers (docs/workspace-explorer.md,
+ * "The puck as a guide"): per facet, the values picked, in the order they were picked.
+ * An empty or missing facet doesn't filter.
+ */
+export type GuideFilters = Partial<Record<string, string[]>>;
+
+/** Whether an entry passes the filters: any picked value within a facet, every facet with picks. */
+export function matchesFilters(entry: VisualizerEntry, filters: GuideFilters): boolean {
+  return Object.entries(filters).every(([facet, vals]) => !vals || !vals.length || vals.some((v) => ((entry.tags as Record<string, string[]>)[facet] || []).includes(v)));
+}
+
+/** "For: impressing" alone (expressive picked, informative not): the shelf leads with the hero views. */
+export function leadsWithHeroes(filters: GuideFilters): boolean {
+  const purpose = filters.purpose || [];
+  return purpose.includes('expressive') && !purpose.includes('informative');
+}
+
+/**
+ * The guide's recommendation, which is the shelf's order: the views the filters
+ * allow, hero views first when the answer is "For: impressing", then by the
+ * first picked subject each draws (subjects in the order picked), then in the
+ * catalog's order. No scoring: every step is a tag or the catalog's own order.
+ */
+export function guideShelf(catalog: VisualizerEntry[], filters: GuideFilters): VisualizerEntry[] {
+  const subjects = filters.subject || [];
+  const heroesFirst = leadsWithHeroes(filters);
+  const subjectRank = (e: VisualizerEntry) => {
+    const ranks = (e.tags.subject || []).map((s) => subjects.indexOf(s)).filter((i) => i >= 0);
+    return ranks.length ? Math.min(...ranks) : subjects.length;
+  };
+  return catalog
+    .map((entry, index) => ({ entry, index, hero: heroesFirst && entry.hero ? 0 : 1, subject: subjectRank(entry) }))
+    .filter((x) => matchesFilters(x.entry, filters))
+    .sort((a, b) => a.hero - b.hero || a.subject - b.subject || a.index - b.index)
+    .map((x) => x.entry);
+}
