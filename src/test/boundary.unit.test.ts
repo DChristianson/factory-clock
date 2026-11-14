@@ -51,11 +51,27 @@ async function main() {
     }
   });
 
-  test('the page loads only its own files, under a policy that allows nothing else', () => {
+  test('the page loads only its own files, under a policy that allows nothing but Google Analytics', () => {
     const html = fs.readFileSync(path.join(root, 'hosts', 'web', 'index.html'), 'utf8');
     const csp = /<meta http-equiv="Content-Security-Policy" content="([^"]+)">/.exec(html);
     assert.ok(csp, 'index.html has no Content-Security-Policy');
-    for (const rule of ["default-src 'none'", "script-src 'self'", "style-src 'self'", "connect-src 'none'"]) assert.ok(csp[1].includes(rule), `the policy lacks ${rule}`);
+    const policy = new Map(csp[1].split(';').map((d) => d.trim().split(/\s+/)).map(([name, ...sources]) => [name, sources]));
+    const google = /^https:\/\/(www\.googletagmanager\.com|\*\.googletagmanager\.com|\*\.google-analytics\.com|\*\.analytics\.google\.com)$/;
+    const allowed: Record<string, (s: string) => boolean> = {
+      'default-src': (s) => s === "'none'",
+      'script-src': (s) => s === "'self'" || s === 'https://www.googletagmanager.com',
+      'style-src': (s) => s === "'self'",
+      'img-src': (s) => s === "'self'" || s === 'data:' || google.test(s),
+      'connect-src': (s) => google.test(s),
+      'base-uri': (s) => s === "'none'",
+      'form-action': (s) => s === "'none'",
+    };
+    assert.deepStrictEqual([...policy.keys()].sort(), Object.keys(allowed).sort());
+    for (const [name, sources] of policy) for (const s of sources) assert.ok(allowed[name](s), `the policy allows ${s} in ${name}`);
+    // The tag loads only on the published site, so a local build or a fork sends nothing.
+    const tag = fs.readFileSync(path.join(root, 'hosts', 'web', 'analytics.js'), 'utf8');
+    assert.match(tag, /if \(location\.hostname !== 'dchristianson\.github\.io'\) return;/);
+    assert.match(html, /<script src="analytics\.js"><\/script>/);
     // Scripts and stylesheets; plain links out (<a href>) load nothing.
     const loaded = [...html.matchAll(/<script src="([^"]+)"|<link rel="stylesheet" href="([^"]+)"/g)].map((m) => m[1] ?? m[2]);
     assert.ok(loaded.length >= 5, `found ${loaded.length} loads`);

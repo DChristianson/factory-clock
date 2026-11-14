@@ -94,7 +94,7 @@ Run `npm test` before you open a pull request.
 
 ## Constraints
 
-- **No network.** No `fetch`, XHR, remote images or fonts. The web page's policy has `connect-src 'none'`.
+- **No network.** No `fetch`, XHR, remote images or fonts. The web page's policy lets the page reach only Google Analytics, for its page-view tag.
 - **No globals** beyond `window.factoryClock` to register. Everything else comes through `ctx`.
 - **Stay inside `host`.** Reach the tooltip through `ctx.showTip` and `ctx.hideTip`.
 - **Any size.** Work at any slide width and down to a 320 px slide height. The width can be zero at mount, so fall back (`host.clientWidth || 800`) and redraw on `resize()`.
@@ -116,7 +116,7 @@ Run `npm test` before you open a pull request.
 
 ## Other changes
 
-- **Keep the page's promise.** No network requests, no analytics, no storage beyond the explorer's state. See [PRIVACY.md](PRIVACY.md). Don't loosen the Content-Security-Policy in `hosts/web/index.html`.
+- **Keep the page's promise.** Nothing you load leaves the browser. The only network request is the published page's Google Analytics page view (`hosts/web/analytics.js`), with no query or hash in its address. Never put loaded data in the page's address, title, or an analytics event. Storage is only the explorer's state. See [PRIVACY.md](PRIVACY.md). Don't loosen the Content-Security-Policy in `hosts/web/index.html` further.
 - **The schema copy.** `src/schema/` is a copy of Snagboat's files. Change it by copying newer files from Snagboat, and update the commit in its [README](src/schema/README.md). If you must change a copied file here, say so in that README.
 - **Never commit real sessions** to tests. Example traces (`hosts/web/demo/traces.js`) are made with Snagboat's `npm run demo:traces` and committed only after someone has read the text report it writes.
 - **Writing.** Plain, short, direct sentences in docs and the page.

@@ -4,8 +4,9 @@ name: Pages
 # to GitHub Pages at https://dchristianson.github.io/factory-clock/. The
 # repository's Pages source must be "GitHub Actions" (Settings > Pages).
 # The page is files only; nothing runs on a server. Its Content-Security-
-# Policy is in hosts/web/index.html: scripts and styles only from the page,
-# no network requests, no analytics. The deploy checks it is still there.
+# Policy is in hosts/web/index.html: scripts and styles from the page, plus
+# Google Analytics (hosts/web/analytics.js) on this site only, and no other
+# network requests. The deploy checks it is still there.
 
 on:
   push:
@@ -36,7 +37,7 @@ jobs:
       - run: npm run build
       - run: npm test
       - name: Check the page's security policy
-        run: grep -F "content=\"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'\"" site/index.html
+        run: grep -F "content=\"default-src 'none'; script-src 'self' https://www.googletagmanager.com; style-src 'self'; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; connect-src https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; base-uri 'none'; form-action 'none'\"" site/index.html
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
