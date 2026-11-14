@@ -42,7 +42,7 @@
     mount(host, ctx) {
       const { el, svg, svgText, fmt, clip, short, sessionName, formatTime, hideTip, hashId, shapeSelected } = ctx;
       const frame = el('div', { class: 'hero-transit' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(frame, note);
       let ws = null;
       let views = [];

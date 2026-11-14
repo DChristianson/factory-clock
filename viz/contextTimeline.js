@@ -17,7 +17,7 @@
     mount(host, ctx) {
       const { el, svg, compact, fmt, clip, formatTime, ms, modelShort, showTip, hideTip } = ctx;
       const chartHost = el('div');
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(chartHost, note);
       let v = null; // the SessionView drawn
       let selection = null;

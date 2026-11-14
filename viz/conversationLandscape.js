@@ -56,7 +56,7 @@
     mount(host, ctx) {
       const { el, svg, svgText, fmt, clip, short, formatTime, showTip, hideTip, forceLayout, hashId, countUpTo, termsOf, foldPlural, modeButtons } = ctx;
       const frame = el('div', { class: 'hero-edgeless' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(frame, note);
       let views = [];
       let dataKey = null;

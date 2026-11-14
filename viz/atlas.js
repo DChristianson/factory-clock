@@ -220,7 +220,7 @@
       const { el, svg, svgText, fmt, compact, clip, fit: fitText, hashId, forceLayout, formatTime, sessionName, agentName, interact } = ctx;
       const prefix = `atlas${++charts}`;
       const frame = el('div', { class: 'hero-atlas' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(frame, note);
       const fitter = ctx.fitter(host);
       let workspace = null;

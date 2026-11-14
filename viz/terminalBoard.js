@@ -42,7 +42,7 @@
     mount(host, ctx) {
       const { el, fmt, compact, clip, short, modelShort, formatTime, countUpTo, termsOf, modeButtons, callTokens, showTip, hideTip } = ctx;
       const frame = el('div', { class: 'hero-board' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(frame, note);
       const fit = ctx.fitter(host); // the board fills the slide's height
       let rowCap = MAX_ROWS; // lowered when a draw's estimate overflowed

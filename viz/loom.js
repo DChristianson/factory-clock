@@ -44,7 +44,7 @@
     mount(host, ctx) {
       const { el, svg, svgText, fmt, clip, short, sessionName, formatTime, hideTip } = ctx;
       const frame = el('div', { class: 'hero-loom' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(frame, note);
       const clipId = `lm-clip-${++serial}`;
       let ws = null;

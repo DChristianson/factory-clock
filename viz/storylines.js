@@ -42,7 +42,7 @@
     mount(host, ctx) {
       const { el, svg, svgText, fmt, clip, short, sessionName, agentName, formatTime, hideTip, shapeSelected } = ctx;
       const frame = el('div', { class: 'hero-storylines' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(frame, note);
       const clipId = `sl-clip-${++clipSeq}`;
       let ws = null;

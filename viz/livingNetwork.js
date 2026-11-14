@@ -47,7 +47,7 @@
       const { el, svg, svgText, compact, fmt, clip, short, modelShort, agentName, formatTime, showTip, hideTip, settledLayout, drift, hashId, countUpTo } = ctx;
       const prefix = `ln${++charts}`;
       const frame = el('div', { class: 'hero-living' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(frame, note);
       let views = [];
       let viewKey = '';

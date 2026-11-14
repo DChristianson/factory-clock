@@ -42,7 +42,7 @@
       const controls = el('div', { class: 'controls', role: 'group', 'aria-label': 'Which grid' }, [el('span', { class: 'muted small', text: 'Show' }), ...buttons.map(([, b]) => b)]);
       const chartHost = el('div');
       const legend = el('div', { class: 'legend small heat-legend' });
-      const note = el('p', { class: 'muted small' });
+      const note = el('p', { class: 'muted small viz-note' });
       host.replaceChildren(controls, chartHost, legend, note);
 
       const sessionLabel = (s) => (s.name ? clip(s.name, 60) : short(s.sessionId));
