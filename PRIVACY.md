@@ -4,9 +4,11 @@ Factory Clock is a static page on GitHub Pages: <https://dchristianson.github.io
 
 ## What the page reads
 
-By default the page draws generated example sessions that are built into it. They were not recorded from anyone.
+By default the page draws a generated example workspace that is built into it. Its sessions were not recorded from anyone.
 
-It can also load event files you choose, such as the daily files Snagboat writes (`events/YYYY-MM-DD.jsonl`). In VS Code, **Snagboat: Reveal Event Log Folder** opens the folder they are in. The page reads the files in your browser. Loaded events stay in the page's memory until you close or reload the tab. They are never uploaded.
+A copy of the page can also list sample workspaces that are files on its own site (`workspaces/*.js`), added when it was built with `FC_WORKSPACES`. The page loads one only when you pick it, from the same site, like its other scripts. The public page at `dchristianson.github.io` is built without any.
+
+It can also read files you choose, such as the daily files Snagboat writes (`events/YYYY-MM-DD.jsonl`), a project folder, or a `.workspace.json` package. In VS Code, **Snagboat: Reveal Event Log Folder** opens the folder the event files are in. The page reads the files in your browser and makes them a workspace in its list. It stays in the page's memory until you close or reload the tab. Nothing is uploaded.
 
 ## What the page sends
 
@@ -36,7 +38,7 @@ So scripts load only from the page's own site and Google's tag host. A script on
 
 ## What the page stores
 
-Besides Google Analytics' cookies, only the explorer's view state, in your browser's local storage under the key `factoryClock.explore`. It holds the picked session ids, the current view, its filters, the replay settings, the puck's position, and the current selection. It holds no events and no text from your files. Clearing the site's data in your browser removes it.
+Besides Google Analytics' cookies, only the explorer's view state, in your browser's local storage under the key `factoryClock.explore`. It holds the id of the selected workspace when it's one of the page's own (its name and time range; never one made from your files), the picked session ids, the current view, its filters, the replay settings, the puck's position, and the current selection. It holds no events and no text from your files. Clearing the site's data in your browser removes it.
 
 ## What GitHub and Google see
 

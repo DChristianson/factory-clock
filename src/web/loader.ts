@@ -16,6 +16,7 @@ import {
 import { NormalizedEvent } from '../schema';
 import { EventSet } from './eventSet';
 import { parseJsonl } from './jsonl';
+import { WorkspacePackage, checkWorkspacePackage } from './workspaceStore';
 
 /**
  * The loader's model (docs/workspace-explorer.md, "What the page does with a
@@ -121,7 +122,7 @@ export function looksBinary(text: string): boolean {
 }
 
 /** What a single dropped file is, by its content. */
-export type FileKind = 'events' | 'code' | 'plans' | 'beads' | 'unknown';
+export type FileKind = 'events' | 'code' | 'plans' | 'beads' | 'workspace' | 'unknown';
 
 function firstJson(text: string): unknown {
   for (const line of text.split('\n')) {
@@ -139,7 +140,8 @@ const isObject = (x: unknown): x is Record<string, unknown> => !!x && typeof x =
 
 /**
  * Sorts one file: a `.json` whose top says `kind: 'code-graph'` or
- * `'plan-graph'` is that subject; a JSONL whose first line is an issue is a
+ * `'plan-graph'` is that subject, and one that says `'workspace-package'` is
+ * a whole workspace (a `.workspace.json`); a JSONL whose first line is an issue is a
  * beads export; one whose first line has `kind` and `ts` is events. Anything
  * else is unknown, and the page names it and refuses it.
  */
@@ -150,6 +152,7 @@ export function sortFile(name: string, text: string): FileKind {
       const whole: unknown = JSON.parse(text);
       if (isObject(whole) && whole.kind === 'code-graph') return 'code';
       if (isObject(whole) && whole.kind === 'plan-graph') return 'plans';
+      if (isObject(whole) && whole.kind === 'workspace-package') return 'workspace';
     } catch {
       // Not one JSON document; it may still be JSONL.
     }
@@ -264,6 +267,8 @@ export interface SortedFiles {
   events: NormalizedEvent[];
   code: CodeGraph[];
   plans: PlanGraph[];
+  /** Workspace packages, each its own workspace, with the rows their check dropped. */
+  workspaces: Array<{ name: string; pkg: WorkspacePackage; errors: string[] }>;
   /** Files read but not usable, with why. */
   refused: Array<{ name: string; reason: string }>;
   /** Event lines skipped or duplicated, for the note. */
@@ -273,11 +278,11 @@ export interface SortedFiles {
 
 /**
  * Reads single files the visitor dropped or chose: events are parsed, schema
- * files validated, a beads export run through the beads adapter, and the rest
- * named and refused.
+ * files and workspace packages validated, a beads export run through the
+ * beads adapter, and the rest named and refused.
  */
 export function readSingleFiles(files: Array<{ name: string; text: string }>, options: { now?: string; keepText?: boolean } = {}): SortedFiles {
-  const out: SortedFiles = { events: [], code: [], plans: [], refused: [], skippedLines: 0, duplicates: 0 };
+  const out: SortedFiles = { events: [], code: [], plans: [], workspaces: [], refused: [], skippedLines: 0, duplicates: 0 };
   const seen = new Set<string>();
   for (const file of files) {
     const kind = sortFile(file.name, file.text);
@@ -292,6 +297,10 @@ export function readSingleFiles(files: Array<{ name: string; text: string }>, op
       if (!checked.value) out.refused.push({ name: file.name, reason: checked.errors[0] ?? 'not a valid graph' });
       else if (kind === 'code') out.code.push(checked.value as CodeGraph);
       else out.plans.push(checked.value as PlanGraph);
+    } else if (kind === 'workspace') {
+      const checked = checkWorkspacePackage(JSON.parse(file.text));
+      if (!checked.value) out.refused.push({ name: file.name, reason: checked.errors[0] ?? 'not a valid workspace package' });
+      else out.workspaces.push({ name: file.name, pkg: checked.value, errors: checked.errors });
     } else if (kind === 'beads') {
       const stem = file.name.replace(/\.jsonl$/i, '') || 'beads';
       const read = readProject([{ path: file.name, text: file.text, bytes: file.text.length }], {
@@ -303,7 +312,7 @@ export function readSingleFiles(files: Array<{ name: string; text: string }>, op
       if (read.plans.length) out.plans.push(...read.plans);
       else out.refused.push({ name: file.name, reason: read.reports[0]?.errors[0] ?? 'no issues in it' });
     } else {
-      out.refused.push({ name: file.name, reason: 'not events, a code or plan graph, or a beads export' });
+      out.refused.push({ name: file.name, reason: 'not events, a code or plan graph, a workspace package, or a beads export' });
     }
   }
   out.code = distinctRoots(out.code);

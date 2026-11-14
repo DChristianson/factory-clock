@@ -253,6 +253,11 @@ export class WorkspaceStore {
     return entry;
   }
 
+  /** Drops a workspace: the visitor's folder, read again with other switches, can come out with another range. */
+  remove(id: string): boolean {
+    return this.entries.delete(id);
+  }
+
   get(id: string): WorkspaceEntry | undefined {
     return this.entries.get(id);
   }

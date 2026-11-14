@@ -3,11 +3,15 @@
 // then copies the page's own files from hosts/web/ and the plain scripts and
 // stylesheets from the repository root, as they are. A script tag is written
 // into index.html for every file under viz/ (the registry first), so a new
-// visualizer needs no edit here. Nothing generated is committed; the Pages
-// workflow deploys site/.
+// visualizer needs no edit here. When FC_WORKSPACES names a folder of
+// workspace packages, they're copied into site/workspaces/ and listed in the
+// page (scripts/siteWorkspaces.js); otherwise the page has only its built-in
+// workspaces. Nothing generated is committed; the Pages workflow deploys
+// site/, without FC_WORKSPACES.
 const fs = require('fs');
 const path = require('path');
 const esbuild = require('esbuild');
+const { siteWorkspaces } = require('./siteWorkspaces');
 
 const root = path.join(__dirname, '..');
 const out = path.join(root, 'site');
@@ -47,7 +51,7 @@ if (viz[0] !== 'registry.js') {
   process.exit(1);
 }
 for (const f of viz) copies.push([`viz/${f}`, `viz/${f}`]);
-// The example traces, when they've been made and reviewed; without them the page shows only generated sessions.
+// The example traces, when they've been made and reviewed: the picker lists them as a workspace of their own.
 const traces = fs.existsSync(path.join(root, 'hosts', 'web', 'demo', 'traces.js'));
 if (traces) copies.push(['hosts/web/demo/traces.js', 'demo-traces.js']);
 for (const [from, to] of copies) fs.copyFileSync(path.join(root, from), path.join(out, to));
@@ -63,9 +67,14 @@ if (!tracesMarker.test(html)) {
   console.error('site: hosts/web/index.html has no <!-- demo-traces --> marker');
   process.exit(1);
 }
-fs.writeFileSync(
-  path.join(out, 'index.html'),
-  html.replace(marker, viz.map((f) => `<script src="viz/${f}"></script>`).join('\n')).replace(tracesMarker, traces ? '<script src="demo-traces.js"></script>' : '')
-);
+let packages;
+try {
+  packages = siteWorkspaces({ root, out, env: process.env, html: html.replace(marker, viz.map((f) => `<script src="viz/${f}"></script>`).join('\n')).replace(tracesMarker, traces ? '<script src="demo-traces.js"></script>' : '') });
+} catch (err) {
+  console.error(err.message);
+  process.exit(1);
+}
+fs.writeFileSync(path.join(out, 'index.html'), packages.html);
 
-console.log(`site: ${traces ? 'with' : 'without'} example traces; wrote ${copies.length + 1} files and the bundle to site/ (visualizers: ${viz.filter((f) => f !== 'registry.js').length})`);
+const listed = packages.from ? `${packages.files.length} workspace files from ${packages.from}` : 'no workspace packages (FC_WORKSPACES is not set)';
+console.log(`site: ${traces ? 'with' : 'without'} example traces, ${listed}; wrote ${copies.length + 1} files and the bundle to site/ (visualizers: ${viz.filter((f) => f !== 'registry.js').length})`);

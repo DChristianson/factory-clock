@@ -11,3 +11,4 @@ export * from './syntheticWorkspace';
 export * from './loader';
 export * from './workspaceStore';
 export * from './viewLink';
+export * from './workspacePicker';
