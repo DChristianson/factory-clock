@@ -23,6 +23,7 @@
   const SPEED_PX = 360; // every particle travels this many px per second of playback, out or back, so a long link takes longer
   const BLOOM_MS = 1400; // playback time a node's bloom takes to fade
   const TAIL = 4; // dots in a particle's comet tail
+  const DRIFT_PX = 1.2; // the most a node drifts from its place while the replay plays: decoration, kept small
   const HEAD = 28; // the letterbox bars
   const FOOT = 0; // the controls under the drawing are the bottom bar
   const KIND = { you: 'You', agent: 'Agent', subagent: 'Subagent', tool: 'Tool category' };
@@ -43,7 +44,7 @@
     title: 'Living Network',
     tags: { category: ['actor', 'temporal'], purpose: ['expressive'], level: ['session', 'project'], dimension: ['actor', 'communication', 'time'], language: ['cinematic'] },
     mount(host, ctx) {
-      const { el, svg, svgText, compact, fmt, clip, short, modelShort, agentName, formatTime, showTip, hideTip, forceLayout, drift, hashId, countUpTo } = ctx;
+      const { el, svg, svgText, compact, fmt, clip, short, modelShort, agentName, formatTime, showTip, hideTip, settledLayout, drift, hashId, countUpTo } = ctx;
       const prefix = `ln${++charts}`;
       const frame = el('div', { class: 'hero-living' });
       const note = el('p', { class: 'muted small' });
@@ -55,7 +56,8 @@
       const turnKey = (sessionId, turnId) => `${sessionId}\n${turnId}`;
       const subKey = (v, agentId) => `${v.summary.sessionId}/${agentId}`;
       const title = () => (views.length === 1 ? views[0].summary.name || short(views[0].summary.sessionId) : `${views.length} sessions`);
-      let positions = null; // Map id -> {x, y}, kept across updates so the layout only nudges
+      const layout = settledLayout(); // settles once per change in the actors and links, then stays still
+      let positions = null; // Map id -> {x, y}, the layout as last drawn
       let scene = null; // the drawn parts the frame loop touches
       let isolated = null; // an actor id whose neighborhood stands out
       const shown = { message: true, delegation: true, tool: true }; // particle types on
@@ -66,7 +68,7 @@
       function update(sessions, sel) {
         const key = sessions.map((v) => v.summary.sessionId).join('\n');
         if (key !== viewKey) {
-          positions = null;
+          layout.reset();
           isolated = null;
         }
         viewKey = key;
@@ -268,12 +270,12 @@
         for (const n of nodes) n.r = radius(n);
 
         // Interaction weights: how often two actors exchanged anything, on a square-root scale so one busy link doesn't crush the rest.
-        positions = forceLayout(
+        positions = layout(
           // Room for the two label lines; agents' labels are the widest.
           nodes.map((n) => ({ id: n.id, r: n.r + (n.kind === 'tool' ? 22 : 28), pin: n.id === 'you' ? { x: Math.max(60, width * 0.1), y: fieldH / 2 } : undefined })),
           // A subagent's tool calls pull more gently than the main agent's, so subagents spread around it rather than knot in the middle.
           edges.map((e) => ({ source: e.from, target: e.to, weight: Math.sqrt(e.count + 1) * (e.type === 'tool' && e.from.startsWith('sub:') ? 0.35 : 1) })),
-          { width, height: fieldH, padding: 34, previous: positions }
+          { width, height: fieldH, padding: 34 }
         );
 
         const root = svg('svg', { class: 'ln-svg', width, height, viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Living Network of ${title()}: ${nodes.length} actors, ${clock.events.length} events` });
@@ -462,13 +464,12 @@
           part.halo.setAttribute('r', (part.n.r * (3.2 + 2.2 * bloom)).toFixed(1));
           part.ring.setAttribute('opacity', (0.2 + 0.7 * bloom).toFixed(3));
           part.core.classList.toggle('ln-unlit', n === 0);
-          // Drift is decoration: it moves while playing and never touches the layout.
-          if (moving && !clock.reduced) {
-            const d = drift(id, t / speed, 2.5);
-            part.g.setAttribute('transform', `translate(${(part.p.x + d.dx).toFixed(1)} ${(part.p.y + d.dy).toFixed(1)})`);
-            part.halo.setAttribute('cx', (part.p.x + d.dx).toFixed(1));
-            part.halo.setAttribute('cy', (part.p.y + d.dy).toFixed(1));
-          }
+          // Drift is decoration: a pixel or so, only while the replay plays (the clock ticks only on stage),
+          // none under reduced motion, and never in the layout. Paused or finished, every node rests on its place.
+          const d = moving && !clock.reduced ? drift(id, t / speed, DRIFT_PX) : { dx: 0, dy: 0 };
+          part.g.setAttribute('transform', `translate(${(part.p.x + d.dx).toFixed(1)} ${(part.p.y + d.dy).toFixed(1)})`);
+          part.halo.setAttribute('cx', (part.p.x + d.dx).toFixed(1));
+          part.halo.setAttribute('cy', (part.p.y + d.dy).toFixed(1));
         }
         // Particles: each recent event's leg in flight now. Legs run one after another at the one particle speed,
         // so a trip through the shell takes longer than a direct one; newest first, a few per link and direction.

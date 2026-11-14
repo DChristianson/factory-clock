@@ -698,8 +698,16 @@
    * screen. With previous positions, known nodes start there and new ones start beside a
    * neighbor that has a position, and the layout runs a third as long, so an update nudges
    * rather than reshuffles.
+   *
+   * Deterministic: the same nodes, links, and box give the same positions every time, whatever
+   * order the nodes and links come in (they're sorted by id first; nothing is random).
+   * A view doesn't call this on every redraw: it keeps a settledLayout() and asks that, which
+   * runs this once per change in the data and reuses the result.
    */
   function forceLayout(nodes, links, opts) {
+    const byId = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+    nodes = [...nodes].sort((a, b) => byId(a.id, b.id));
+    links = [...links].sort((a, b) => byId(a.source, b.source) || byId(a.target, b.target) || a.weight - b.weight);
     const width = Math.max(1, opts.width);
     const height = Math.max(1, opts.height);
     const pad = opts.padding !== undefined ? opts.padding : 24;
@@ -810,6 +818,76 @@
     const out = new Map();
     for (const p of pts) out.set(p.id, { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 });
     return out;
+  }
+
+  /**
+   * A force layout that settles once and then stays still (the rule in docs/visualizer-contract.md,
+   * "Settle and stay still"). Keep one per drawing in the view's instance and call it from draw:
+   *
+   *   const layout = settledLayout();
+   *   const pos = layout(nodes, links, opts);   // same arguments as forceLayout
+   *   layout.reset();                            // forget it, e.g. for a different session
+   *
+   * It runs forceLayout only when the data changes: the set of node ids or of linked pairs.
+   * Selection, hover, replay, and a change in weights or radii alone reuse the cached positions;
+   * a new size rescales them into the new box (pinned nodes go to their pins) rather than
+   * running again. When the node set does change, it warm-starts from the cached positions
+   * with a short run (WARM_ITERATIONS), so the nodes that stayed move little.
+   */
+  const WARM_ITERATIONS = 40;
+  function settledLayout() {
+    let key = null;
+    let base = null; // the positions the layout produced
+    let size = null; // the box it produced them in: { width, height, pad }
+    const keyOf = (nodes, links) => {
+      const ids = nodes.map((n) => n.id).sort();
+      const pairs = links.filter((l) => l.weight > 0).map((l) => `${l.source}\u0001${l.target}`).sort();
+      return `${ids.join('\u0002')}\u0003${[...new Set(pairs)].join('\u0002')}`;
+    };
+    /** The cached positions moved from the box they were made in to this one. */
+    const rescaled = (nodes, opts) => {
+      const width = Math.max(1, opts.width);
+      const height = Math.max(1, opts.height);
+      const pad = opts.padding !== undefined ? opts.padding : 24;
+      const sx = Math.max(1, width - 2 * pad) / Math.max(1, size.width - 2 * size.pad);
+      const sy = Math.max(1, height - 2 * pad) / Math.max(1, size.height - 2 * size.pad);
+      const same = sx === 1 && sy === 1 && pad === size.pad;
+      const out = new Map();
+      for (const n of nodes) {
+        if (n.pin) {
+          out.set(n.id, { x: n.pin.x, y: n.pin.y });
+          continue;
+        }
+        const p = base.get(n.id);
+        if (!p) continue;
+        if (same) {
+          out.set(n.id, p);
+          continue;
+        }
+        const r = n.r || 6;
+        const x = pad + (p.x - size.pad) * sx;
+        const y = pad + (p.y - size.pad) * sy;
+        out.set(n.id, {
+          x: Math.round(Math.min(width - pad - r, Math.max(pad + r, x)) * 10) / 10,
+          y: Math.round(Math.min(height - pad - r, Math.max(pad + r, y)) * 10) / 10,
+        });
+      }
+      return out;
+    };
+    function layout(nodes, links, opts) {
+      const k = keyOf(nodes, links);
+      if (base && k === key) return rescaled(nodes, opts);
+      const previous = base ? rescaled(nodes, opts) : null;
+      const warm = !!previous && nodes.some((n) => !n.pin && previous.has(n.id));
+      base = forceLayout(nodes, links, { ...opts, previous: warm ? previous : undefined, iterations: opts.iterations || (warm ? WARM_ITERATIONS : undefined) });
+      key = k;
+      size = { width: Math.max(1, opts.width), height: Math.max(1, opts.height), pad: opts.padding !== undefined ? opts.padding : 24 };
+      return base;
+    }
+    layout.reset = () => {
+      key = base = size = null;
+    };
+    return layout;
   }
 
   /**
@@ -1024,5 +1102,5 @@
     return { groups: sorted, cells, under, fold, files };
   }
 
-  window.factoryClockKit = { hilbertPoint, hilbertBands, codeGrid, shapeKindText, shapeClass, shapeLegend, shapeSelection, shapeSelected, shapeChildren, shapeOwn, shapeTip, shapeNote, el, svg, compact, fmt, niceMax, clip, formatTime, tipFor, ms, short, duration, agentName, modelShort, fit, findNode, pathTo, callTokens, sessionName, secondsText, turnStats, METRICS, metricValues, quantile, density, niceAxis, heatScale, arcPath, modeButtons, vizPanel, interact, legendKey, sessionClass, svgText, REPLAY_SPEEDS, REPLAY_CHOICES, getReplayPrefs, setReplayPrefs, onReplayPrefs, speedText, replayEvents, countUpTo, createReplay, replayBar, hashId, forceLayout, drift, termsOf, foldPlural, fitHeight, fitter };
+  window.factoryClockKit = { hilbertPoint, hilbertBands, codeGrid, shapeKindText, shapeClass, shapeLegend, shapeSelection, shapeSelected, shapeChildren, shapeOwn, shapeTip, shapeNote, el, svg, compact, fmt, niceMax, clip, formatTime, tipFor, ms, short, duration, agentName, modelShort, fit, findNode, pathTo, callTokens, sessionName, secondsText, turnStats, METRICS, metricValues, quantile, density, niceAxis, heatScale, arcPath, modeButtons, vizPanel, interact, legendKey, sessionClass, svgText, REPLAY_SPEEDS, REPLAY_CHOICES, getReplayPrefs, setReplayPrefs, onReplayPrefs, speedText, replayEvents, countUpTo, createReplay, replayBar, hashId, forceLayout, settledLayout, drift, termsOf, foldPlural, fitHeight, fitter };
 })();

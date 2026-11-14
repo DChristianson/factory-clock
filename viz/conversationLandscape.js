@@ -42,7 +42,7 @@
     title: 'Conversation Landscape',
     tags: { category: ['semantic', 'conversational', 'actor'], purpose: ['expressive'], level: ['session'], dimension: ['content', 'actor', 'communication'], language: ['edgeless'] },
     mount(host, ctx) {
-      const { el, svg, svgText, fmt, clip, short, formatTime, showTip, hideTip, forceLayout, hashId, countUpTo, termsOf, foldPlural, modeButtons } = ctx;
+      const { el, svg, svgText, fmt, clip, short, formatTime, showTip, hideTip, settledLayout, hashId, countUpTo, termsOf, foldPlural, modeButtons } = ctx;
       const frame = el('div', { class: 'hero-edgeless' });
       const note = el('p', { class: 'muted small' });
       host.replaceChildren(frame, note);
@@ -50,7 +50,8 @@
       let selection = null;
       let model = null;
       let mode = 'interaction';
-      let positions = { interaction: null, delegation: null };
+      // One settled layout per proximity model: each runs once per session and is reused for every redraw.
+      const layouts = { interaction: settledLayout(), delegation: settledLayout() };
       let scene = null;
       let reading = null; // { kind: 'word' | 'actor', id, term? } listed under the field
       const clock = ctx.createReplay({ onFrame: () => paintFrame() });
@@ -70,7 +71,8 @@
       function update(sessions, sel) {
         const next = sessions[0] || null;
         if (!view || !next || view.summary.sessionId !== next.summary.sessionId) {
-          positions = { interaction: null, delegation: null };
+          layouts.interaction.reset();
+          layouts.delegation.reset();
           reading = null;
         }
         view = next;
@@ -209,12 +211,11 @@
         const width = Math.max(320, host.clientWidth || 800);
         const height = fit.height(Math.round(Math.min(620, Math.max(360, width * 0.56))), 320);
         const weights = model.links.map((l) => ({ source: l.a, target: l.b, weight: mode === 'interaction' ? Math.sqrt(l.count) : l.type === 'tool' ? 0.3 : l.type === 'delegation' ? 4 : 3 }));
-        positions[mode] = forceLayout(
+        const pos = layouts[mode](
           model.actors.map((a) => ({ id: a.id, r: CLOUD, pin: a.id === 'you' ? { x: Math.max(CLOUD, width * 0.14), y: height * 0.35 } : undefined })),
           weights,
-          { width, height, padding: 10, previous: positions[mode], spacing: CLOUD * 2.1 }
+          { width, height, padding: 10, spacing: CLOUD * 2.1 }
         );
-        const pos = positions[mode];
 
         const root = svg('svg', { class: 'ce-svg', width, height, viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': `Conversation Landscape of ${view.summary.name || short(view.summary.sessionId)}: ${model.actors.length} actors` });
         root.append(svg('rect', { class: 'ce-ground', x: 0, y: 0, width, height }));
