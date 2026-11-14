@@ -378,7 +378,7 @@
         return;
       }
       if (list.sessions.length === 0) {
-        listHost.replaceChildren(el('p', { class: 'muted', text: 'No agent sessions yet.' }));
+        listHost.replaceChildren(el('p', { class: 'muted', text: 'This workspace has no agent sessions.' }));
         return;
       }
       const rows = list.sessions.map((s) => {
@@ -430,7 +430,8 @@
     function renderLoaded() {
       unloadBtn.hidden = st.sessions.length === 0;
       if (!st.sessions.length && !st.notLoaded.length) {
-        loadedNote.textContent = st.picked && st.picked.length ? 'Nothing loaded yet: press Load to draw the picked sessions.' : 'Nothing loaded: pick sessions here and press Load.';
+        const none = st.list && st.list.sessions.length === 0;
+        loadedNote.textContent = none ? '' : st.picked && st.picked.length ? 'Nothing loaded yet: press Load to draw the picked sessions.' : 'Nothing loaded: pick sessions here and press Load.';
         return;
       }
       const names = st.sessions.map((v) => sessionLabel(v.summary)).join(', ');
@@ -841,7 +842,7 @@
     }
     function needsText(entry) {
       const wants = subjectsOf(entry);
-      if (wants.length === 1 && wants[0] === 'sessions') return 'No sessions loaded. Pick sessions below (Sessions and project ↓) and press Load.';
+      if (wants.length === 1 && wants[0] === 'sessions') return st.list && st.list.sessions.length === 0 ? 'This workspace has no agent sessions, so there’s nothing for this view to draw. Pick another workspace, or choose files with sessions.' : 'No sessions loaded. Pick sessions below (Sessions and project ↓) and press Load.';
       if (wants.length === 1 && wants[0] === 'workspace') return 'This view draws the workspace: load two of sessions, code, and plans (Sessions and project ↓).';
       const names = wants.map((x) => SUBJECT_TEXT[x].toLowerCase());
       return `This view draws ${names.slice(0, -1).join(', ')}${names.length > 1 ? ' or ' : ''}${names[names.length - 1]}; none is loaded. Pick some below (Sessions and project ↓).`;
@@ -1293,7 +1294,9 @@
           save({ picked: st.picked });
           renderPicker();
         }
-        if (st.picked.length && !st.requested && !st.sessions.length) {
+        // Ask even with nothing picked: the reply carries the catalog, so a workspace with no sessions (code and
+        // plans only) still gets its views; the session views say there's no session.
+        if (!st.requested && !st.sessions.length) {
           st.requested = true;
           source.loadSessions(st.picked);
         }
