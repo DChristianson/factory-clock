@@ -124,7 +124,7 @@ export interface Credit {
   note?: string;
 }
 
-/** The short form of a credit's `by`, as the puck's After line and the Credits list show it. */
+/** The short form of a credit's `by`, as the credit line at the foot of a view's slide shows it. */
 export function creditName(by: string): string {
   const given = /\(([^()]+)\)\s*$/.exec(by);
   if (given) return given[1].trim();
@@ -133,7 +133,7 @@ export function creditName(by: string): string {
   return last.length > 2 ? `${last[0]} et al.` : last.join(' & ');
 }
 
-/** A credit as the After line cites it: "Shneiderman 1992". */
+/** A credit as a slide's credit line cites it: "Shneiderman 1992". */
 export function creditCite(credit: Credit): string {
   return credit.year === undefined ? creditName(credit.by) : `${creditName(credit.by)} ${credit.year}`;
 }
@@ -148,7 +148,7 @@ export interface VisualizerEntry {
   hero?: boolean;
   /** How the gallery draws its tile: the view itself, small (the default), or a title card when it can't read at that size. */
   thumbnail?: 'live' | 'title';
-  /** The prior art it draws on, at least one: the chart form, a technique, or a borrowed picture. The puck's After line and the page's Credits list show them. */
+  /** The prior art it draws on, at least one: the chart form, a technique, or a borrowed picture. Shown at the foot of the view's slide. */
   credits: Credit[];
   tags: VisualizerTags;
 }

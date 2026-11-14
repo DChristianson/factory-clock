@@ -840,6 +840,41 @@ rect.pog-file { opacity: 1; }
 .slide-head > .slide-desc { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 /* The stage's height is set to fit the window (fitStage in explore.js); a taller drawing scrolls here. */
 .slide-host { flex: 1; min-height: 0; width: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-gutter: stable; }
+/* A slide's credits (slideCredits in explore.js): one line at its foot, a fixed height for every view like the head, in the
+   slide's frame rather than the view's drawing, so the page's colors hold on a hero view too. The names clip on a narrow
+   screen (the button's title has them all); opened, the full list lies over the bottom of the drawing, not pushing it, so
+   the view keeps its fitted height. */
+.slide-credits { flex: none; position: relative; display: flex; align-items: center; height: 1.6em; margin-top: 6px; border-top: 1px solid var(--fc-rule); font-size: 0.85em; min-width: 0; }
+button.link.slide-credits-toggle { max-width: 100%; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-break: normal; color: var(--fc-ink-muted); }
+.slide-credits-toggle::before { content: "▸ "; }
+.slide-credits.open .slide-credits-toggle::before { content: "▾ "; }
+.slide-credits-toggle:focus-visible { outline: 1px solid var(--fc-accent); outline-offset: 1px; }
+.slide-credits-label { font-style: italic; }
+.slide-credits-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 4px);
+  z-index: 5;
+  max-height: min(20em, 50vh);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  background: var(--fc-panel, var(--fc-surface));
+  color: var(--fc-ink);
+  border: 1px solid var(--fc-rule);
+  border-radius: 4px;
+  box-shadow: 0 4px 16px var(--fc-shadow);
+  overflow-wrap: anywhere;
+}
+.slide-credits-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.slide-credits-close { float: right; margin: -4px -6px 4px 8px; padding: 0 6px; border: 0; background: none; color: var(--fc-ink-muted); font: inherit; font-size: 1.3em; line-height: 1.2; cursor: pointer; border-radius: 3px; }
+.slide-credits-close:hover { color: var(--fc-ink); background: var(--fc-rule); }
+.slide-credits-close:focus-visible { outline: 1px solid var(--fc-accent); outline-offset: 1px; }
+.slide-credits-list li > span { display: block; }
+.slide-credits-panel a { color: var(--fc-link); }
+.slide-credit-note { margin-top: 1px; }
 /* The stage while data loads: in the page from its first paint until the explorer mounts, and over the stage (the veil) while files are read. */
 .stage-loading {
   box-sizing: border-box;
@@ -955,8 +990,6 @@ rect.pog-file { opacity: 1; }
 .puck-body { flex: 0 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 .puck-toggle { margin-left: auto; }
 .puck-desc { margin: 0 0 4px; }
-.puck-after { margin: 0 0 4px; }
-.puck-after a { color: var(--fc-link); }
 .puck-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; margin-top: 8px; }
 /* Collapsed: a small circle with the title and position; the whole of it is the toggle. */
 .puck.collapsed { width: 96px; height: 96px; padding: 0 6px; justify-content: center; border-radius: 50%; }
