@@ -191,7 +191,7 @@ For the examples, the page builds without any file: the synthetic sessions it ha
 
 ## Workspace packages and the store
 
-Decided 2026-11-14, superseding the demo workspace above: the example data stops being three unrelated things (generated sessions, a generated code graph and plan, redacted traces), and every view draws one **workspace** at a time. A workspace is one project's sessions, code, and plans packaged together. The model and store are in [`src/web/workspaceStore.ts`](../src/web/workspaceStore.ts), the picker that lists them is below ("The workspace picker"), and the scrape script that makes them comes later.
+Decided 2026-11-14, superseding the demo workspace above: the example data stops being three unrelated things (generated sessions, a generated code graph and plan, redacted traces), and every view draws one **workspace** at a time. A workspace is one project's sessions, code, and plans packaged together. The model and store are in [`src/web/workspaceStore.ts`](../src/web/workspaceStore.ts), the picker that lists them is below ("The workspace picker"), and the scrape script that makes them is [below](#the-scrape-script) too.
 
 ### Name, time range, identity
 
@@ -236,7 +236,37 @@ Each built-in package is a file in the site, loaded only when picked, rather tha
 
 **Live packages stay out of the repository.** The scrape script writes a folder holding `index.js` and one `<file>.js` per workspace (its index entries name `workspaces/<file>.js`). `scripts/site.js` copies that folder's top-level `.js` files into `site/workspaces/`, and writes a `<script src="workspaces/index.js">` tag into the page, **only when the environment variable `FC_WORKSPACES` names the folder** (an absolute path, or relative to the repository): `FC_WORKSPACES=../my-scrape npm run build`. A folder without `index.js` fails the build. Without the variable nothing is copied and no tag is written, so the picker lists only the built-in workspaces; a normal build, and the public Pages deploy, which doesn't set it, can't carry real project data. The copying is in `scripts/siteWorkspaces.js`, tested against a temporary folder.
 
-The generated workspace is the exception: it's made in the bundle by seeded code, so it's built there with `syntheticWorkspacePackage` rather than shipped as a file, and goes into the store through the same format. This repository's own data isn't packaged.
+The generated workspace is the exception: it's made in the bundle by seeded code, so it's built there with `syntheticWorkspacePackage` rather than shipped as a file, and goes into the store through the same format. This repository's own data isn't packaged in the repository; the scrape script below packages it, or any project, into a folder outside it.
+
+### The scrape script
+
+Added 2026-11-14 (bqx.40, replacing bqx.27 and bqx.19): the example data should be real projects packaged as one coherent workspace, the sessions that touched that code with that plan. [`scripts/packageWorkspace.js`](../scripts/packageWorkspace.js) does the file system and git; every decision about what's kept is in [`src/scrape/index.ts`](../src/scrape/index.ts), which has no Node in it, so the tests run it on made-up fixtures. The script bundles that module with esbuild when it starts, as the site build bundles the page, so it needs no compile step. Its options are in the [README](../README.md#package-a-project-as-a-workspace).
+
+**What it writes.** An output folder holding `<name>.js` (`workspaceScript`) and `index.js` (`workspaceIndexScript`), whose entries name `workspaces/<name>.js`, so the folder is copied into the site's `workspaces/` as it is. `<name>` is the workspace name with anything but letters, digits, `.`, `-`, and `_` made a dash. Running it again for the same name replaces that package and its index entry and keeps the others. The folder is refused inside a git work tree unless git ignores it, so real data never sits where `git add` would take it. The report goes to `<out>-reports/<name>.report.txt`, outside the folder the site copies.
+
+**Code and plans.** Only the files git tracks, as `git ls-files` lists them, so nothing uncommitted or ignored is read. Of those, a file the project's `.gitignore` ignores (tracked by force) is skipped, and so is one whose name looks like a secret: `.env*`, `.envrc`, `*.pem`, `*.key` and other key and certificate files, `id_rsa` and its kin, any name with `credential`, `secret`, `token`, or `password` in it, `.npmrc`, `.netrc`, `.pypirc`, and files under `.ssh/` or `.aws/`. The rest go through the page's own walk rules (`planWalk`: skipped folders, binary files, size limits) and adapters (`readProject`), as if the visitor had picked the folder. `--exclude` leaves out path prefixes, such as test fixtures whose made-up packages and plans aren't the project's. **Plans come from the beads first:** `--beads <file>`; else the project's committed `.beads/issues.jsonl`; else, when it has a `.beads` folder and `bd` is installed, `bd export` (issues only, so `bd remember` memories stay out) into a temporary folder outside the project, removed when the script ends; `--no-beads` leaves them out. Planning markdown is read only under the plan paths (`--plans <prefix>`, repeatable): by default `docs/`, and only when the project has no beads, since a design doc's steps and the beads are usually the same work twice. A README, CONTRIBUTING, or changelog outside the plan paths is never read as a plan (the owner, 2026-11-15: the first run read every `.md` in the repository). The report says where the plans came from. Plan titles, ids, statuses, times, labels, links, and the paths and URLs an item's text names (its `refs`) are kept; plan descriptions (`text`) and assignees, which can name a person, are dropped unless `--keep-text`.
+
+**Sessions.** From Snagboat's event files (`--events`); Claude Code's own transcripts aren't read, since turning them into events is Snagboat's job and that code isn't in this repository's copy of the schema. A session is the project's when any of its events was recorded in a workspace that is the project's folder, its real path, a folder inside it, another worktree of the same repository (when the project is a repository's top), or a path given with `--match`; then all its events are kept. A session whose events name no workspace is kept only with `--include-unscoped`. Each kept event is rebuilt from the fields the views draw: ids, time, kind, status, model, tokens, turn and subagent, tool name and category, `endsTurn`, `channel`, context limit, compaction sizes, outcome fields, todo counts, and task ops. A new field is dropped until it's added there. Free text is dropped unless `--keep-text`: the prompt, the reply excerpt, the session name, a tool's input (the target of anything but a file read or edit: a command line, a search pattern, a URL), todo item text, and task subjects. A file read's or edit's target is made relative to the event's workspace, or to the project's folder, and dropped (the event kept) when it's outside both. The event's `workspace` and its `raw` record are always dropped.
+
+**Scrubbing.** After that, every string left in the package, code and plans included, is scrubbed, and each replacement is counted by kind:
+
+| What | Becomes |
+| --- | --- |
+| Private key blocks | `[private key]` |
+| Credentials in a URL (`https://user:pass@host`) | `https://[credentials]@host` |
+| `Bearer` and `Basic` tokens, JWTs, GitHub tokens, `sk-` keys, AWS key ids, Google, Slack, npm, GitLab, and Stripe keys | `[token]` or `[key]` |
+| `NAME=value` where the name says key, token, secret, password, or auth (`.env` lines), and `password: value` | `NAME=[redacted]` |
+| Email addresses | `[email]` |
+| The project's absolute paths | relative (`.` for the folder itself) |
+| The home folder, and anyone's `/Users/<name>`, `/home/<name>`, `C:\Users\<name>` | `~` |
+| Any other absolute path | `[path]` |
+| The user's names (login, `$USER`, git's `user.name`) in kept free text | `[user]` |
+
+User names are replaced only in free text: in paths and names a user name can be an ordinary word (`vscode`) or a folder (`.vscode/`), and a home folder is caught by its shape anyway.
+
+**The final check.** Before anything is written, the package script is searched for the project's absolute paths (both slash directions), the home folder, any `/Users/<name>` or `/home/<name>`, anything a secret or email pattern still matches, and a user name in kept free text. If any is found the script fails, names the kind of thing found, never the thing, and writes nothing. The package is also run through `checkWorkspacePackage`, whose result is in the report.
+
+**The report.** Printed and written as above: the range, what was kept (files read, code and plan graphs, artifacts, plan items, sessions, events, file targets, session-to-code joins, each adapter's summary), and what was removed or changed, as counts by kind, never the values. With `--keep-text` it opens with a warning. `generatedAt` is the last commit's time unless `--now` is given, so one commit packages the same way every time, and a package of code alone gets a stable range.
 
 ### The workspace picker
 

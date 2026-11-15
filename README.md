@@ -54,6 +54,35 @@ The build script is [`scripts/site.js`](scripts/site.js). It bundles [`src/main.
 
 On every push to `main`, the [Pages workflow](.github/workflows/pages.yml) runs the same build and deploys `site/` to GitHub Pages. The [CI workflow](.github/workflows/ci.yml) builds and tests every push and pull request.
 
+## Package a project as a workspace
+
+[`scripts/packageWorkspace.js`](scripts/packageWorkspace.js) scrapes a whole project (its code, its plans, and the agent sessions recorded on it), sanitizes it, and writes it as one workspace package the page can load:
+
+```bash
+npm run package-workspace -- --project ../my-app --out ../workspaces \
+  --events ~/.snagboat/data
+```
+
+| Option | What it does |
+| --- | --- |
+| `--project <dir>` | The project, a git work tree. Only the files git tracks are read, minus any its `.gitignore` ignores and any named like secrets (`.env*`, `*.pem`, keys, `credentials*`, `.npmrc`, ...). Required. |
+| `--out <dir>` | Where the package goes: `<name>.js` and an `index.js` listing every package in the folder. Running again replaces that workspace and keeps the others. Refused inside a git work tree unless git ignores it (`out/` is fine). Required. |
+| `--name <name>` | The workspace's name; the project's `package.json` name, or its folder's, by default. |
+| `--events <dir or file>` | Snagboat's event files: a folder's `*.jsonl` and its `events/` folder, or one file. Repeatable. Without it the package has no sessions. |
+| `--beads <file>` | A beads export to use. Without it the script uses the project's committed `.beads/issues.jsonl`, or, when the project has a `.beads` folder and `bd` is installed, runs `bd export` (issues only; memories are left out) into a temporary folder outside the project. |
+| `--no-beads` | Leave the beads out. |
+| `--plans <prefix>` | Where planning markdown is read from. Repeatable. By default `docs/`, and only when the project has no beads: with beads, the beads are the plan and markdown is read only when you name a folder. A README, CONTRIBUTING, or changelog outside these folders is never read as a plan. |
+| `--exclude <prefix>` | A path prefix to leave out, such as test fixtures. Repeatable. |
+| `--match <abs path>` | Another path the project was opened at, so its sessions are kept. Repeatable. |
+| `--include-unscoped` | Keep sessions whose events name no workspace (a VS Code window's own event log). |
+| `--keep-text` | Keep prompt, reply, tool input, and plan text (still scrubbed). Off by default; read the package before sharing it. |
+| `--report <file>` | Where the report goes; `<out>-reports/<name>.report.txt` by default, outside the output folder. |
+| `--now <iso time>` | The package's `generatedAt`; the last commit's time by default. |
+
+A session is kept when its events were recorded in the project's folder, inside it (a worktree under it), or in another worktree of the same repository. The script prints a report of what it removed, as counts by kind, never the values, and fails without writing if a project path, the home folder, or something shaped like a secret is left in the output. What is kept and removed is in [docs/workspace-explorer.md](docs/workspace-explorer.md#the-scrape-script). Don't commit a package of real data.
+
+For this repository: `npm run package-workspace -- --project . --out out/workspaces --exclude src/test/fixtures`.
+
 ## Add a visualizer
 
 A visualizer is one plain browser script in `viz/` that registers itself with `window.factoryClock.register`, plus an entry in the catalog. [CONTRIBUTING.md](CONTRIBUTING.md) has the steps and a checklist. [docs/visualizer-contract.md](docs/visualizer-contract.md) has the full interface: `register`, `mount`, the instance methods, `ctx`, the data, and styling.
@@ -111,6 +140,7 @@ The files you load never leave your browser. The published page sends one page v
 | `src/schema/` | The copy of Snagboat's event types and session-view builder |
 | `src/test/` | The unit tests, run by `scripts/runUnit.js` |
 | `scripts/site.js` | Builds the page in `site/`, with `scripts/siteWorkspaces.js` for `FC_WORKSPACES` |
+| `scripts/packageWorkspace.js`, `src/scrape/` | Scrapes, sanitizes, and packages a project as a workspace |
 | `docs/` | The visualizer contract and the explorer's design |
 
 ## License
