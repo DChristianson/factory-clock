@@ -85,6 +85,23 @@ function makeProject(base: string): string {
   return root;
 }
 
+/** A project with plan-like markdown in four places, and beads only when asked: a committed export, or a .beads folder alone. */
+function makePlansProject(base: string, dir: string, beads: 'none' | 'committed' | 'folder'): string {
+  const root = path.join(base, dir);
+  const steps = (title: string) => [`# ${title}`, '', '## Steps', '', `1. **${title} one.** Do it.`, `2. **${title} two.** Then this.`, ''].join('\n');
+  write(root, 'package.json', JSON.stringify({ name: dir, version: '1.0.0' }));
+  write(root, 'src/a.ts', 'export const a = 1;\n');
+  write(root, 'README.md', steps('Readme'));
+  write(root, 'CONTRIBUTING.md', steps('Contributing'));
+  write(root, 'docs/plan.md', steps('Docs plan'));
+  write(root, 'notes/roadmap.md', steps('Notes roadmap'));
+  if (beads === 'committed') write(root, '.beads/issues.jsonl', JSON.stringify({ _type: 'issue', id: 'p-1', issue_type: 'task', status: 'open', priority: 2, title: 'Committed bead', created_at: '2026-11-01T09:00:00Z', updated_at: '2026-11-01T09:00:00Z' }) + '\n');
+  if (beads === 'folder') write(root, '.beads/config.yaml', 'prefix: p\n');
+  sh(root, ['init', '-q']);
+  sh(root, ['add', '.']);
+  return root;
+}
+
 /** The made-up event file: sessions in the project, in a worktree under it, elsewhere, and with no workspace. */
 function makeEvents(base: string, root: string): string {
   let n = 0;
@@ -126,7 +143,8 @@ async function main() {
   const events = makeEvents(base, root);
   const out = path.join(base, 'site-workspaces');
   const quiet = { log: () => undefined, scrape };
-  const go = (...extra: string[]) => run(['--project', root, '--out', out, '--events', events, '--now', NOW, ...extra], quiet)!;
+  // --plans docs: the fixture has beads too, and with beads markdown is read only when asked for (tested below).
+  const go = (...extra: string[]) => run(['--project', root, '--out', out, '--events', events, '--now', NOW, '--plans', 'docs', ...extra], quiet)!;
 
   const first = go();
   const script = fs.readFileSync(path.join(out, 'tiny-app.js'), 'utf8');
@@ -308,6 +326,60 @@ async function main() {
   });
 
   // The pieces, on their own.
+
+  // ---------- where plans come from: the beads first, markdown only under the plan paths ----------
+  const titlesBy = (r: { package: { plans: { source: { adapter: string }; items: { title: string }[] }[] } }, adapter: string) =>
+    r.package.plans.filter((g) => g.source.adapter === adapter).flatMap((g) => g.items.map((i) => i.title));
+  const plansRun = (root: string, ...extra: string[]) => run(['--project', root, '--out', path.join(base, 'plans-out', path.basename(root) + extra.join('')), '--now', NOW, ...extra], quiet)!;
+
+  test('without beads, planning markdown is read from docs/ only: not the README, CONTRIBUTING, or other folders', () => {
+    const r = plansRun(makePlansProject(base, 'no-beads', 'none'));
+    const md = titlesBy(r, 'markdown');
+    assert.ok(md.some((t) => /Docs plan/.test(t)), md.join(', '));
+    assert.ok(!md.some((t) => /Readme|Contributing|Notes roadmap/.test(t)), md.join(', '));
+    assert.strictEqual(r.result.removed['markdown outside the plan paths'], 3);
+    assert.match(r.report, /Plans: beads none \(no \.beads folder\); planning markdown from docs\/\./);
+  });
+
+  test('--plans picks the folders markdown plans are read from', () => {
+    const r = plansRun(makePlansProject(base, 'plans-flag', 'none'), '--plans', 'notes');
+    const md = titlesBy(r, 'markdown');
+    assert.ok(md.some((t) => /Notes roadmap/.test(t)) && !md.some((t) => /Docs plan|Readme|Contributing/.test(t)), md.join(', '));
+  });
+
+  test('with beads, the beads are the plan, and markdown is read only when asked for', () => {
+    const root = makePlansProject(base, 'with-beads', 'committed');
+    const r = plansRun(root);
+    assert.deepStrictEqual(titlesBy(r, 'beads'), ['Committed bead']);
+    assert.deepStrictEqual(titlesBy(r, 'markdown'), []);
+    assert.match(r.report, /beads from the committed \.beads\/issues\.jsonl; planning markdown from nowhere/);
+    const both = plansRun(root, '--plans', 'docs');
+    assert.deepStrictEqual(titlesBy(both, 'beads'), ['Committed bead']);
+    assert.ok(titlesBy(both, 'markdown').some((t) => /Docs plan/.test(t)));
+  });
+
+  test('--no-beads leaves the beads out, and markdown falls back to docs/', () => {
+    const r = plansRun(makePlansProject(base, 'no-beads-flag', 'committed'), '--no-beads');
+    assert.deepStrictEqual(titlesBy(r, 'beads'), []);
+    assert.ok(titlesBy(r, 'markdown').some((t) => /Docs plan/.test(t)));
+  });
+
+  test('a .beads folder without a committed export is read with bd export, into a folder outside the project', () => {
+    const root = makePlansProject(base, 'bd-folder', 'folder');
+    const bin = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-fake-bd-'));
+    const line = JSON.stringify({ _type: 'issue', id: 'q-1', issue_type: 'task', status: 'open', priority: 1, title: 'Exported bead', created_at: '2026-11-02T09:00:00Z', updated_at: '2026-11-02T09:00:00Z' });
+    fs.writeFileSync(path.join(bin, 'bd'), `#!/bin/sh\n[ "$1" = export ] && printf '%s\\n' '${line}'\n`, { mode: 0o755 });
+    const PATH = process.env.PATH;
+    process.env.PATH = `${bin}${path.delimiter}${PATH}`;
+    try {
+      const r = plansRun(root);
+      assert.deepStrictEqual(titlesBy(r, 'beads'), ['Exported bead']);
+      assert.match(r.report, /beads from bd export \(1 issues\)/);
+      assert.ok(!fs.existsSync(path.join(root, '.beads', 'issues.jsonl')), 'nothing written into the project');
+    } finally {
+      process.env.PATH = PATH;
+    }
+  });
 
   test('the scrubber replaces each kind of secret and counts it', () => {
     const s = new Scrubber({ roots: ['/work/proj'], homes: ['/home/me'], users: ['someone'] });

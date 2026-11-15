@@ -379,9 +379,19 @@ export interface FilesOptions {
   name: string;
   /** Path prefixes left out, such as test fixtures whose made-up packages and plans aren't the project's. */
   exclude?: string[];
+  /**
+   * Where planning markdown is read from: path prefixes, relative to the project. A markdown file outside
+   * them (a README, CONTRIBUTING, a changelog) isn't read as a plan. Default ['docs']; [] reads none.
+   */
+  planPaths?: string[];
   keepText?: boolean;
   now: string;
 }
+
+/** Markdown the planning-markdown adapter would read. */
+export const isMarkdown = (p: string): boolean => /\.(md|markdown)$/i.test(p);
+/** The plan paths by default: a project's docs folder. */
+export const DEFAULT_PLAN_PATHS = ['docs'];
 
 export interface FilesRead {
   code: CodeGraph[];
@@ -402,6 +412,7 @@ export interface FilesRead {
  */
 export function readFiles<T extends TrackedFile>(files: T[], read: (file: T) => string, options: FilesOptions, counts: Counts): FilesRead {
   const exclude = (options.exclude ?? []).map((p) => normalizePath(p)).filter(Boolean);
+  const planPaths = (options.planPaths ?? DEFAULT_PLAN_PATHS).map((p) => normalizePath(p).replace(/\/+$/, '') || '.');
   const kept: T[] = [];
   for (const f of files) {
     const p = normalizePath(f.path);
@@ -409,6 +420,7 @@ export function readFiles<T extends TrackedFile>(files: T[], read: (file: T) => 
     else if (f.ignored) bump(counts, 'file the .gitignore ignores');
     else if (looksLikeSecretFile(p)) bump(counts, 'file that looks like a secret');
     else if (exclude.some((x) => p === x || p.startsWith(x + '/'))) bump(counts, 'file excluded');
+    else if (isMarkdown(p) && !planPaths.some((x) => x === '.' || p === x || p.startsWith(x + '/'))) bump(counts, 'markdown outside the plan paths');
     else kept.push(f);
   }
   const plan = planWalk(kept.map((f) => ({ path: `${options.name}/${normalizePath(f.path)}`, bytes: f.bytes, file: f })));
@@ -453,6 +465,8 @@ export interface ScrapeInput<T extends TrackedFile> {
   /** The user's names, as `[user]` in kept free text. */
   users?: string[];
   exclude?: string[];
+  /** Where planning markdown is read from (FilesOptions.planPaths). */
+  planPaths?: string[];
   includeUnscoped?: boolean;
   keepText?: boolean;
   now: string;
@@ -486,7 +500,7 @@ export function scrapeProject<T extends TrackedFile>(input: ScrapeInput<T>): Scr
   const removed: Counts = {};
   const keepText = input.keepText === true;
   bump(removed, 'event line that is not JSON', input.unparsedLines ?? 0);
-  const files = readFiles(input.files, input.read, { name: input.name, exclude: input.exclude, keepText, now: input.now }, removed);
+  const files = readFiles(input.files, input.read, { name: input.name, exclude: input.exclude, planPaths: input.planPaths, keepText, now: input.now }, removed);
   const sessions = readSessions(input.events, { roots: input.roots, includeUnscoped: input.includeUnscoped, keepText }, removed);
   const scrubber = new Scrubber({ roots: input.roots, homes: input.homes, users: input.users });
   const events = sessions.events.map((e) => {

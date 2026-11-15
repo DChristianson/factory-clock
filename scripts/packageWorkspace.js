@@ -2,7 +2,7 @@
 // the store's format (docs/workspace-explorer.md, "The scrape script"):
 //
 //   node scripts/packageWorkspace.js --project <dir> --out <dir>
-//     [--name <name>] [--events <dir or file>]... [--beads <file>]
+//     [--name <name>] [--events <dir or file>]... [--beads <file>] [--no-beads] [--plans <path prefix>]...
 //     [--exclude <path prefix>]... [--match <abs path>]... [--include-unscoped]
 //     [--keep-text] [--report <file>] [--now <iso time>]
 //
@@ -46,17 +46,18 @@ function loadScrape() {
 }
 
 const USAGE = `usage: node scripts/packageWorkspace.js --project <dir> --out <dir> [--name <name>]
-  [--events <dir or file>]... [--beads <file>] [--exclude <path prefix>]...
+  [--events <dir or file>]... [--beads <file>] [--no-beads] [--plans <path prefix>]... [--exclude <path prefix>]...
   [--match <absolute path>]... [--include-unscoped] [--keep-text] [--report <file>] [--now <iso time>]`;
 
 function parseArgs(argv) {
-  const opts = { events: [], exclude: [], match: [], keepText: false, includeUnscoped: false };
-  const many = { '--events': 'events', '--exclude': 'exclude', '--match': 'match' };
+  const opts = { events: [], exclude: [], match: [], plans: [], keepText: false, includeUnscoped: false, noBeads: false };
+  const many = { '--events': 'events', '--exclude': 'exclude', '--match': 'match', '--plans': 'plans' };
   const one = { '--project': 'project', '--out': 'out', '--name': 'name', '--beads': 'beads', '--report': 'report', '--now': 'now' };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--keep-text') opts.keepText = true;
     else if (a === '--include-unscoped') opts.includeUnscoped = true;
+    else if (a === '--no-beads') opts.noBeads = true;
     else if (a === '--help' || a === '-h') opts.help = true;
     else if (many[a] || one[a]) {
       const v = argv[++i];
@@ -66,6 +67,24 @@ function parseArgs(argv) {
     } else throw new Error(`unknown argument ${a}`);
   }
   return opts;
+}
+
+/**
+ * The project's beads, first among its plans: a --beads file; else a committed export (.beads/issues.jsonl);
+ * else, when the project has a .beads folder and bd is installed, `bd export` (issues only: bd leaves out
+ * memories by default) into a temporary folder outside the project, removed when the script exits.
+ */
+function findBeads(root, given, files) {
+  if (given) return { found: true, abs: path.resolve(given), from: `from ${path.basename(given)} (--beads)` };
+  if (files.some((f) => f.path === '.beads/issues.jsonl')) return { found: true, from: 'from the committed .beads/issues.jsonl' };
+  if (!fs.existsSync(path.join(root, '.beads'))) return { from: 'none (no .beads folder)' };
+  const r = spawnSync('bd', ['export'], { cwd: root, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
+  if (r.error || r.status !== 0 || !r.stdout.trim()) return { from: `none (bd export didn't run: ${r.error ? 'bd not found' : `exit ${r.status}`})` };
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-beads-'));
+  process.on('exit', () => fs.rmSync(dir, { recursive: true, force: true }));
+  const abs = path.join(dir, 'issues.jsonl');
+  fs.writeFileSync(abs, r.stdout);
+  return { found: true, abs, from: `from bd export (${r.stdout.split('\n').filter((l) => l.trim()).length} issues)` };
 }
 
 function git(cwd, args) {
@@ -202,10 +221,12 @@ function run(argv, { log = console.log, scrape = loadScrape() } = {}) {
   const users = [...new Set([os.userInfo().username, process.env.USER, gitUser].filter(Boolean))];
 
   const files = trackedFiles(root);
-  if (opts.beads) {
-    const abs = path.resolve(opts.beads);
-    if (!files.some((f) => f.path === '.beads/issues.jsonl')) files.push({ path: '.beads/issues.jsonl', bytes: fs.statSync(abs).size, abs, ignored: false });
-  }
+  const beads = opts.noBeads ? { from: 'skipped (--no-beads)' } : findBeads(root, opts.beads, files);
+  if (opts.noBeads) for (let i = files.length - 1; i >= 0; i--) if (files[i].path === '.beads/issues.jsonl') files.splice(i, 1);
+  if (beads.abs && !files.some((f) => f.path === '.beads/issues.jsonl')) files.push({ path: '.beads/issues.jsonl', bytes: fs.statSync(beads.abs).size, abs: beads.abs, ignored: false });
+  // Plans: the beads first. Planning markdown is read from --plans, or from docs/ when the project has no beads
+  // (with beads, a design doc's steps are usually the same work, so markdown is read only when asked for).
+  const planPaths = opts.plans.length ? opts.plans : beads.found ? [] : scrape.DEFAULT_PLAN_PATHS;
   const events = readEvents(opts.events);
   // The last commit's time by default, so one commit packages the same way every time (a package of code alone takes its range from it).
   const committed = (git(root, ['log', '-1', '--format=%cI']) ?? '').trim();
@@ -220,6 +241,7 @@ function run(argv, { log = console.log, scrape = loadScrape() } = {}) {
     homes,
     users,
     exclude: opts.exclude,
+    planPaths,
     includeUnscoped: opts.includeUnscoped,
     keepText: opts.keepText,
     now,
@@ -234,7 +256,8 @@ function run(argv, { log = console.log, scrape = loadScrape() } = {}) {
   const joins = scrape.countSessionJoins(pkg);
   const report = scrape.formatReport(result, { name, keepText: opts.keepText, eventsGiven: opts.events.length > 0, joins })
     + (checked.errors.length ? `\nPackage check: ${checked.errors.length} problem(s):\n${checked.errors.map((e) => `  ${e}`).join('\n')}\n` : '\nPackage check: clean.\n')
-    + `Leak check: none of the project's paths, the home folder, a user name, or a secret pattern found.\n`;
+    + `Leak check: none of the project's paths, the home folder, a user name, or a secret pattern found.\n`
+    + `Plans: beads ${beads.from}; planning markdown from ${planPaths.length ? planPaths.map((p) => `${p}/`).join(', ') : 'nowhere (the beads are the plan; add --plans <path> to read markdown too)'}.\n`;
 
   fs.mkdirSync(out, { recursive: true });
   const indexFile = path.join(out, 'index.js');

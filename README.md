@@ -60,7 +60,7 @@ On every push to `main`, the [Pages workflow](.github/workflows/pages.yml) runs 
 
 ```bash
 npm run package-workspace -- --project ../my-app --out ../workspaces \
-  --events ~/.snagboat/data --beads /path/to/issues.jsonl
+  --events ~/.snagboat/data
 ```
 
 | Option | What it does |
@@ -69,7 +69,9 @@ npm run package-workspace -- --project ../my-app --out ../workspaces \
 | `--out <dir>` | Where the package goes: `<name>.js` and an `index.js` listing every package in the folder. Running again replaces that workspace and keeps the others. Refused inside a git work tree unless git ignores it (`out/` is fine). Required. |
 | `--name <name>` | The workspace's name; the project's `package.json` name, or its folder's, by default. |
 | `--events <dir or file>` | Snagboat's event files: a folder's `*.jsonl` and its `events/` folder, or one file. Repeatable. Without it the package has no sessions. |
-| `--beads <file>` | A beads export (`bd export`), when the project doesn't track one. |
+| `--beads <file>` | A beads export to use. Without it the script uses the project's committed `.beads/issues.jsonl`, or, when the project has a `.beads` folder and `bd` is installed, runs `bd export` (issues only; memories are left out) into a temporary folder outside the project. |
+| `--no-beads` | Leave the beads out. |
+| `--plans <prefix>` | Where planning markdown is read from. Repeatable. By default `docs/`, and only when the project has no beads: with beads, the beads are the plan and markdown is read only when you name a folder. A README, CONTRIBUTING, or changelog outside these folders is never read as a plan. |
 | `--exclude <prefix>` | A path prefix to leave out, such as test fixtures. Repeatable. |
 | `--match <abs path>` | Another path the project was opened at, so its sessions are kept. Repeatable. |
 | `--include-unscoped` | Keep sessions whose events name no workspace (a VS Code window's own event log). |
